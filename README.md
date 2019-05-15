@@ -1,8 +1,14 @@
 # stream-chat-ruby
 
+[![Build Status](https://travis-ci.org/GetStream/stream-chat-ruby.svg?branch=master)](https://travis-ci.org/GetStream/stream-ruby) [![Gem Version](https://badge.fury.io/rb/stream-chat-ruby.svg)](http://badge.fury.io/rb/stream-chat-ruby)
+
 stream-chat-ruby is the official Ruby client for [Stream chat](https://getstream.io/chat/) a service for building chat applications.
 
 You can sign up for a Stream account at https://getstream.io/chat/get_started/.
+
+You can use this library to access chat API endpoints server-side. For the
+client-side integrations (web and mobile) have a look at the Javascript, iOS and
+Android SDK libraries (https://getstream.io/chat/).
 
 ### Installation
 
@@ -13,7 +19,7 @@ stream-chat-ruby supports:
 #### Install
 
 ```bash
-
+gem install stream-chat-ruby
 ```
 
 ### Documentation
@@ -66,4 +72,7 @@ STREAM_KEY=my_api_key STREAM_SECRET=my_api_secret bundle exec rake spec
 In order to release new version you need to be a maintainer of the library.
 
 - Update CHANGELOG
-- ...
+- Update the version in `lib/stream-chat/version.rb`
+- Commit and push to GitHub
+- Build the gem with `bundle exec rake build`
+- Publish the gem with `bundle exec rake release`
