@@ -11,7 +11,6 @@ Gem::Specification.new do |gem|
   gem.email = 'support@getstream.io'
   gem.homepage = 'http://github.com/GetStream/stream-chat-ruby'
   gem.authors = ['Mircea Cosbuc']
-  gem.license = "MIT"
   gem.files = Dir.chdir(File.expand_path('..', __FILE__)) do
     `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   end
