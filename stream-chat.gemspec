@@ -4,10 +4,10 @@ require 'stream-chat/version'
 
 Gem::Specification.new do |gem|
   gem.name = 'stream-chat-ruby'
-  gem.description = ''
+  gem.description = 'Ruby client for Stream Chat.'
   gem.version = StreamChat::VERSION
   gem.platform = Gem::Platform::RUBY
-  gem.summary = ''
+  gem.summary = 'The low level client for serverside calls for Stream Chat.'
   gem.email = 'support@getstream.io'
   gem.homepage = 'http://github.com/GetStream/stream-chat-ruby'
   gem.authors = ['Mircea Cosbuc']
