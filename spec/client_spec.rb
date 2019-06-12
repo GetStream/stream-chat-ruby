@@ -5,7 +5,7 @@ require 'stream-chat'
 describe StreamChat::Client do
   before(:all) do
     @client = StreamChat::Client.new(ENV['STREAM_API_KEY'], ENV['STREAM_API_SECRET'])
-   
+
     @fellowship_of_the_ring = [
       {id: 'frodo-baggins', name: 'Frodo Baggins', race: 'Hobbit', age: 50},
       {id: 'sam-gamgee', name: 'Samwise Gamgee', race: 'Hobbit', age: 38},
@@ -24,6 +24,7 @@ describe StreamChat::Client do
     response = @client.update_user(@random_user)
     expect(response).to include 'users'
     expect(response['users']).to include @random_user[:id]
+    @client.update_users(@random_users)
   end
 
   it 'mutes users' do
@@ -88,12 +89,12 @@ describe StreamChat::Client do
   end
 
   it 'bans a user' do
-    @client.ban_user(@random_user[:id])
+    @client.ban_user(@random_user[:id], user_id: @random_users[0][:id])
   end
 
   it 'unbans a user' do
-    @client.ban_user(@random_user[:id])
-    @client.unban_user(@random_user[:id])
+    @client.ban_user(@random_user[:id], user_id: @random_users[0][:id])
+    @client.unban_user(@random_user[:id], user_id: @random_users[0][:id])
   end
 
   it 'marks everything as read' do
