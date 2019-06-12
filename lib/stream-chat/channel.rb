@@ -4,7 +4,7 @@ module StreamChat
     attr_reader :id
     attr_reader :channel_type
     attr_reader :custom_data
-    
+
     def initialize(client, channel_type, channel_id=nil, custom_data=nil)
       @channel_type = channel_type
       @id = channel_id
@@ -114,10 +114,10 @@ module StreamChat
     end
 
     private
-    
+
     def add_user_id(payload, user_id)
       payload.merge({"user": {"id": user_id}})
     end
-    
+
   end
 end
