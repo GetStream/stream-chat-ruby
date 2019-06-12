@@ -3,6 +3,7 @@ require 'faraday'
 require 'jwt'
 require 'stream-chat/channel'
 require 'stream-chat/errors'
+require 'stream-chat/version'
 
 module StreamChat
   class Client
@@ -35,7 +36,7 @@ module StreamChat
         faraday.adapter Faraday.default_adapter
       end
     end
-    
+
     def create_token(user_id, exp = nil)
       payload = {user_id: user_id}
       if exp != nil
@@ -69,7 +70,7 @@ module StreamChat
     end
 
     def deactivate_user(user_id, **options)
-      post("users/#{user_id}/deactivate", **options)      
+      post("users/#{user_id}/deactivate", **options)
     end
 
     def export_user(user_id, **options)
@@ -151,13 +152,13 @@ module StreamChat
     def get_channel_type(channel_type)
       get("channeltypes/#{channel_type}")
     end
-        
+
     def list_channel_types
       get("channeltypes")
     end
 
     def update_channel_type(channel_type, **options)
-      put
+      put("channeltypes/#{channel_type}", **options)
     end
 
     def delete_channel_type(channel_type)
@@ -171,7 +172,7 @@ module StreamChat
     # @param [hash] data additional channel data
     #
     # @return [StreamChat::Channel]
-    # 
+    #
     def channel(channel_type, channel_id: nil, data: nil)
       StreamChat::Channel.new(self, channel_type, channel_id, data)
     end
@@ -222,7 +223,7 @@ module StreamChat
     def get_default_params
       {api_key: @api_key}
     end
-    
+
     def get_user_agent
       "stream-ruby-client-#{StreamChat::VERSION}"
     end
@@ -245,7 +246,7 @@ module StreamChat
       end
       return parsed_result
     end
-    
+
     def make_http_request(method, relative_url, params: nil, data: nil)
       headers = get_default_headers
       headers['Authorization'] = @auth_token
