@@ -194,7 +194,7 @@ module StreamChat
     end
 
     def verify_webhook(request_body, x_signature)
-      signature = OpenSSL::HMAC.hexdigest("SHA256", @api_key, request_body)
+      signature = OpenSSL::HMAC.hexdigest("SHA256", @api_secret, request_body)
       signature == x_signature
     end
 

@@ -1,3 +1,5 @@
+require 'stream-chat/errors'
+
 module StreamChat
 
   class Channel
