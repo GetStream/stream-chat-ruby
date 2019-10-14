@@ -77,6 +77,15 @@ module StreamChat
       get("messages/#{id}")
     end
 
+    def search(filter_conditions, query, **options)
+      params = options.merge({
+        "filter_conditions": filter_conditions,
+        "query": query,
+      })
+
+      get("search", params: {"payload": params.to_json})
+    end
+
     def update_users(users)
       payload = {}
       users.each do |user|
