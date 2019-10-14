@@ -53,6 +53,16 @@ module StreamChat
       get('app')
     end
 
+    def flag_message(id, **options)
+      payload = {'target_message_id': id}.merge(options)
+      post("moderation/flag", data: payload)
+    end
+
+    def unflag_message(id, **options)
+      payload = {'target_message_id': id}.merge(options)
+      post("moderation/unflag", data: payload)
+    end
+
     def update_users(users)
       payload = {}
       users.each do |user|
