@@ -63,6 +63,16 @@ module StreamChat
       post("moderation/unflag", data: payload)
     end
 
+    def flag_user(id, **options)
+      payload = {'target_user_id': id}.merge(options)
+      post("moderation/flag", data: payload)
+    end
+
+    def unflag_user(id, **options)
+      payload = {'target_user_id': id}.merge(options)
+      post("moderation/unflag", data: payload)
+    end
+
     def update_users(users)
       payload = {}
       users.each do |user|
@@ -72,7 +82,7 @@ module StreamChat
     end
 
     def update_user(user)
-        update_users([user])
+      update_users([user])
     end
 
     def delete_user(user_id, **options)
@@ -81,6 +91,10 @@ module StreamChat
 
     def deactivate_user(user_id, **options)
       post("users/#{user_id}/deactivate", **options)
+    end
+
+    def reactivate_user(user_id, **options)
+      post("users/#{user_id}/reactivate", **options)
     end
 
     def export_user(user_id, **options)
