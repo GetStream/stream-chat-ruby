@@ -115,6 +115,14 @@ module StreamChat
       @client.unban_user(user_id, type: @channel_type, id: @id)
     end
 
+    def hide(user_id)
+      @client.post("#{url}/hide", data: {user_id: user_id})
+    end
+
+    def show(user_id)
+      @client.post("#{url}/show", data: {user_id: user_id})
+    end
+
     private
 
     def add_user_id(payload, user_id)
