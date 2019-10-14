@@ -73,6 +73,10 @@ module StreamChat
       post("moderation/unflag", data: payload)
     end
 
+    def get_message(id)
+      get("messages/#{id}")
+    end
+
     def update_users(users)
       payload = {}
       users.each do |user|
