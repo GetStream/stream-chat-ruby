@@ -82,6 +82,13 @@ describe StreamChat::Client do
     expect(response['user']['id']).to eq(@random_user[:id])
   end
 
+  it 'reactivates a user' do
+    @client.deactivate_user(@random_user[:id])
+    response = @client.reactivate_user(@random_user[:id])
+    expect(response).to include 'user'
+    expect(response['user']['id']).to eq(@random_user[:id])
+  end
+
   it 'exports a user' do
     response = @client.export_user('gandalf')
     expect(response).to include 'user'
