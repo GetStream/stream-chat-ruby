@@ -97,6 +97,17 @@ describe StreamChat::Client do
     @client.unban_user(@random_user[:id], user_id: @random_users[0][:id])
   end
 
+  it 'flags\unflags message' do
+    msg_id = SecureRandom.uuid
+    response = @channel.send_message({
+      'id' => msg_id,
+      'text' => 'Hello world'
+    }, @random_user[:id])
+
+    @client.flag_message(msg_id, user_id: @random_users[0][:id])
+    @client.unflag_message(msg_id, user_id: @random_users[0][:id])
+  end
+
   it 'marks everything as read' do
     @client.mark_all_read(@random_user[:id])
   end
