@@ -30,7 +30,7 @@ module StreamChat
       @timeout = timeout
       @options = options
       @auth_token = JWT.encode({server: true}, @api_secret, 'HS256')
-      @base_url = options.key?(:base_url) ? options[:base_url] : BASE_URL
+      @base_url = options[:base_url] || BASE_URL
       @conn = Faraday.new(url: @base_url) do |faraday|
         faraday.options[:open_timeout] = @timeout
         faraday.options[:timeout] = @timeout
