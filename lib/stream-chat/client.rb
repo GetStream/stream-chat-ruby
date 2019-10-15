@@ -7,6 +7,7 @@ require 'stream-chat/version'
 
 module StreamChat
   class Client
+    BASE_URL = 'https://chat-us-east-1.stream-io-api.com'
 
     attr_reader :api_key
     attr_reader :api_secret
@@ -28,8 +29,8 @@ module StreamChat
       @api_secret = api_secret
       @timeout = timeout
       @options = options
-      @base_url = 'https://chat-us-east-1.stream-io-api.com'
       @auth_token = JWT.encode({server: true}, @api_secret, 'HS256')
+      @base_url = options.key?(:base_url) ? options[:base_url] : BASE_URL
       @conn = Faraday.new(url: @base_url) do |faraday|
         faraday.options[:open_timeout] = @timeout
         faraday.options[:timeout] = @timeout
