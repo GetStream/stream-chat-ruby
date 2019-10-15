@@ -121,5 +121,10 @@ describe StreamChat::Channel do
     expect(response['reactions'].length).to eq 1
     expect(response['reactions'][0]['count']).to eq 42
   end
+
+  it 'hides\shows channel for user' do
+    @channel.hide(@random_user[:id])
+    @channel.show(@random_user[:id])
+  end
 end
 
