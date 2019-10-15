@@ -124,6 +124,16 @@ describe StreamChat::Client do
     @client.mark_all_read(@random_user[:id])
   end
 
+  it 'gets message by id' do
+    msg_id = SecureRandom.uuid
+    message = @channel.send_message({
+      'id' => msg_id,
+      'text' => 'Hello world'
+    }, @random_user[:id])[:message]
+
+    expect(@client.get_message(msg_id)[:message]).to eq(message)
+  end
+
   it 'updates a message' do
     msg_id = SecureRandom.uuid
     response = @channel.send_message({
