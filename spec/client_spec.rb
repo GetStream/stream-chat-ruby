@@ -185,5 +185,12 @@ describe StreamChat::Client do
     response = @client.get_devices(@random_user[:id])
     expect(response['devices'].length).to eq 1
   end
+
+  it 'search for messages' do
+    text = SecureRandom.uuid
+    @channel.send_message({text: text}, 'legolas')
+    resp = @client.search({ members: { "$in" => ['legolas'] }}, text)
+    expect(resp["results"].length).to eq(1)
+  end
 end
 
