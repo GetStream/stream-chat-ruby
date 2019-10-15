@@ -97,6 +97,11 @@ describe StreamChat::Client do
     @client.unban_user(@random_user[:id], user_id: @random_users[0][:id])
   end
 
+  it 'flags\unflags a user' do
+    @client.flag_user(@random_user[:id], user_id: @random_users[0][:id])
+    @client.unflag_user(@random_user[:id], user_id: @random_users[0][:id])
+  end
+
   it 'flags\unflags message' do
     msg_id = SecureRandom.uuid
     response = @channel.send_message({
