@@ -99,6 +99,14 @@ module StreamChat
       update_users([user])
     end
 
+    def update_users_partial(updates)
+      patch('users', data: {'users': updates})
+    end
+
+    def update_user_partial(update)
+      update_users_partial([update])
+    end
+
     def delete_user(user_id, **options)
       delete("users/#{user_id}", **options)
     end

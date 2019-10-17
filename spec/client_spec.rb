@@ -70,6 +70,18 @@ describe StreamChat::Client do
     expect(response['users']).to include users[0][:id]
   end
 
+  it 'makes partial user update' do
+    user_id = SecureRandom.uuid
+    @client.update_user({id: user_id, field: 'value'})
+
+    response = @client.update_user_partial({
+      id: user_id,
+      set: {field: 'updated'}
+    })
+
+    expect(response['users'][user_id]['field']).to eq('updated')
+  end
+
   it 'deletes a user' do
     response = @client.delete_user(@random_user[:id])
     expect(response).to include 'user'
