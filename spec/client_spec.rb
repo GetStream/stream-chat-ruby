@@ -4,7 +4,7 @@ require 'stream-chat'
 
 describe StreamChat::Client do
   before(:all) do
-    @client = StreamChat::Client.new(ENV['STREAM_API_KEY'], ENV['STREAM_API_SECRET'])
+    @client = StreamChat::Client.new(ENV['STREAM_CHAT_API_KEY'], ENV['STREAM_CHAT_API_SECRET'], {base_url: ENV['STREAM_CHAT_API_HOST']})
 
     @fellowship_of_the_ring = [
       {id: 'frodo-baggins', name: 'Frodo Baggins', race: 'Hobbit', age: 50},
@@ -70,6 +70,18 @@ describe StreamChat::Client do
     expect(response['users']).to include users[0][:id]
   end
 
+  it 'makes partial user update' do
+    user_id = SecureRandom.uuid
+    @client.update_user({id: user_id, field: 'value'})
+
+    response = @client.update_user_partial({
+      id: user_id,
+      set: {field: 'updated'}
+    })
+
+    expect(response['users'][user_id]['field']).to eq('updated')
+  end
+
   it 'deletes a user' do
     response = @client.delete_user(@random_user[:id])
     expect(response).to include 'user'
@@ -78,6 +90,13 @@ describe StreamChat::Client do
 
   it 'deactivates a user' do
     response = @client.deactivate_user(@random_user[:id])
+    expect(response).to include 'user'
+    expect(response['user']['id']).to eq(@random_user[:id])
+  end
+
+  it 'reactivates a user' do
+    @client.deactivate_user(@random_user[:id])
+    response = @client.reactivate_user(@random_user[:id])
     expect(response).to include 'user'
     expect(response['user']['id']).to eq(@random_user[:id])
   end
@@ -97,8 +116,34 @@ describe StreamChat::Client do
     @client.unban_user(@random_user[:id], user_id: @random_users[0][:id])
   end
 
+  it 'flags\unflags a user' do
+    @client.flag_user(@random_user[:id], user_id: @random_users[0][:id])
+    @client.unflag_user(@random_user[:id], user_id: @random_users[0][:id])
+  end
+
+  it 'flags\unflags message' do
+    msg_id = SecureRandom.uuid
+    response = @channel.send_message({
+      'id' => msg_id,
+      'text' => 'Hello world'
+    }, @random_user[:id])
+
+    @client.flag_message(msg_id, user_id: @random_users[0][:id])
+    @client.unflag_message(msg_id, user_id: @random_users[0][:id])
+  end
+
   it 'marks everything as read' do
     @client.mark_all_read(@random_user[:id])
+  end
+
+  it 'gets message by id' do
+    msg_id = SecureRandom.uuid
+    message = @channel.send_message({
+      'id' => msg_id,
+      'text' => 'Hello world'
+    }, @random_user[:id])[:message]
+
+    expect(@client.get_message(msg_id)[:message]).to eq(message)
   end
 
   it 'updates a message' do
@@ -151,6 +196,13 @@ describe StreamChat::Client do
     @client.add_device(SecureRandom.uuid, "apn", @random_user[:id])
     response = @client.get_devices(@random_user[:id])
     expect(response['devices'].length).to eq 1
+  end
+
+  it 'search for messages' do
+    text = SecureRandom.uuid
+    @channel.send_message({text: text}, 'legolas')
+    resp = @client.search({ members: { "$in" => ['legolas'] }}, text)
+    expect(resp["results"].length).to eq(1)
   end
 end
 

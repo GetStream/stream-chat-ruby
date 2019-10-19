@@ -7,6 +7,7 @@ require 'stream-chat/version'
 
 module StreamChat
   class Client
+    BASE_URL = 'https://chat-us-east-1.stream-io-api.com'
 
     attr_reader :api_key
     attr_reader :api_secret
@@ -28,8 +29,8 @@ module StreamChat
       @api_secret = api_secret
       @timeout = timeout
       @options = options
-      @base_url = 'https://chat-us-east-1.stream-io-api.com'
       @auth_token = JWT.encode({server: true}, @api_secret, 'HS256')
+      @base_url = options[:base_url] || BASE_URL
       @conn = Faraday.new(url: @base_url) do |faraday|
         faraday.options[:open_timeout] = @timeout
         faraday.options[:timeout] = @timeout
@@ -53,6 +54,39 @@ module StreamChat
       get('app')
     end
 
+    def flag_message(id, **options)
+      payload = {'target_message_id': id}.merge(options)
+      post("moderation/flag", data: payload)
+    end
+
+    def unflag_message(id, **options)
+      payload = {'target_message_id': id}.merge(options)
+      post("moderation/unflag", data: payload)
+    end
+
+    def flag_user(id, **options)
+      payload = {'target_user_id': id}.merge(options)
+      post("moderation/flag", data: payload)
+    end
+
+    def unflag_user(id, **options)
+      payload = {'target_user_id': id}.merge(options)
+      post("moderation/unflag", data: payload)
+    end
+
+    def get_message(id)
+      get("messages/#{id}")
+    end
+
+    def search(filter_conditions, query, **options)
+      params = options.merge({
+        "filter_conditions": filter_conditions,
+        "query": query,
+      })
+
+      get("search", params: {"payload": params.to_json})
+    end
+
     def update_users(users)
       payload = {}
       users.each do |user|
@@ -62,7 +96,15 @@ module StreamChat
     end
 
     def update_user(user)
-        update_users([user])
+      update_users([user])
+    end
+
+    def update_users_partial(updates)
+      patch('users', data: {'users': updates})
+    end
+
+    def update_user_partial(update)
+      update_users_partial([update])
     end
 
     def delete_user(user_id, **options)
@@ -71,6 +113,10 @@ module StreamChat
 
     def deactivate_user(user_id, **options)
       post("users/#{user_id}/deactivate", **options)
+    end
+
+    def reactivate_user(user_id, **options)
+      post("users/#{user_id}/reactivate", **options)
     end
 
     def export_user(user_id, **options)

@@ -3,7 +3,7 @@ require 'stream-chat'
 
 describe StreamChat::Channel do
   before(:all) do
-    @client = StreamChat::Client.new(ENV['STREAM_API_KEY'], ENV['STREAM_API_SECRET'])
+    @client = StreamChat::Client.new(ENV['STREAM_CHAT_API_KEY'], ENV['STREAM_CHAT_API_SECRET'], {base_url: ENV['STREAM_CHAT_API_HOST']})
   end
 
   before(:each) do
@@ -120,6 +120,11 @@ describe StreamChat::Channel do
     response = @channel.get_reactions(msg['message']['id'], offset: 1)
     expect(response['reactions'].length).to eq 1
     expect(response['reactions'][0]['count']).to eq 42
+  end
+
+  it 'hides\shows channel for user' do
+    @channel.hide(@random_user[:id])
+    @channel.show(@random_user[:id])
   end
 end
 
