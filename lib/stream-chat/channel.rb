@@ -131,6 +131,14 @@ module StreamChat
       @client.send_file("#{self.url}/image", url, user, content_type)
     end
 
+    def delete_file(url)
+      @client.delete("#{self.url}/file", params: {"url": url})
+    end
+
+    def delete_image(url)
+      @client.delete("#{self.url}/image", params: {"url": url})
+    end
+
     private
 
     def add_user_id(payload, user_id)
