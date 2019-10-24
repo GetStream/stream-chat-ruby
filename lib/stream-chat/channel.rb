@@ -82,6 +82,10 @@ module StreamChat
       @client.post(url, data: {"add_members": user_ids})
     end
 
+    def invite_members(user_ids)
+      @client.post(url, data: {"invites": user_ids})
+    end
+
     def add_moderators(user_ids)
       @client.post(url, data: {"add_moderators": user_ids})
     end
