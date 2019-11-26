@@ -1,3 +1,7 @@
+## next release
+
+- Mark gems use for testing as development dependencies
+
 ## Oct 19th, 2019 - 1.0.0
 
 - Added `channel.hide` and `channel.show`
