@@ -2,6 +2,7 @@
 
 - Mark gems use for testing as development dependencies
 - Added `send_file`, `send_image`, `delete_file`, `delete_image`
+- Added `invite_members`
 
 ## Oct 19th, 2019 - 1.0.0
 
