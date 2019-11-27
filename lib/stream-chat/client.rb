@@ -1,4 +1,5 @@
 # lib/client.rb
+require 'open-uri'
 require 'faraday'
 require 'jwt'
 require 'stream-chat/channel'
@@ -34,7 +35,8 @@ module StreamChat
       @conn = Faraday.new(url: @base_url) do |faraday|
         faraday.options[:open_timeout] = @timeout
         faraday.options[:timeout] = @timeout
-        faraday.adapter Faraday.default_adapter
+        faraday.request :multipart
+        faraday.adapter :net_http
       end
     end
 
@@ -264,6 +266,25 @@ module StreamChat
       make_http_request(:patch, relative_url, params: params, data: data)
     end
 
+    def send_file(relative_url, file_url, user, content_type = 'application/octet-stream')      
+      url = [@base_url, relative_url].join('/')
+
+      file = open(file_url)
+      body = {user: user.to_json}
+
+      body[:file] = Faraday::UploadIO.new(file, content_type)
+
+      response = @conn.post url do |req|
+        req.headers["X-Stream-Client"] = get_user_agent
+        req.headers['Authorization'] = @auth_token
+        req.headers["stream-auth-type"] = "jwt"
+        req.params = get_default_params
+        req.body = body
+      end
+      
+      parse_response(response)
+    end
+
     private
 
     def get_default_params
@@ -301,7 +322,10 @@ module StreamChat
       params = params != nil ? params : {}
       params = Hash[get_default_params.merge(params).sort_by { |k, v| k.to_s }]
       url = "#{url}?#{URI.encode_www_form(params)}"
-      body = data.to_json if %w[patch post put].include? method.to_s
+      
+      if %w[patch post put].include? method.to_s
+        body = data.to_json
+      end 
 
       response = @conn.run_request(
         method,

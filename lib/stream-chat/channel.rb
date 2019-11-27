@@ -123,6 +123,22 @@ module StreamChat
       @client.post("#{url}/show", data: {user_id: user_id})
     end
 
+    def send_file(url, user, content_type = nil)
+      @client.send_file("#{self.url}/file", url, user, content_type)
+    end
+
+    def send_image(url, user, content_type = nil)
+      @client.send_file("#{self.url}/image", url, user, content_type)
+    end
+
+    def delete_file(url)
+      @client.delete("#{self.url}/file", params: {"url": url})
+    end
+
+    def delete_image(url)
+      @client.delete("#{self.url}/image", params: {"url": url})
+    end
+
     private
 
     def add_user_id(payload, user_id)

@@ -126,5 +126,27 @@ describe StreamChat::Channel do
     @channel.hide(@random_user[:id])
     @channel.show(@random_user[:id])
   end
+
+  file = ''
+  it 'can send file' do
+    response = @channel.send_file(__dir__ + "/data/helloworld.txt", @random_user, "text/plain")
+    expect(response).to have_key("file")
+    file = response["file"]
+  end
+
+  it 'delete file' do
+    @channel.delete_file(file)
+  end
+
+  image = ''
+  it 'can send image' do
+    response = @channel.send_image(__dir__ + "/data/helloworld.jpg", @random_user, "image/jpeg")
+    expect(response).to have_key("file")
+    image = response["file"]
+  end
+
+  it 'delete image' do
+    @channel.delete_image(image)
+  end
 end
 
