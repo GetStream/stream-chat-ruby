@@ -60,9 +60,9 @@ client.create_token('bob-1')
 
 ```ruby
 client.update_user({
-    'id' => 'bob-1',
-    'role' => 'admin',
-    'name' => 'Robert Tables'
+    :id => 'bob-1',
+    :role => 'admin',
+    :name => 'Robert Tables'
 })
 
 # batch update is also supported
