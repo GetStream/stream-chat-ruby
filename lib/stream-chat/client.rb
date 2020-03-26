@@ -57,22 +57,22 @@ module StreamChat
     end
 
     def flag_message(id, **options)
-      payload = {'target_message_id': id}.merge(options)
+      payload = {target_message_id: id}.merge(options)
       post("moderation/flag", data: payload)
     end
 
     def unflag_message(id, **options)
-      payload = {'target_message_id': id}.merge(options)
+      payload = {target_message_id: id}.merge(options)
       post("moderation/unflag", data: payload)
     end
 
     def flag_user(id, **options)
-      payload = {'target_user_id': id}.merge(options)
+      payload = {target_user_id: id}.merge(options)
       post("moderation/flag", data: payload)
     end
 
     def unflag_user(id, **options)
-      payload = {'target_user_id': id}.merge(options)
+      payload = {target_user_id: id}.merge(options)
       post("moderation/unflag", data: payload)
     end
 
@@ -82,19 +82,22 @@ module StreamChat
 
     def search(filter_conditions, query, **options)
       params = options.merge({
-        "filter_conditions": filter_conditions,
-        "query": query,
+        filter_conditions: filter_conditions,
+        query: query,
       })
 
-      get("search", params: {"payload": params.to_json})
+      get("search", params: {payload: params.to_json})
     end
 
     def update_users(users)
       payload = {}
       users.each do |user|
-        payload[user[:id]] = user
+        id = user[:id] || user["id"]
+        raise ArgumentError "user must have an id" unless id
+        payload[id] = user
       end
-      post('users', data: {'users': payload})
+
+      post('users', data: {users: payload})
     end
 
     def update_user(user)
@@ -102,7 +105,7 @@ module StreamChat
     end
 
     def update_users_partial(updates)
-      patch('users', data: {'users': updates})
+      patch('users', data: {users: updates})
     end
 
     def update_user_partial(update)
@@ -136,25 +139,26 @@ module StreamChat
     end
 
     def mute_user(target_id, user_id)
-      payload = {'target_id': target_id, 'user_id': user_id}
+      payload = {target_id: target_id, user_id: user_id}
       post('moderation/mute', data: payload)
     end
 
     def unmute_user(target_id, user_id)
-      payload = {'target_id': target_id, 'user_id': user_id}
+      payload = {target_id: target_id, user_id: user_id}
       post('moderation/unmute', data: payload)
     end
 
     def mark_all_read(user_id)
-      payload = {'user': {'id': user_id}}
+      payload = {user: {id: user_id}}
       post('channels/read', data: payload)
     end
 
     def update_message(message)
-      if !message.key? 'id'
-        raise ArgumentError "message must have an id"
-      end
-      post("messages/#{message['id']}", data: {'message': message})
+      id = message[:id] || message["id"]
+
+      raise ArgumentError "message must have an id" unless id
+
+      post("messages/#{id}", data: {message: message})
     end
 
     def delete_message(message_id)
@@ -169,29 +173,30 @@ module StreamChat
         end
       end
       params = options.merge({
-        "filter_conditions": filter_conditions,
-        "sort": sort_fields
+        filter_conditions: filter_conditions,
+        sort: sort_fields
       })
-      get("users", params: {"payload": params.to_json})
+      get("users", params: {payload: params.to_json})
     end
 
     def query_channels(filter_conditions, sort: nil, **options)
-      params = {"state": true, "watch": false, "presence": false}
+      params = {state: true, watch: false, presence: false}
       sort_fields = []
       if sort != nil
         sort.each do |k, v|
-          sort_fields << {"field": k, "direction": v}
+          sort_fields << {field: k, direction: v}
         end
       end
       params = params.merge(options).merge({
-        "filter_conditions": filter_conditions,
-        "sort": sort_fields
+        filter_conditions: filter_conditions,
+        sort: sort_fields
       })
-      get("channels", params: {"payload": params.to_json})
+      get("channels", params: {payload: params.to_json})
     end
 
     def create_channel_type(data)
-      if !data.key? "commands" || data["commands"].nil? || data["commands"].empty?
+      commands = data[:commands] || data["commands"]
+      if commands.to_s.empty?
         data["commands"] = ["all"]
       end
       post("channeltypes", data: data)
@@ -227,18 +232,18 @@ module StreamChat
 
     def add_device(device_id, push_provider, user_id)
       post("devices", data: {
-        "id": device_id,
-        "push_provider": push_provider,
-        "user_id": user_id
+        id: device_id,
+        push_provider: push_provider,
+        user_id: user_id
       })
     end
 
     def delete_device(device_id, user_id)
-      delete("devices", params: {"id": device_id, "user_id": user_id})
+      delete("devices", params: {id: device_id, user_id: user_id})
     end
 
     def get_devices(user_id)
-      get("devices", params: {"user_id": user_id})
+      get("devices", params: {user_id: user_id})
     end
 
     def verify_webhook(request_body, x_signature)
