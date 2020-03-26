@@ -328,7 +328,7 @@ module StreamChat
       params = Hash[get_default_params.merge(params).sort_by { |k, v| k.to_s }]
       url = "#{url}?#{URI.encode_www_form(params)}"
       
-      if %w[patch post put].include? method.to_s
+      if [:patch, :post, :put].include? method.to_sym
         body = data.to_json
       end 
 
