@@ -60,9 +60,9 @@ client.create_token('bob-1')
 
 ```ruby
 client.update_user({
-    :id => 'bob-1',
-    :role => 'admin',
-    :name => 'Robert Tables'
+    id: 'bob-1',
+    role: 'admin',
+    name: 'Robert Tables'
 })
 
 # batch update is also supported
@@ -76,14 +76,14 @@ client.update_users([jane, june])
 ```ruby
 # Create
 client.create_channel_type({
-    'name' => 'livechat',
-    'automod' => 'disabled',
-    'commands' => ['ban'],
-    'mutes' => true
+    name: 'livechat',
+    automod: 'disabled',
+    commands: ['ban'],
+    mutes: true
 })
 
 # Update
-client.update_channel_type('livechat', 'automod' => 'enabled'})
+client.update_channel_type('livechat', automod: 'enabled'})
 
 # Get
 client.get_channel_type('livechat')
@@ -99,7 +99,7 @@ client.delete_channel_type('livechat')
 
 ```ruby
 # Create a channel with members from the start
-chan = client.channel("messaging", channel_id: "bob-and-jane", data: {'members'=> ['bob-1', 'jane-77']})
+chan = client.channel("messaging", channel_id: "bob-and-jane", data: {members: ['bob-1', 'jane-77']})
 chan.create('bob-1')
 
 # Create a channel and then add members
@@ -108,14 +108,14 @@ chan.create('bob-1')
 chan.add_members(['bob-1', 'jane-77'])
 
 # Send messages
-m1 = chan.send_message({'text' => 'Hi Jane!'}, 'bob-1')
-m2 = chan.send_message({'text' => 'Hi Bob'}, 'jane-77')
+m1 = chan.send_message({text: 'Hi Jane!'}, 'bob-1')
+m2 = chan.send_message({text: 'Hi Bob'}, 'jane-77')
 
 # Send replies
-r1 = chan.send_message({'text' => 'And a good day!', 'parent_id' => m1['id']}, 'bob-1')
+r1 = chan.send_message({text: 'And a good day!', parent_id: m1[:id]}, 'bob-1')
 
 # Send reactions
-chan.send_reaction(m1['id'], {'type' => 'like'}, 'bob-1')
+chan.send_reaction(m1[:id], {type: 'like'}, 'bob-1')
 
 # Add/remove moderators
 chan.add_moderators(['jane-77'])
@@ -128,14 +128,14 @@ chan.ban_user('bob-1', timeout: 30)
 chan.unban_user('bob-1')
 
 # Query channel state
-chan.query({'messages' => { 'limit' => 10, 'id_lte' => m1['id']}})
+chan.query({messages: {limit: 10, id_lte: m1[:id]}})
 ```
 
 ### Messages
 
 ```ruby
 # Delete a message from any channel by ID
-deleted_message = client.delete_message(r1['id'])
+deleted_message = client.delete_message(r1[:id])
 
 ```
 
@@ -143,7 +143,7 @@ deleted_message = client.delete_message(r1['id'])
 
 ```ruby
 # Add device
-jane_phone = client.add_device({'id' => 'iOS Device Token', 'push_provider' => push_provider.apn, 'user_id' => 'jane-77'})
+jane_phone = client.add_device({id: 'iOS Device Token', push_provider: push_provider.apn, user_id: 'jane-77'})
 
 # List devices
 client.get_devices('jane-77')
