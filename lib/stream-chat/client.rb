@@ -92,7 +92,9 @@ module StreamChat
     def update_users(users)
       payload = {}
       users.each do |user|
-        payload[user[:id]] = user
+        id = user[:id] || user["id"]
+        raise ArgumentError "user must have an id" unless id
+        payload[id] = user
       end
       post('users', data: {'users': payload})
     end
