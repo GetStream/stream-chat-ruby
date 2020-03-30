@@ -9,10 +9,8 @@ module StreamChat
       begin
         parsed_response = JSON.parse(response.body)
         @json_response = true
-        @error_code = parsed_response.fetch("data", {})
-          .fetch("code", "unknown")
-        @error_message = parsed_response.fetch("data", {})
-          .fetch("message", "unknown")
+        @error_code = parsed_response.fetch("code", "unknown")
+        @error_message = parsed_response.fetch("message", "unknown")
       rescue JSON::ParserError
         @json_response = false
       end
