@@ -7,7 +7,7 @@ module StreamChat
       @response = response
       p response
       begin
-        parsed_response = JSON.parse(response.body, symbolize_names: true)
+        parsed_response = JSON.parse(response.body, symbolize_names: true, object_class: StreamChat::IndifferentHash)
         @json_response = true
         @error_code = parsed_response.fetch(:code, "unknown")
         @error_message = parsed_response.fetch(:message, "unknown")
