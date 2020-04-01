@@ -1,4 +1,5 @@
-## next release
+## March 30th, 2020 - 1.1.1
+- Fixed few minor issues
 
 ## Oct 27th, 2019 - 1.1.0
 
