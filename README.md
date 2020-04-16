@@ -161,7 +161,7 @@ See [an example rails application using the Ruby SDK](https://github.com/GetStre
 First, make sure you can run the test suite. Tests are run via rspec
 
 ```bash
-STREAM_KEY=my_api_key STREAM_SECRET=my_api_secret bundle exec rake spec
+STREAM_CHAT_API_KEY=my_api_key STREAM_CHAT_API_SECRET=my_api_secret bundle exec rake spec
 ```
 
 ### Releasing a new version
