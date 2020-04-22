@@ -204,5 +204,16 @@ describe StreamChat::Client do
     resp = @client.search({ members: { "$in" => ['legolas'] }}, text)
     expect(resp["results"].length).to eq(1)
   end
+
+  it 'can inspect response headers' do
+    headers = nil
+
+    @client.on_response = Proc.new { |resp| headers = resp.headers }
+    @channel.send_message({text: SecureRandom.uuid}, 'inspecting')
+
+    expect(headers.key?("x-ratelimit-limit")).to eq(true)
+    expect(headers.key?("x-ratelimit-remaining")).to eq(true)
+    expect(headers.key?("x-ratelimit-reset")).to eq(true)
+  end
 end
 
