@@ -15,6 +15,8 @@ module StreamChat
     attr_reader :conn
     attr_reader :options
 
+    attr_accessor :on_response
+
     # initializes a Stream Chat API Client
     #
     # @param [string] api_key your application api_key
@@ -335,6 +337,9 @@ module StreamChat
         body,
         headers
       )
+      if on_response.respond_to?(:call)
+        on_response.call(response)
+      end
       parse_response(response)
     end
 
