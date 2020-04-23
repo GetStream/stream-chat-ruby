@@ -1,3 +1,6 @@
+## April 23th, 2020 - 1.1.2
+- Fixed ArgumentError when no users was passed
+
 ## March 30th, 2020 - 1.1.1
 - Fixed few minor issues
 
