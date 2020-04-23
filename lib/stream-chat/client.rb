@@ -93,7 +93,7 @@ module StreamChat
       payload = {}
       users.each do |user|
         id = user[:id] || user["id"]
-        raise ArgumentError "user must have an id" unless id
+        raise ArgumentError, "user must have an id" unless id
         payload[id] = user
       end
       post('users', data: {'users': payload})

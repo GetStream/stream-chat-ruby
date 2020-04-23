@@ -70,6 +70,11 @@ describe StreamChat::Client do
     expect(response['users']).to include users[0][:id]
   end
 
+  it 'raises when a user without an id is provided' do
+    users = [{}, {}]
+    expect {@client.update_users(users)}.to raise_error(ArgumentError)
+  end
+
   it 'makes partial user update' do
     user_id = SecureRandom.uuid
     @client.update_user({id: user_id, field: 'value'})
