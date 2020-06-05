@@ -5,7 +5,6 @@ module StreamChat
     
     def initialize(response)
       @response = response
-      p response
       begin
         parsed_response = JSON.parse(response.body)
         @json_response = true
