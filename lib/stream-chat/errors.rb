@@ -2,7 +2,8 @@
 
 module StreamChat
   class StreamAPIException < StandardError
-    
+    attr_reader :error_code
+
     def initialize(response)
       @response = response
       p response
