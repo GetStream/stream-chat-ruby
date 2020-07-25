@@ -24,6 +24,10 @@ module StreamChat
       "channels/#{@channel_type}/#{@id}"
     end
 
+    def messages(options = {})
+      query(messages: options || {})
+    end
+
     def send_message(message, user_id)
       payload = {"message": add_user_id(message, user_id)}
       @client.post("#{url}/message", data: payload)

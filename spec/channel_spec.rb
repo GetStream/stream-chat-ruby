@@ -98,6 +98,30 @@ describe StreamChat::Channel do
     expect(response['event']['type']).to eq 'message.read'
   end
 
+  it 'can get messages with/without an argument' do
+    response = @channel.messages({'limit' => 10})
+    expect(response).to include 'messages'
+    expect(response['messages'].length).to eq 0
+    msg = @channel.send_message({'text' => 'hi'}, @random_user[:id])
+    for i in 1..9
+      @channel.send_message(
+        {'text' => 'hi', 'index' => i},
+        @random_user[:id]
+      )
+    end
+    response = @channel.messages({'limit' => 10, 'id_lte' => msg['id']})
+    expect(response).to include 'messages'
+    expect(response['messages'].length).to eq 10
+
+    response = @channel.messages
+    expect(response).to include 'messages'
+    expect(response['messages'].length).to eq 10
+
+    response = @channel.messages(nil)
+    expect(response).to include 'messages'
+    expect(response['messages'].length).to eq 10
+  end
+
   it 'can get replies' do
     msg = @channel.send_message({'text' => 'hi'}, @random_user[:id])
     response = @channel.get_replies(msg['message']['id'])

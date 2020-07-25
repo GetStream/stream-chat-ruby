@@ -117,9 +117,18 @@ r1 = chan.send_message({'text' => 'And a good day!', 'parent_id' => m1['id']}, '
 # Send reactions
 chan.send_reaction(m1['id'], {'type' => 'like'}, 'bob-1')
 
+# Get Reactions 
+chan.get_reactions(m1['id'], {'limit' => 10})
+
+# Get Replies 
+chan.get_replies(m1['id'], {'limit' => 10})
+
 # Add/remove moderators
 chan.add_moderators(['jane-77'])
 chan.demote_moderators(['bob-1'])
+
+# Get Messages
+chan.messages({'limit' => 10, 'created_by' => 'bob-1'})
 
 # Add a ban with a timeout
 chan.ban_user('bob-1', timeout: 30)
