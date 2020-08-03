@@ -1,3 +1,6 @@
+## August 3rd, 2020 - 1.1.3
+- Fixed Argument Error on delete_user
+
 ## April 23th, 2020 - 1.1.2
 - Fixed ArgumentError when no users was passed
 
