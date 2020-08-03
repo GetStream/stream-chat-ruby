@@ -93,6 +93,12 @@ describe StreamChat::Client do
     expect(response['user']['id']).to eq(@random_user[:id])
   end
 
+  it 'deletes a user with mark delete' do
+    response = @client.delete_user(@random_user[:id], mark_messages_deleted: true, hard_delete: true)
+    expect(response).to include 'user'
+    expect(response['user']['id']).to eq(@random_user[:id])
+  end
+
   it 'deactivates a user' do
     response = @client.deactivate_user(@random_user[:id])
     expect(response).to include 'user'

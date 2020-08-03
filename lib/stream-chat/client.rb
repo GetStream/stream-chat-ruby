@@ -112,7 +112,7 @@ module StreamChat
     end
 
     def delete_user(user_id, **options)
-      delete("users/#{user_id}", **options)
+      delete("users/#{user_id}", params: options)
     end
 
     def deactivate_user(user_id, **options)
@@ -268,7 +268,7 @@ module StreamChat
       make_http_request(:patch, relative_url, params: params, data: data)
     end
 
-    def send_file(relative_url, file_url, user, content_type = 'application/octet-stream')      
+    def send_file(relative_url, file_url, user, content_type = 'application/octet-stream')
       url = [@base_url, relative_url].join('/')
 
       file = open(file_url)
@@ -283,7 +283,7 @@ module StreamChat
         req.params = get_default_params
         req.body = body
       end
-      
+
       parse_response(response)
     end
 
@@ -324,10 +324,10 @@ module StreamChat
       params = params != nil ? params : {}
       params = Hash[get_default_params.merge(params).sort_by { |k, v| k.to_s }]
       url = "#{url}?#{URI.encode_www_form(params)}"
-      
+
       if %w[patch post put].include? method.to_s
         body = data.to_json
-      end 
+      end
 
       response = @conn.run_request(
         method,
