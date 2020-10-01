@@ -1,26 +1,28 @@
+# frozen_string_literal: true
+
 require 'jwt'
 require 'securerandom'
 require 'stream-chat'
 
 describe StreamChat::Client do
   before(:all) do
-    @client = StreamChat::Client.new(ENV['STREAM_CHAT_API_KEY'], ENV['STREAM_CHAT_API_SECRET'], {base_url: ENV['STREAM_CHAT_API_HOST']})
+    @client = StreamChat::Client.new(ENV['STREAM_CHAT_API_KEY'], ENV['STREAM_CHAT_API_SECRET'], { base_url: ENV['STREAM_CHAT_API_HOST'] })
 
     @fellowship_of_the_ring = [
-      {id: 'frodo-baggins', name: 'Frodo Baggins', race: 'Hobbit', age: 50},
-      {id: 'sam-gamgee', name: 'Samwise Gamgee', race: 'Hobbit', age: 38},
-      {id: 'gandalf', name: 'Gandalf the Grey', race: 'Istari'},
-      {id: 'legolas', name: 'Legolas', race: 'Elf', age: 500}
+      { id: 'frodo-baggins', name: 'Frodo Baggins', race: 'Hobbit', age: 50 },
+      { id: 'sam-gamgee', name: 'Samwise Gamgee', race: 'Hobbit', age: 38 },
+      { id: 'gandalf', name: 'Gandalf the Grey', race: 'Istari' },
+      { id: 'legolas', name: 'Legolas', race: 'Elf', age: 500 }
     ]
     @client.update_users(@fellowship_of_the_ring)
     @channel = @client.channel('team', channel_id: 'fellowship-of-the-ring',
-                              data: { members: @fellowship_of_the_ring.map { |fellow| fellow[:id] }})
+                                       data: { members: @fellowship_of_the_ring.map { |fellow| fellow[:id] } })
     @channel.create('gandalf')
   end
 
   before(:each) do
-    @random_users = [{id: SecureRandom.uuid}, {id: SecureRandom.uuid}]
-    @random_user = {id: SecureRandom.uuid}
+    @random_users = [{ id: SecureRandom.uuid }, { id: SecureRandom.uuid }]
+    @random_user = { id: SecureRandom.uuid }
     response = @client.update_user(@random_user)
     expect(response).to include 'users'
     expect(response['users']).to include @random_user[:id]
@@ -57,14 +59,14 @@ describe StreamChat::Client do
   end
 
   it 'updates a user' do
-    user = {id: SecureRandom.uuid}
+    user = { id: SecureRandom.uuid }
     response = @client.update_user(user)
     expect(response).to include 'users'
     expect(response['users']).to include user[:id]
   end
 
   it 'updates multiple users' do
-    users = [{id: SecureRandom.uuid}, {id: SecureRandom.uuid}]
+    users = [{ id: SecureRandom.uuid }, { id: SecureRandom.uuid }]
     response = @client.update_users(users)
     expect(response).to include 'users'
     expect(response['users']).to include users[0][:id]
@@ -72,17 +74,17 @@ describe StreamChat::Client do
 
   it 'raises when a user without an id is provided' do
     users = [{}, {}]
-    expect {@client.update_users(users)}.to raise_error(ArgumentError)
+    expect { @client.update_users(users) }.to raise_error(ArgumentError)
   end
 
   it 'makes partial user update' do
     user_id = SecureRandom.uuid
-    @client.update_user({id: user_id, field: 'value'})
+    @client.update_user({ id: user_id, field: 'value' })
 
     response = @client.update_user_partial({
-      id: user_id,
-      set: {field: 'updated'}
-    })
+                                             id: user_id,
+                                             set: { field: 'updated' }
+                                           })
 
     expect(response['users'][user_id]['field']).to eq('updated')
   end
@@ -134,10 +136,10 @@ describe StreamChat::Client do
 
   it 'flags\unflags message' do
     msg_id = SecureRandom.uuid
-    response = @channel.send_message({
-      'id' => msg_id,
-      'text' => 'Hello world'
-    }, @random_user[:id])
+    @channel.send_message({
+                            'id' => msg_id,
+                            'text' => 'Hello world'
+                          }, @random_user[:id])
 
     @client.flag_message(msg_id, user_id: @random_users[0][:id])
     @client.unflag_message(msg_id, user_id: @random_users[0][:id])
@@ -150,9 +152,9 @@ describe StreamChat::Client do
   it 'gets message by id' do
     msg_id = SecureRandom.uuid
     message = @channel.send_message({
-      'id' => msg_id,
-      'text' => 'Hello world'
-    }, @random_user[:id])[:message]
+                                      'id' => msg_id,
+                                      'text' => 'Hello world'
+                                    }, @random_user[:id])[:message]
 
     expect(@client.get_message(msg_id)[:message]).to eq(message)
   end
@@ -160,35 +162,35 @@ describe StreamChat::Client do
   it 'updates a message' do
     msg_id = SecureRandom.uuid
     response = @channel.send_message({
-      'id' => msg_id,
-      'text' => 'Hello world'
-    }, @random_user[:id])
+                                       'id' => msg_id,
+                                       'text' => 'Hello world'
+                                     }, @random_user[:id])
     expect(response['message']['text']).to eq('Hello world')
     @client.update_message({
-      'id' => msg_id,
-      'awesome' => true,
-      'text' => 'helloworld',
-      'user' => {'id' => response['message']['user']['id']}
-    })
+                             'id' => msg_id,
+                             'awesome' => true,
+                             'text' => 'helloworld',
+                             'user' => { 'id' => response['message']['user']['id'] }
+                           })
   end
 
   it 'deletes a message' do
     msg_id = SecureRandom.uuid
     @channel.send_message({
-      'id' => msg_id,
-      'text' => 'hello world'
-    }, @random_user[:id])
+                            'id' => msg_id,
+                            'text' => 'hello world'
+                          }, @random_user[:id])
     @client.delete_message(msg_id)
   end
 
   it 'queries users' do
-    response = @client.query_users({'race' => {'$eq' => 'Hobbit'}}, sort: {'age' => -1})
+    response = @client.query_users({ 'race' => { '$eq' => 'Hobbit' } }, sort: { 'age' => -1 })
     expect(response['users'].length).to eq 2
-    expect([50, 38]).to eq response['users'].map { |u| u['age'] }
+    expect([50, 38]).to eq(response['users'].map { |u| u['age'] })
   end
 
   it 'queries channels' do
-    response = @client.query_channels({'members' => {'$in' => ['legolas']}}, sort: {'id' => 1})
+    response = @client.query_channels({ 'members' => { '$in' => ['legolas'] } }, sort: { 'id' => 1 })
     expect(response['channels'].length).to eq 1
     expect(response['channels'][0]['channel']['id']).to eq 'fellowship-of-the-ring'
     expect(response['channels'][0]['members'].length).to eq 4
@@ -199,21 +201,20 @@ describe StreamChat::Client do
     expect(response).to include 'devices'
     expect(response['devices'].length).to eq 0
 
-    @client.add_device(SecureRandom.uuid, "apn", @random_user[:id])
+    @client.add_device(SecureRandom.uuid, 'apn', @random_user[:id])
     response = @client.get_devices(@random_user[:id])
     expect(response['devices'].length).to eq 1
 
     @client.delete_device(response['devices'][0]['id'], @random_user[:id])
-    @client.add_device(SecureRandom.uuid, "apn", @random_user[:id])
+    @client.add_device(SecureRandom.uuid, 'apn', @random_user[:id])
     response = @client.get_devices(@random_user[:id])
     expect(response['devices'].length).to eq 1
   end
 
   it 'search for messages' do
     text = SecureRandom.uuid
-    @channel.send_message({text: text}, 'legolas')
-    resp = @client.search({ members: { "$in" => ['legolas'] }}, text)
-    expect(resp["results"].length).to eq(1)
+    @channel.send_message({ text: text }, 'legolas')
+    resp = @client.search({ members: { '$in' => ['legolas'] } }, text)
+    expect(resp['results'].length).to eq(1)
   end
 end
-

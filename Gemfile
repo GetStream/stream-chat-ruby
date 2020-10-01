@@ -1,16 +1,18 @@
+# frozen_string_literal: true
+
 source 'https://rubygems.org'
 
 gemspec
 
 group :dev do
-  gem "pry"
-  gem "pry-doc"
-  gem "method_source"
+  gem 'method_source'
+  gem 'pry'
+  gem 'pry-doc'
+  gem 'rubocop', require: false
 end
 
 group :test do
-  gem "faraday"
-  gem "rack"
-  gem "simplecov"
+  gem 'faraday'
+  gem 'rack'
+  gem 'simplecov'
 end
-
