@@ -1,3 +1,7 @@
+## October 2nd, 2020 - 2.0.0
+- Drop EOL Ruby versions: 2.3 && 2.4
+- Setup Rubocop and mark string literals as frozen
+
 ## August 3rd, 2020 - 1.1.3
 - Fixed Argument Error on delete_user
 
