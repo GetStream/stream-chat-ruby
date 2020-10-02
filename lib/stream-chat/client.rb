@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # lib/client.rb
 require 'open-uri'
 require 'faraday'
@@ -30,7 +32,7 @@ module StreamChat
       @api_secret = api_secret
       @timeout = timeout
       @options = options
-      @auth_token = JWT.encode({server: true}, @api_secret, 'HS256')
+      @auth_token = JWT.encode({ server: true }, @api_secret, 'HS256')
       @base_url = options[:base_url] || BASE_URL
       @conn = Faraday.new(url: @base_url) do |faraday|
         faraday.options[:open_timeout] = @timeout
@@ -41,10 +43,8 @@ module StreamChat
     end
 
     def create_token(user_id, exp = nil)
-      payload = {user_id: user_id}
-      if exp != nil
-        payload['exp'] = exp
-      end
+      payload = { user_id: user_id }
+      payload['exp'] = exp unless exp.nil?
       JWT.encode(payload, @api_secret, 'HS256')
     end
 
@@ -57,23 +57,23 @@ module StreamChat
     end
 
     def flag_message(id, **options)
-      payload = {'target_message_id': id}.merge(options)
-      post("moderation/flag", data: payload)
+      payload = { 'target_message_id': id }.merge(options)
+      post('moderation/flag', data: payload)
     end
 
     def unflag_message(id, **options)
-      payload = {'target_message_id': id}.merge(options)
-      post("moderation/unflag", data: payload)
+      payload = { 'target_message_id': id }.merge(options)
+      post('moderation/unflag', data: payload)
     end
 
     def flag_user(id, **options)
-      payload = {'target_user_id': id}.merge(options)
-      post("moderation/flag", data: payload)
+      payload = { 'target_user_id': id }.merge(options)
+      post('moderation/flag', data: payload)
     end
 
     def unflag_user(id, **options)
-      payload = {'target_user_id': id}.merge(options)
-      post("moderation/unflag", data: payload)
+      payload = { 'target_user_id': id }.merge(options)
+      post('moderation/unflag', data: payload)
     end
 
     def get_message(id)
@@ -82,21 +82,22 @@ module StreamChat
 
     def search(filter_conditions, query, **options)
       params = options.merge({
-        "filter_conditions": filter_conditions,
-        "query": query,
-      })
+                               "filter_conditions": filter_conditions,
+                               "query": query
+                             })
 
-      get("search", params: {"payload": params.to_json})
+      get('search', params: { "payload": params.to_json })
     end
 
     def update_users(users)
       payload = {}
       users.each do |user|
-        id = user[:id] || user["id"]
-        raise ArgumentError, "user must have an id" unless id
+        id = user[:id] || user['id']
+        raise ArgumentError, 'user must have an id' unless id
+
         payload[id] = user
       end
-      post('users', data: {'users': payload})
+      post('users', data: { 'users': payload })
     end
 
     def update_user(user)
@@ -104,7 +105,7 @@ module StreamChat
     end
 
     def update_users_partial(updates)
-      patch('users', data: {'users': updates})
+      patch('users', data: { 'users': updates })
     end
 
     def update_user_partial(update)
@@ -128,35 +129,34 @@ module StreamChat
     end
 
     def ban_user(target_id, **options)
-      payload = {'target_user_id': target_id}.merge(options)
-      post("moderation/ban", data: payload)
+      payload = { 'target_user_id': target_id }.merge(options)
+      post('moderation/ban', data: payload)
     end
 
     def unban_user(target_id, **options)
-      params = {'target_user_id': target_id}.merge(options)
-      delete("moderation/ban", params: params)
+      params = { 'target_user_id': target_id }.merge(options)
+      delete('moderation/ban', params: params)
     end
 
     def mute_user(target_id, user_id)
-      payload = {'target_id': target_id, 'user_id': user_id}
+      payload = { 'target_id': target_id, 'user_id': user_id }
       post('moderation/mute', data: payload)
     end
 
     def unmute_user(target_id, user_id)
-      payload = {'target_id': target_id, 'user_id': user_id}
+      payload = { 'target_id': target_id, 'user_id': user_id }
       post('moderation/unmute', data: payload)
     end
 
     def mark_all_read(user_id)
-      payload = {'user': {'id': user_id}}
+      payload = { 'user': { 'id': user_id } }
       post('channels/read', data: payload)
     end
 
     def update_message(message)
-      if !message.key? 'id'
-        raise ArgumentError "message must have an id"
-      end
-      post("messages/#{message['id']}", data: {'message': message})
+      raise ArgumentError 'message must have an id' unless message.key? 'id'
+
+      post("messages/#{message['id']}", data: { 'message': message })
     end
 
     def delete_message(message_id)
@@ -165,38 +165,32 @@ module StreamChat
 
     def query_users(filter_conditions, sort: nil, **options)
       sort_fields = []
-      if sort != nil
-        sort.each do |k ,v|
-          sort_fields << {"field": k, "direction":  v}
-        end
+      sort&.each do |k, v|
+        sort_fields << { "field": k, "direction": v }
       end
       params = options.merge({
-        "filter_conditions": filter_conditions,
-        "sort": sort_fields
-      })
-      get("users", params: {"payload": params.to_json})
+                               "filter_conditions": filter_conditions,
+                               "sort": sort_fields
+                             })
+      get('users', params: { "payload": params.to_json })
     end
 
     def query_channels(filter_conditions, sort: nil, **options)
-      params = {"state": true, "watch": false, "presence": false}
+      params = { "state": true, "watch": false, "presence": false }
       sort_fields = []
-      if sort != nil
-        sort.each do |k, v|
-          sort_fields << {"field": k, "direction": v}
-        end
+      sort&.each do |k, v|
+        sort_fields << { "field": k, "direction": v }
       end
       params = params.merge(options).merge({
-        "filter_conditions": filter_conditions,
-        "sort": sort_fields
-      })
-      get("channels", params: {"payload": params.to_json})
+                                             "filter_conditions": filter_conditions,
+                                             "sort": sort_fields
+                                           })
+      get('channels', params: { "payload": params.to_json })
     end
 
     def create_channel_type(data)
-      if !data.key? "commands" || data["commands"].nil? || data["commands"].empty?
-        data["commands"] = ["all"]
-      end
-      post("channeltypes", data: data)
+      data['commands'] = ['all'] unless data.key?('commands') || data['commands'].nil? || data['commands'].empty?
+      post('channeltypes', data: data)
     end
 
     def get_channel_type(channel_type)
@@ -204,7 +198,7 @@ module StreamChat
     end
 
     def list_channel_types
-      get("channeltypes")
+      get('channeltypes')
     end
 
     def update_channel_type(channel_type, **options)
@@ -228,23 +222,23 @@ module StreamChat
     end
 
     def add_device(device_id, push_provider, user_id)
-      post("devices", data: {
-        "id": device_id,
-        "push_provider": push_provider,
-        "user_id": user_id
-      })
+      post('devices', data: {
+             "id": device_id,
+             "push_provider": push_provider,
+             "user_id": user_id
+           })
     end
 
     def delete_device(device_id, user_id)
-      delete("devices", params: {"id": device_id, "user_id": user_id})
+      delete('devices', params: { "id": device_id, "user_id": user_id })
     end
 
     def get_devices(user_id)
-      get("devices", params: {"user_id": user_id})
+      get('devices', params: { "user_id": user_id })
     end
 
     def verify_webhook(request_body, x_signature)
-      signature = OpenSSL::HMAC.hexdigest("SHA256", @api_secret, request_body)
+      signature = OpenSSL::HMAC.hexdigest('SHA256', @api_secret, request_body)
       signature == x_signature
     end
 
@@ -272,14 +266,14 @@ module StreamChat
       url = [@base_url, relative_url].join('/')
 
       file = open(file_url)
-      body = {user: user.to_json}
+      body = { user: user.to_json }
 
       body[:file] = Faraday::UploadIO.new(file, content_type)
 
       response = @conn.post url do |req|
-        req.headers["X-Stream-Client"] = get_user_agent
+        req.headers['X-Stream-Client'] = get_user_agent
         req.headers['Authorization'] = @auth_token
-        req.headers["stream-auth-type"] = "jwt"
+        req.headers['stream-auth-type'] = 'jwt'
         req.params = get_default_params
         req.body = body
       end
@@ -290,7 +284,7 @@ module StreamChat
     private
 
     def get_default_params
-      {api_key: @api_key}
+      { api_key: @api_key }
     end
 
     def get_user_agent
@@ -299,7 +293,7 @@ module StreamChat
 
     def get_default_headers
       {
-        "Content-Type": "application/json",
+        "Content-Type": 'application/json',
         "X-Stream-Client": get_user_agent
       }
     end
@@ -308,26 +302,23 @@ module StreamChat
       begin
         parsed_result = JSON.parse(response.body)
       rescue JSON::ParserError
-        raise StreamAPIException.new(response)
+        raise StreamAPIException, response
       end
-      if response.status >= 399
-        raise StreamAPIException.new(response)
-      end
-      return parsed_result
+      raise StreamAPIException, response if response.status >= 399
+
+      parsed_result
     end
 
     def make_http_request(method, relative_url, params: nil, data: nil)
       headers = get_default_headers
       headers['Authorization'] = @auth_token
-      headers["stream-auth-type"] = "jwt"
+      headers['stream-auth-type'] = 'jwt'
       url = [@base_url, relative_url].join('/')
-      params = params != nil ? params : {}
-      params = Hash[get_default_params.merge(params).sort_by { |k, v| k.to_s }]
+      params = !params.nil? ? params : {}
+      params = Hash[get_default_params.merge(params).sort_by { |k, _v| k.to_s }]
       url = "#{url}?#{URI.encode_www_form(params)}"
 
-      if %w[patch post put].include? method.to_s
-        body = data.to_json
-      end
+      body = data.to_json if %w[patch post put].include? method.to_s
 
       response = @conn.run_request(
         method,
@@ -337,7 +328,5 @@ module StreamChat
       )
       parse_response(response)
     end
-
   end
 end
-
