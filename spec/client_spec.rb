@@ -18,6 +18,8 @@ describe StreamChat::Client do
     @channel = @client.channel('team', channel_id: 'fellowship-of-the-ring',
                                        data: { members: @fellowship_of_the_ring.map { |fellow| fellow[:id] } })
     @channel.create('gandalf')
+
+    @blocklist = SecureRandom.uuid
   end
 
   before(:each) do
@@ -220,47 +222,47 @@ describe StreamChat::Client do
 
   it 'list available blocklists' do
     resp = @client.list_blocklists
-    expect(resp['blocklists'].length).to eq 1
+    expect(resp['blocklists'].map { |b| b['name'] }).to include StreamChat::DEFAULT_BLOCKLIST
   end
 
-  it 'get blocklist profanity_en_2020_v1' do
-    resp = @client.get_blocklist('profanity_en_2020_v1')
-    expect(resp['blocklist']['name']).to eq 'profanity_en_2020_v1'
+  it 'get default blocklist' do
+    resp = @client.get_blocklist(StreamChat::DEFAULT_BLOCKLIST)
+    expect(resp['blocklist']['name']).to eq StreamChat::DEFAULT_BLOCKLIST
   end
 
   it 'create a new blocklist' do
-    @client.create_blocklist('no-cakes', %w[fudge cream sugar])
+    @client.create_blocklist(@blocklist, %w[fudge cream sugar])
   end
 
   it 'list available blocklists' do
     resp = @client.list_blocklists
-    expect(resp['blocklists'].length).to eq 2
+    expect(resp['blocklists'].length).to be >= 2
   end
 
   it 'get blocklist info' do
-    resp = @client.get_blocklist('no-cakes')
-    expect(resp['blocklist']['name']).to eq 'no-cakes'
+    resp = @client.get_blocklist(@blocklist)
+    expect(resp['blocklist']['name']).to eq @blocklist
     expect(resp['blocklist']['words']).to eq %w[fudge cream sugar]
   end
 
   it 'update a default blocklist should fail' do
     expect do
-      @client.update_blocklist('profanity_en_2020_v1', %w[fudge cream sugar vanilla])
+      @client.update_blocklist(StreamChat::DEFAULT_BLOCKLIST, %w[fudge cream sugar vanilla])
     end.to raise_error(/cannot update the builtin block list/)
   end
 
   it 'update blocklist' do
-    @client.update_blocklist('no-cakes', %w[fudge cream sugar vanilla])
+    @client.update_blocklist(@blocklist, %w[fudge cream sugar vanilla])
   end
 
   it 'get blocklist info again' do
-    resp = @client.get_blocklist('no-cakes')
-    expect(resp['blocklist']['name']).to eq 'no-cakes'
+    resp = @client.get_blocklist(@blocklist)
+    expect(resp['blocklist']['name']).to eq @blocklist
     expect(resp['blocklist']['words']).to eq %w[fudge cream sugar vanilla]
   end
 
   it 'use the blocklist for a channel type' do
-    @client.update_channel_type('messaging', blocklist: 'no-cakes', blocklist_behavior: 'block')
+    @client.update_channel_type('messaging', blocklist: @blocklist, blocklist_behavior: 'block')
   end
 
   it 'should block messages that match the blocklist' do
@@ -272,7 +274,7 @@ describe StreamChat::Client do
   end
 
   it 'update blocklist again' do
-    @client.update_blocklist('no-cakes', %w[fudge cream sugar vanilla jam])
+    @client.update_blocklist(@blocklist, %w[fudge cream sugar vanilla jam])
   end
 
   it 'should block messages that match the blocklist' do
@@ -284,7 +286,7 @@ describe StreamChat::Client do
   end
 
   it 'delete a blocklist' do
-    @client.delete_blocklist('no-cakes')
+    @client.delete_blocklist(@blocklist)
   end
 
   it 'should not block messages anymore' do
@@ -296,12 +298,12 @@ describe StreamChat::Client do
 
   it 'list available blocklists' do
     resp = @client.list_blocklists
-    expect(resp['blocklists'].length).to eq 1
+    expect(resp['blocklists'].length).to be >= 1
   end
 
   it 'delete a default blocklist should fail' do
     expect do
-      @client.delete_blocklist('profanity_en_2020_v1')
+      @client.delete_blocklist(StreamChat::DEFAULT_BLOCKLIST)
     end.to raise_error(
       /cannot delete the builtin block list/
     )
