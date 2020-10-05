@@ -1,3 +1,6 @@
+## October 5th, 2020 - 2.1.0
+- Add support for blocklist
+
 ## October 2nd, 2020 - 2.0.0
 - Drop EOL Ruby versions: 2.3 && 2.4
 - Setup Rubocop and mark string literals as frozen
