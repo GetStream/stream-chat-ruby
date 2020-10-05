@@ -217,4 +217,93 @@ describe StreamChat::Client do
     resp = @client.search({ members: { '$in' => ['legolas'] } }, text)
     expect(resp['results'].length).to eq(1)
   end
+
+  it 'list available blocklists' do
+    resp = @client.list_blocklists
+    expect(resp['blocklists'].length).to eq 1
+  end
+
+  it 'get blocklist profanity_en_2020_v1' do
+    resp = @client.get_blocklist('profanity_en_2020_v1')
+    expect(resp['blocklist']['name']).to eq 'profanity_en_2020_v1'
+  end
+
+  it 'create a new blocklist' do
+    @client.create_blocklist('no-cakes', %w[fudge cream sugar])
+  end
+
+  it 'list available blocklists' do
+    resp = @client.list_blocklists
+    expect(resp['blocklists'].length).to eq 2
+  end
+
+  it 'get blocklist info' do
+    resp = @client.get_blocklist('no-cakes')
+    expect(resp['blocklist']['name']).to eq 'no-cakes'
+    expect(resp['blocklist']['words']).to eq %w[fudge cream sugar]
+  end
+
+  it 'update a default blocklist should fail' do
+    expect do
+      @client.update_blocklist('profanity_en_2020_v1', %w[fudge cream sugar vanilla])
+    end.to raise_error(/cannot update the builtin block list/)
+  end
+
+  it 'update blocklist' do
+    @client.update_blocklist('no-cakes', %w[fudge cream sugar vanilla])
+  end
+
+  it 'get blocklist info again' do
+    resp = @client.get_blocklist('no-cakes')
+    expect(resp['blocklist']['name']).to eq 'no-cakes'
+    expect(resp['blocklist']['words']).to eq %w[fudge cream sugar vanilla]
+  end
+
+  it 'use the blocklist for a channel type' do
+    @client.update_channel_type('messaging', blocklist: 'no-cakes', blocklist_behavior: 'block')
+  end
+
+  it 'should block messages that match the blocklist' do
+    channel = @client.channel('messaging', channel_id: SecureRandom.uuid, data: { 'test' => true, 'language' => 'ruby' })
+    channel.create(@random_user[:id])
+    resp = channel.send_message({ text: 'put some sugar and fudge on that!' }, @random_user[:id])
+    expect(resp['message']['text']).to eq 'Automod blocked your message'
+    expect(resp['message']['type']).to eq 'error'
+  end
+
+  it 'update blocklist again' do
+    @client.update_blocklist('no-cakes', %w[fudge cream sugar vanilla jam])
+  end
+
+  it 'should block messages that match the blocklist' do
+    channel = @client.channel('messaging', channel_id: SecureRandom.uuid, data: { 'test' => true, 'language' => 'ruby' })
+    channel.create(@random_user[:id])
+    resp = channel.send_message({ text: 'you should add more jam there ;)' }, @random_user[:id])
+    expect(resp['message']['text']).to eq 'Automod blocked your message'
+    expect(resp['message']['type']).to eq 'error'
+  end
+
+  it 'delete a blocklist' do
+    @client.delete_blocklist('no-cakes')
+  end
+
+  it 'should not block messages anymore' do
+    channel = @client.channel('messaging', channel_id: SecureRandom.uuid, data: { 'test' => true, 'language' => 'ruby' })
+    channel.create(@random_user[:id])
+    resp = channel.send_message({ text: 'put some sugar and fudge on that!' }, @random_user[:id])
+    expect(resp['message']['text']).to eq 'put some sugar and fudge on that!'
+  end
+
+  it 'list available blocklists' do
+    resp = @client.list_blocklists
+    expect(resp['blocklists'].length).to eq 1
+  end
+
+  it 'delete a default blocklist should fail' do
+    expect do
+      @client.delete_blocklist('profanity_en_2020_v1')
+    end.to raise_error(
+      /cannot delete the builtin block list/
+    )
+  end
 end
