@@ -299,6 +299,7 @@ describe StreamChat::Client do
   it 'list available blocklists' do
     resp = @client.list_blocklists
     expect(resp['blocklists'].length).to be >= 1
+    expect(resp['blocklists'].map { |b| b['name'] }).not_to include @blocklist
   end
 
   it 'delete a default blocklist should fail' do
