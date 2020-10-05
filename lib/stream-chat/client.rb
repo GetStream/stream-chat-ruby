@@ -202,7 +202,7 @@ module StreamChat
     end
 
     def update_channel_type(channel_type, **options)
-      put("channeltypes/#{channel_type}", **options)
+      put("channeltypes/#{channel_type}", data: options)
     end
 
     def delete_channel_type(channel_type)
@@ -240,6 +240,26 @@ module StreamChat
     def verify_webhook(request_body, x_signature)
       signature = OpenSSL::HMAC.hexdigest('SHA256', @api_secret, request_body)
       signature == x_signature
+    end
+
+    def list_blocklists
+      get('blocklists')
+    end
+
+    def get_blocklist(name)
+      get("blocklists/#{name}")
+    end
+
+    def create_blocklist(name, words)
+      post('blocklists', data: { "name": name, "words": words })
+    end
+
+    def update_blocklist(name, words)
+      put("blocklists/#{name}", data: { "words": words })
+    end
+
+    def delete_blocklist(name)
+      delete("blocklists/#{name}")
     end
 
     def put(relative_url, params: nil, data: nil)
