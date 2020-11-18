@@ -14,7 +14,7 @@ Android SDK libraries (https://getstream.io/chat/).
 
 stream-chat-ruby supports:
 
-- Ruby (2.6, 2.5, 2.4, 2.3)
+- Ruby (2.7, 2.6, 2.5)
 
 #### Install
 
