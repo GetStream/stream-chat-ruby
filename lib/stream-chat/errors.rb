@@ -26,5 +26,6 @@ module StreamChat
       end
     end
   end
+
   class StreamChannelException < StandardError; end
 end
