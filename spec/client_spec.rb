@@ -20,6 +20,11 @@ describe StreamChat::Client do
     @channel.create('gandalf')
 
     @blocklist = SecureRandom.uuid
+    @client.create_channel_type({ name: @blocklist })
+  end
+
+  after(:all) do
+    @client.delete_channel_type(@blocklist)
   end
 
   before(:each) do
@@ -262,11 +267,11 @@ describe StreamChat::Client do
   end
 
   it 'use the blocklist for a channel type' do
-    @client.update_channel_type('messaging', blocklist: @blocklist, blocklist_behavior: 'block')
+    @client.update_channel_type(@blocklist, blocklist: @blocklist, blocklist_behavior: 'block')
   end
 
   it 'should block messages that match the blocklist' do
-    channel = @client.channel('messaging', channel_id: SecureRandom.uuid, data: { 'test' => true, 'language' => 'ruby' })
+    channel = @client.channel(@blocklist, channel_id: SecureRandom.uuid, data: { 'test' => true, 'language' => 'ruby' })
     channel.create(@random_user[:id])
     resp = channel.send_message({ text: 'put some sugar and fudge on that!' }, @random_user[:id])
     expect(resp['message']['text']).to eq 'Automod blocked your message'
@@ -278,7 +283,7 @@ describe StreamChat::Client do
   end
 
   it 'should block messages that match the blocklist' do
-    channel = @client.channel('messaging', channel_id: SecureRandom.uuid, data: { 'test' => true, 'language' => 'ruby' })
+    channel = @client.channel(@blocklist, channel_id: SecureRandom.uuid, data: { 'test' => true, 'language' => 'ruby' })
     channel.create(@random_user[:id])
     resp = channel.send_message({ text: 'you should add more jam there ;)' }, @random_user[:id])
     expect(resp['message']['text']).to eq 'Automod blocked your message'
@@ -290,7 +295,7 @@ describe StreamChat::Client do
   end
 
   it 'should not block messages anymore' do
-    channel = @client.channel('messaging', channel_id: SecureRandom.uuid, data: { 'test' => true, 'language' => 'ruby' })
+    channel = @client.channel(@blocklist, channel_id: SecureRandom.uuid, data: { 'test' => true, 'language' => 'ruby' })
     channel.create(@random_user[:id])
     resp = channel.send_message({ text: 'put some sugar and fudge on that!' }, @random_user[:id])
     expect(resp['message']['text']).to eq 'put some sugar and fudge on that!'
