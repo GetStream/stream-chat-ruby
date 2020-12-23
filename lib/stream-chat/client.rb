@@ -264,6 +264,14 @@ module StreamChat
       delete("blocklists/#{name}")
     end
 
+    def export_channels(*channels)
+      post('export_channels', data: { "channels": channels })
+    end
+
+    def get_export_channel_status(task_id)
+      get("export_channels/#{task_id}")
+    end
+
     def put(relative_url, params: nil, data: nil)
       make_http_request(:put, relative_url, params: params, data: data)
     end
