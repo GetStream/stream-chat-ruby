@@ -9,6 +9,8 @@ require 'stream-chat/errors'
 require 'stream-chat/version'
 
 module StreamChat
+  DEFAULT_BLOCKLIST = 'profanity_en_2020_v1'
+
   class Client
     BASE_URL = 'https://chat-us-east-1.stream-io-api.com'
 
