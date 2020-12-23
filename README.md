@@ -37,6 +37,8 @@ gem install stream-chat-ruby
 - User devices
 - User search
 - Channel search
+- Blocklists
+- Export channels
 
 ### Import
 
@@ -150,6 +152,31 @@ client.get_devices('jane-77')
 
 # Remove device
 client.remove_device(jane_phone['id'], jane_phone['user_id'])
+```
+
+### Blocklists
+```ruby
+# Create a blocklist
+client.create_blocklist('my_blocker', %w[fudge cream sugar])
+
+# Enable it on messaging channel type
+client.update_channel_type('messaging', blocklist: 'my_blocker', blocklist_behavior: 'block')
+
+# Get the details of the blocklist
+client.get_blocklist('my_blocker')
+
+# Delete the blocklist
+client.delete_blocklist('my_blocker')
+```
+
+### Export Channels
+```ruby
+# Register an export
+response = client.export_channels({type: 'messaging', id: 'jane'})
+
+# Check completion
+status_response = client.get_export_channel_status(response['task_id'])
+# status_response['status'] == 'pending', 'completed'
 ```
 
 ### Example Rails application
