@@ -1,6 +1,6 @@
 # stream-chat-ruby
 
-[![Build Status](https://travis-ci.com/GetStream/stream-chat-ruby.svg?branch=master)](https://travis-ci.com/GetStream/stream-chat-ruby) [![Gem Version](https://badge.fury.io/rb/stream-chat-ruby.svg)](http://badge.fury.io/rb/stream-chat-ruby)
+ [![build](https://github.com/GetStream/stream-chat-ruby/workflows/build/badge.svg)](https://github.com/GetStream/stream-chat-ruby/actions) [![Gem Version](https://badge.fury.io/rb/stream-chat-ruby.svg)](http://badge.fury.io/rb/stream-chat-ruby)
 
 stream-chat-ruby is the official Ruby client for [Stream chat](https://getstream.io/chat/) a service for building chat applications.
 
