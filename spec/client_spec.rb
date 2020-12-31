@@ -309,4 +309,10 @@ describe StreamChat::Client do
       /cannot delete the builtin block list/
     )
   end
+
+  it 'check_sqs with an invalid queue url should fail' do
+    resp = @client.check_sqs('key', 'secret', 'https://foo.com/bar')
+    expect(resp['status']).to eq 'error'
+    expect(resp['error']).to include 'invalid SQS url'
+  end
 end
