@@ -18,16 +18,6 @@ describe StreamChat::Client do
     @channel = @client.channel('team', channel_id: 'fellowship-of-the-ring',
                                        data: { members: @fellowship_of_the_ring.map { |fellow| fellow[:id] } })
     @channel.create('gandalf')
-
-    @blocklist = SecureRandom.uuid
-    @client.create_channel_type({ name: @blocklist })
-    @blocklist_channel = @client.channel(@blocklist, channel_id: SecureRandom.uuid)
-    @blocklist_channel.create(@fellowship_of_the_ring[0][:id])
-  end
-
-  after(:all) do
-    @blocklist_channel.delete
-    @client.delete_channel_type(@blocklist)
   end
 
   before(:each) do
@@ -229,6 +219,18 @@ describe StreamChat::Client do
   end
 
   describe 'blocklist' do
+    before(:all) do
+      @blocklist = SecureRandom.uuid
+      @client.create_channel_type({ name: @blocklist })
+      @blocklist_channel = @client.channel(@blocklist, channel_id: SecureRandom.uuid)
+      @blocklist_channel.create(@fellowship_of_the_ring[0][:id])
+    end
+
+    after(:all) do
+      @blocklist_channel.delete
+      @client.delete_channel_type(@blocklist)
+    end
+
     it 'list available blocklists' do
       resp = @client.list_blocklists
       expect(resp['blocklists'].map { |b| b['name'] }).to include StreamChat::DEFAULT_BLOCKLIST
