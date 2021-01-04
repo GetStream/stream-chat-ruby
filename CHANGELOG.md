@@ -1,3 +1,10 @@
+## January 4th, 2021 - 2.2.0
+- Add support for export channels
+- Improve readme for blocklist and export channels
+- Improve running tests for multiple versions of ruby
+- Fix issues from the latest version of rubocop
+- Move to GitHub Actions
+
 ## October 5th, 2020 - 2.1.0
 - Add support for blocklist
 
