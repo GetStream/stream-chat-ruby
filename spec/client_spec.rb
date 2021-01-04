@@ -316,4 +316,42 @@ describe StreamChat::Client do
       )
     end
   end
+
+  it 'check status for a task that does not exist' do
+    expect do
+      @client.get_export_channel_status(SecureRandom.uuid)
+    end.to raise_error(
+      /Can't find task with id/
+    )
+  end
+
+  it 'request the export for a channel that does not exist' do
+    expect do
+      @client.export_channels({ type: 'messaging', id: SecureRandom.uuid })
+    end.to raise_error
+  end
+
+  it 'request the channel export' do
+    ch = @client.channel('messaging', channel_id: SecureRandom.uuid)
+    ch.create(@random_user[:id])
+    ch.send_message({ text: 'Hey Joni' }, @random_user[:id])
+
+    resp = @client.export_channels({ type: ch.channel_type, id: ch.id })
+    expect(resp['task_id']).not_to be_empty
+
+    task_id = resp['task_id']
+    loop do
+      resp = @client.get_export_channel_status(task_id)
+      expect(resp['status']).not_to be_empty
+      expect(resp['created_at']).not_to be_empty
+      expect(resp['updated_at']).not_to be_empty
+      if resp['status'] == 'completed'
+        expect(resp['result']).not_to be_empty
+        expect(resp['result']['url']).not_to be_empty
+        expect(resp['error']).not_to be_empty
+        break
+      end
+      sleep(0.5)
+    end
+  end
 end
