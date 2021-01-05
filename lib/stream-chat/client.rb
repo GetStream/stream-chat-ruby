@@ -311,6 +311,10 @@ module StreamChat
       parse_response(response)
     end
 
+    def check_sqs(sqs_key = nil, sqs_secret = nil, sqs_url = nil)
+      post('check_sqs', data: { "sqs_key": sqs_key, "sqs_secret": sqs_secret, "sqs_url": sqs_url })
+    end
+
     private
 
     def get_default_params
