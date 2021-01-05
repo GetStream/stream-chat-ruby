@@ -1,3 +1,6 @@
+## January 5th, 2021 - 2.3.0
+- Add check SQS helper
+
 ## January 4th, 2021 - 2.2.0
 - Add support for export channels
 - Improve readme for blocklist and export channels
