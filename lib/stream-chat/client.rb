@@ -7,6 +7,7 @@ require 'jwt'
 require 'stream-chat/channel'
 require 'stream-chat/errors'
 require 'stream-chat/version'
+require 'stream-chat/util'
 
 module StreamChat
   DEFAULT_BLOCKLIST = 'profanity_en_2020_v1'
@@ -166,26 +167,18 @@ module StreamChat
     end
 
     def query_users(filter_conditions, sort: nil, **options)
-      sort_fields = []
-      sort&.each do |k, v|
-        sort_fields << { "field": k, "direction": v }
-      end
       params = options.merge({
                                "filter_conditions": filter_conditions,
-                               "sort": sort_fields
+                               "sort": get_sort_fields(sort)
                              })
       get('users', params: { "payload": params.to_json })
     end
 
     def query_channels(filter_conditions, sort: nil, **options)
       params = { "state": true, "watch": false, "presence": false }
-      sort_fields = []
-      sort&.each do |k, v|
-        sort_fields << { "field": k, "direction": v }
-      end
       params = params.merge(options).merge({
                                              "filter_conditions": filter_conditions,
-                                             "sort": sort_fields
+                                             "sort": get_sort_fields(sort)
                                            })
       get('channels', params: { "payload": params.to_json })
     end
