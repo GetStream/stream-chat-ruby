@@ -1,12 +1,14 @@
 # frozen_string_literal: true
 
 require 'stream-chat/errors'
+require 'stream-chat/util'
 
 module StreamChat
   class Channel # rubocop:todo Metrics/ClassLength # rubocop:todo Style/Documentation
     attr_reader :id
     attr_reader :channel_type
     attr_reader :custom_data
+    attr_reader :members
 
     def initialize(client, channel_type, channel_id = nil, custom_data = nil)
       @channel_type = channel_type
@@ -57,6 +59,24 @@ module StreamChat
       state = @client.post("#{url}/query", data: payload)
       @id = state['channel']['id'] if @id.nil?
       state
+    end
+
+    def query_members(filter_conditions: {}, sort: nil, **options)
+      params = {}.merge(options).merge({
+                                         id: @id,
+                                         type: @channel_type,
+                                         filter_conditions: filter_conditions,
+                                         sort: get_sort_fields(sort)
+                                       })
+
+      if @id == '' && @members.length.positive?
+        params['members'] = []
+        @members&.each do |m|
+          params['members'] << m['user'].nil? ? m['user_id'] : m['user']['id']
+        end
+      end
+
+      @client.get('members', params: { payload: params.to_json })
     end
 
     def update(channel_data, update_message = nil)

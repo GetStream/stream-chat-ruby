@@ -9,7 +9,7 @@ describe StreamChat::Channel do
   end
 
   before(:each) do
-    @random_users = [{ id: SecureRandom.uuid }, { id: SecureRandom.uuid }]
+    @random_users = [{ id: SecureRandom.uuid, name: 'b' }, { id: SecureRandom.uuid, name: 'a' }]
     @client.update_users(@random_users)
 
     @random_user = { id: SecureRandom.uuid }
@@ -57,7 +57,7 @@ describe StreamChat::Channel do
     expect(response['channel']['motd']).to eq 'one apple a day...'
   end
 
-  it 'can delete ' do
+  it 'can delete' do
     response = @channel.delete
     expect(response).to include 'channel'
     expect(response['channel'].fetch('deleted_at')).not_to eq nil
@@ -158,5 +158,28 @@ describe StreamChat::Channel do
 
   it 'delete image' do
     @channel.delete_image(image)
+  end
+
+  it 'query members' do
+    response = @channel.query_members
+    expect(response['members'].length).to eq 0
+
+    members = []
+    @random_users&.each do |u|
+      members << u[:id]
+    end
+    @channel.add_members(members)
+
+    response = @channel.query_members(sort: { name: 1 })
+    expect(response['members'].length).to eq 2
+
+    got_members = []
+    response['members']&.each do |m|
+      got_members << m['user']['id']
+    end
+    expect(got_members).to eq members.reverse
+
+    response = @channel.query_members(limit: 1)
+    expect(response['members'].length).to eq 1
   end
 end
