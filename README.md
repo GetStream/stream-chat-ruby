@@ -28,9 +28,8 @@ gem install stream-chat-ruby
 
 ### Supported features
 
-- Chat channels
+- Chat channel type, channels and members
 - Messages
-- Chat channel types
 - User management
 - Moderation API
 - Push configuration
@@ -131,6 +130,9 @@ chan.unban_user('bob-1')
 
 # Query channel state
 chan.query({'messages' => { 'limit' => 10, 'id_lte' => m1['id']}})
+
+# Query channel members
+chan.query_members({name: {'$autocomplete': 'test'}}, {last_created_at: -1}, offset: 5, limit: 5)
 ```
 
 ### Messages

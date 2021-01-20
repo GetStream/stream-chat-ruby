@@ -1,3 +1,8 @@
+## January 20th, 2021 - 2.4.0
+- Add query_members to channel
+- Use post endpoint for query channels instead of get
+- Extract common code for sorting into a helper for query calls
+
 ## January 5th, 2021 - 2.3.0
 - Add check SQS helper
 
