@@ -175,12 +175,12 @@ module StreamChat
     end
 
     def query_channels(filter_conditions, sort: nil, **options)
-      params = { "state": true, "watch": false, "presence": false }
-      params = params.merge(options).merge({
-                                             "filter_conditions": filter_conditions,
-                                             "sort": get_sort_fields(sort)
-                                           })
-      get('channels', params: { "payload": params.to_json })
+      data = { "state": true, "watch": false, "presence": false }
+      data = data.merge(options).merge({
+                                         filter_conditions: filter_conditions,
+                                         sort: get_sort_fields(sort)
+                                       })
+      post('channels', data: data)
     end
 
     def create_channel_type(data)
