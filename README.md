@@ -132,7 +132,7 @@ chan.unban_user('bob-1')
 chan.query({'messages' => { 'limit' => 10, 'id_lte' => m1['id']}})
 
 # Query channel members
-chan.query_members({name: {'$autocomplete': 'test'}}, {last_created_at: -1}, offset: 5, limit: 5)
+chan.query_members({name: {'$autocomplete': 'test'}}, sort: {last_created_at: -1}, offset: 5, limit: 5)
 ```
 
 ### Messages

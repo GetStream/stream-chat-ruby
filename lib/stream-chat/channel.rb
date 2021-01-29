@@ -61,7 +61,7 @@ module StreamChat
       state
     end
 
-    def query_members(filter_conditions: {}, sort: nil, **options)
+    def query_members(filter_conditions = {}, sort: nil, **options)
       params = {}.merge(options).merge({
                                          id: @id,
                                          type: @channel_type,
