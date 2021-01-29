@@ -60,22 +60,22 @@ module StreamChat
     end
 
     def flag_message(id, **options)
-      payload = { 'target_message_id': id }.merge(options)
+      payload = { target_message_id: id }.merge(options)
       post('moderation/flag', data: payload)
     end
 
     def unflag_message(id, **options)
-      payload = { 'target_message_id': id }.merge(options)
+      payload = { target_message_id: id }.merge(options)
       post('moderation/unflag', data: payload)
     end
 
     def flag_user(id, **options)
-      payload = { 'target_user_id': id }.merge(options)
+      payload = { target_user_id: id }.merge(options)
       post('moderation/flag', data: payload)
     end
 
     def unflag_user(id, **options)
-      payload = { 'target_user_id': id }.merge(options)
+      payload = { target_user_id: id }.merge(options)
       post('moderation/unflag', data: payload)
     end
 
@@ -85,11 +85,11 @@ module StreamChat
 
     def search(filter_conditions, query, **options)
       params = options.merge({
-                               "filter_conditions": filter_conditions,
-                               "query": query
+                               filter_conditions: filter_conditions,
+                               query: query
                              })
 
-      get('search', params: { "payload": params.to_json })
+      get('search', params: { payload: params.to_json })
     end
 
     def update_users(users)
@@ -100,7 +100,7 @@ module StreamChat
 
         payload[id] = user
       end
-      post('users', data: { 'users': payload })
+      post('users', data: { users: payload })
     end
 
     def update_user(user)
@@ -108,7 +108,7 @@ module StreamChat
     end
 
     def update_users_partial(updates)
-      patch('users', data: { 'users': updates })
+      patch('users', data: { users: updates })
     end
 
     def update_user_partial(update)
@@ -132,34 +132,34 @@ module StreamChat
     end
 
     def ban_user(target_id, **options)
-      payload = { 'target_user_id': target_id }.merge(options)
+      payload = { target_user_id: target_id }.merge(options)
       post('moderation/ban', data: payload)
     end
 
     def unban_user(target_id, **options)
-      params = { 'target_user_id': target_id }.merge(options)
+      params = { target_user_id: target_id }.merge(options)
       delete('moderation/ban', params: params)
     end
 
     def mute_user(target_id, user_id)
-      payload = { 'target_id': target_id, 'user_id': user_id }
+      payload = { target_id: target_id, user_id: user_id }
       post('moderation/mute', data: payload)
     end
 
     def unmute_user(target_id, user_id)
-      payload = { 'target_id': target_id, 'user_id': user_id }
+      payload = { target_id: target_id, user_id: user_id }
       post('moderation/unmute', data: payload)
     end
 
     def mark_all_read(user_id)
-      payload = { 'user': { 'id': user_id } }
+      payload = { user: { id: user_id } }
       post('channels/read', data: payload)
     end
 
     def update_message(message)
       raise ArgumentError 'message must have an id' unless message.key? 'id'
 
-      post("messages/#{message['id']}", data: { 'message': message })
+      post("messages/#{message['id']}", data: { message: message })
     end
 
     def delete_message(message_id)
@@ -168,14 +168,14 @@ module StreamChat
 
     def query_users(filter_conditions, sort: nil, **options)
       params = options.merge({
-                               "filter_conditions": filter_conditions,
-                               "sort": get_sort_fields(sort)
+                               filter_conditions: filter_conditions,
+                               sort: get_sort_fields(sort)
                              })
-      get('users', params: { "payload": params.to_json })
+      get('users', params: { payload: params.to_json })
     end
 
     def query_channels(filter_conditions, sort: nil, **options)
-      data = { "state": true, "watch": false, "presence": false }
+      data = { state: true, watch: false, presence: false }
       data = data.merge(options).merge({
                                          filter_conditions: filter_conditions,
                                          sort: get_sort_fields(sort)
@@ -218,18 +218,18 @@ module StreamChat
 
     def add_device(device_id, push_provider, user_id)
       post('devices', data: {
-             "id": device_id,
-             "push_provider": push_provider,
-             "user_id": user_id
+             id: device_id,
+             push_provider: push_provider,
+             user_id: user_id
            })
     end
 
     def delete_device(device_id, user_id)
-      delete('devices', params: { "id": device_id, "user_id": user_id })
+      delete('devices', params: { id: device_id, user_id: user_id })
     end
 
     def get_devices(user_id)
-      get('devices', params: { "user_id": user_id })
+      get('devices', params: { user_id: user_id })
     end
 
     def verify_webhook(request_body, x_signature)
@@ -246,11 +246,11 @@ module StreamChat
     end
 
     def create_blocklist(name, words)
-      post('blocklists', data: { "name": name, "words": words })
+      post('blocklists', data: { name: name, words: words })
     end
 
     def update_blocklist(name, words)
-      put("blocklists/#{name}", data: { "words": words })
+      put("blocklists/#{name}", data: { words: words })
     end
 
     def delete_blocklist(name)
@@ -258,7 +258,7 @@ module StreamChat
     end
 
     def export_channels(*channels)
-      post('export_channels', data: { "channels": channels })
+      post('export_channels', data: { channels: channels })
     end
 
     def get_export_channel_status(task_id)
@@ -305,7 +305,7 @@ module StreamChat
     end
 
     def check_sqs(sqs_key = nil, sqs_secret = nil, sqs_url = nil)
-      post('check_sqs', data: { "sqs_key": sqs_key, "sqs_secret": sqs_secret, "sqs_url": sqs_url })
+      post('check_sqs', data: { sqs_key: sqs_key, sqs_secret: sqs_secret, sqs_url: sqs_url })
     end
 
     private
