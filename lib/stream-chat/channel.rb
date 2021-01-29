@@ -25,7 +25,7 @@ module StreamChat
     end
 
     def send_message(message, user_id)
-      payload = { "message": add_user_id(message, user_id) }
+      payload = { message: add_user_id(message, user_id) }
       @client.post("#{url}/message", data: payload)
     end
 
@@ -35,24 +35,24 @@ module StreamChat
     end
 
     def send_reaction(message_id, reaction, user_id)
-      payload = { "reaction": add_user_id(reaction, user_id) }
+      payload = { reaction: add_user_id(reaction, user_id) }
       @client.post("messages/#{message_id}/reaction", data: payload)
     end
 
     def delete_reaction(message_id, reaction_type, user_id)
       @client.delete(
         "messages/#{message_id}/reaction/#{reaction_type}",
-        params: { "user_id": user_id }
+        params: { user_id: user_id }
       )
     end
 
     def create(user_id)
-      @custom_data['created_by'] = { "id": user_id }
+      @custom_data['created_by'] = { id: user_id }
       query(watch: false, state: false, presence: false)
     end
 
     def query(**options)
-      payload = { "state": true, "data": @custom_data }.merge(options)
+      payload = { state: true, data: @custom_data }.merge(options)
       url = "channels/#{@channel_type}"
       url = "#{url}/#{@id}" unless @id.nil?
 
@@ -80,7 +80,7 @@ module StreamChat
     end
 
     def update(channel_data, update_message = nil)
-      payload = { "data": channel_data, "message": update_message }
+      payload = { data: channel_data, message: update_message }
       @client.post(url, data: payload)
     end
 
@@ -93,23 +93,23 @@ module StreamChat
     end
 
     def add_members(user_ids)
-      @client.post(url, data: { "add_members": user_ids })
+      @client.post(url, data: { add_members: user_ids })
     end
 
     def invite_members(user_ids)
-      @client.post(url, data: { "invites": user_ids })
+      @client.post(url, data: { invites: user_ids })
     end
 
     def add_moderators(user_ids)
-      @client.post(url, data: { "add_moderators": user_ids })
+      @client.post(url, data: { add_moderators: user_ids })
     end
 
     def remove_members(user_ids)
-      @client.post(url, data: { "remove_members": user_ids })
+      @client.post(url, data: { remove_members: user_ids })
     end
 
     def demote_moderators(user_ids)
-      @client.post(url, data: { "demote_moderators": user_ids })
+      @client.post(url, data: { demote_moderators: user_ids })
     end
 
     def mark_read(user_id, **options)
@@ -150,17 +150,17 @@ module StreamChat
     end
 
     def delete_file(url)
-      @client.delete("#{self.url}/file", params: { "url": url })
+      @client.delete("#{self.url}/file", params: { url: url })
     end
 
     def delete_image(url)
-      @client.delete("#{self.url}/image", params: { "url": url })
+      @client.delete("#{self.url}/image", params: { url: url })
     end
 
     private
 
     def add_user_id(payload, user_id)
-      payload.merge({ "user": { "id": user_id } })
+      payload.merge({ user: { id: user_id } })
     end
   end
 end
