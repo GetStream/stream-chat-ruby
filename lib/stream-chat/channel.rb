@@ -84,6 +84,13 @@ module StreamChat
       @client.post(url, data: payload)
     end
 
+    def update_partial(set = nil, unset = nil)
+      raise StreamChannelException 'set or unset is needed' if set.nil? && unset.nil?
+
+      payload = { set: set, unset: unset }
+      @client.patch(url, data: payload)
+    end
+
     def delete
       @client.delete(url)
     end
