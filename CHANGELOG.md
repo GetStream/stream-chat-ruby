@@ -1,3 +1,8 @@
+## February 3rd, 2021 - 2.5.0
+- Add channel partial update
+- Increase convenience in query members
+- Improve internal symbol conversions
+
 ## January 20th, 2021 - 2.4.0
 - Add query_members to channel
 - Use post endpoint for query channels instead of get
