@@ -131,6 +131,14 @@ chan.unban_user('bob-1')
 # Query channel state
 chan.query({'messages' => { 'limit' => 10, 'id_lte' => m1['id']}})
 
+# Update metadata (overwrite)
+chan.update({'motd' => 'one apple a day....'})
+
+# Update partial
+# 1. key-value pairs to set
+# 2. keys to unset (remove)
+chan.update_partial({color: 'blue', age: 30}, ['motd'])
+
 # Query channel members
 chan.query_members({name: {'$autocomplete': 'test'}}, sort: {last_created_at: -1}, offset: 5, limit: 5)
 ```

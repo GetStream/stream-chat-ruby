@@ -57,6 +57,20 @@ describe StreamChat::Channel do
     expect(response['channel']['motd']).to eq 'one apple a day...'
   end
 
+  it 'can update metadata partial' do
+    @channel.update_partial({ color: 'blue', age: 30 }, ['motd'])
+    response = @channel.query
+    expect(response['channel']['color']).to eq 'blue'
+    expect(response['channel']['age']).to eq 30
+    expect(response['channel']).not_to include 'motd'
+
+    @channel.update_partial({ color: 'red' }, ['age'])
+    response = @channel.query
+    expect(response['channel']['color']).to eq 'red'
+    expect(response['channel']).not_to include 'age'
+    expect(response['channel']).not_to include 'motd'
+  end
+
   it 'can delete' do
     response = @channel.delete
     expect(response).to include 'channel'
