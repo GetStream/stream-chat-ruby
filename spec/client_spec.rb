@@ -211,6 +211,36 @@ describe StreamChat::Client do
     expect(response['devices'].length).to eq 1
   end
 
+  describe 'get rate limits' do
+    it 'lists all limits' do
+      response = @client.get_rate_limits
+      expect(response['android']).not_to be_nil
+      expect(response['ios']).not_to be_nil
+      expect(response['web']).not_to be_nil
+      expect(response['server_side']).not_to be_nil
+    end
+
+    it 'lists limits for a single platform' do
+      response = @client.get_rate_limits(server_side: true)
+      expect(response['server_side']).not_to be_nil
+      expect(response['android']).to be_nil
+      expect(response['ios']).to be_nil
+      expect(response['web']).to be_nil
+    end
+
+    it 'lists limits for a few endpoints' do
+      response = @client.get_rate_limits(server_side: true, android: true, endpoints: %w[GetRateLimits QueryChannels])
+      expect(response['ios']).to be_nil
+      expect(response['web']).to be_nil
+      expect(response['android']).not_to be_nil
+      expect(response['android'].length).to eq(2)
+      expect(response['android']['GetRateLimits']['limit']).to eq(response['android']['GetRateLimits']['remaining'])
+      expect(response['server_side']).not_to be_nil
+      expect(response['server_side'].length).to eq(2)
+      expect(response['server_side']['GetRateLimits']['limit']).to be > response['server_side']['GetRateLimits']['remaining']
+    end
+  end
+
   it 'search for messages' do
     text = SecureRandom.uuid
     @channel.send_message({ text: text }, 'legolas')

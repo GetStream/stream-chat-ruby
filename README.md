@@ -189,6 +189,18 @@ status_response = client.get_export_channel_status(response['task_id'])
 # status_response['status'] == 'pending', 'completed'
 ```
 
+### Rate limits
+```ruby
+# Get all rate limits
+limits = client.get_rate_limits
+
+# Get rate limits for specific platform(s)
+limits = client.get_rate_limits(server_side: true)
+
+# Get rate limits for specific platforms and endpoints
+limits = client.get_rate_limits(android: true, ios: true, endpoints: ['QueryChannels', 'SendMessage'])
+```
+
 ### Example Rails application
 
 See [an example rails application using the Ruby SDK](https://github.com/GetStream/rails-chat-example).
