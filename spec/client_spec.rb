@@ -229,7 +229,7 @@ describe StreamChat::Client do
     end
 
     it 'lists limits for a few endpoints' do
-      response = @client.get_rate_limits(server_side: true, android: true, endpoints: ['GetRateLimits', 'QueryChannels'])
+      response = @client.get_rate_limits(server_side: true, android: true, endpoints: %w(GetRateLimits, QueryChannels))
       expect(response['ios']).to be_nil
       expect(response['web']).to be_nil
       expect(response['android']).not_to be_nil

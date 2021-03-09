@@ -238,7 +238,7 @@ module StreamChat
       params['android'] = android if android
       params['ios'] = ios if ios
       params['web'] = web if web
-      params['endpoints'] = endpoints.join(",") if endpoints.length > 0
+      params['endpoints'] = endpoints.join(',') unless endpoints.empty?
 
       get('rate_limits', params: params)
     end
