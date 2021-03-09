@@ -353,7 +353,7 @@ module StreamChat
       headers['stream-auth-type'] = 'jwt'
       url = [@base_url, relative_url].join('/')
       params = params.nil? ? {} : params
-      params = Hash[get_default_params.merge(params).sort_by { |k, _v| k.to_s }]
+      params = (get_default_params.merge(params).sort_by { |k, _v| k.to_s }).to_h
       url = "#{url}?#{URI.encode_www_form(params)}"
 
       body = data.to_json if %w[patch post put].include? method.to_s
