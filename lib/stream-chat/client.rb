@@ -232,6 +232,17 @@ module StreamChat
       get('devices', params: { user_id: user_id })
     end
 
+    def get_rate_limits(server_side: false, android: false, ios: false, web: false, endpoints: [])
+      params = {}
+      params['server_side'] = server_side if server_side
+      params['android'] = android if android
+      params['ios'] = ios if ios
+      params['web'] = web if web
+      params['endpoints'] = endpoints.join(",") if endpoints.length > 0
+
+      get('rate_limits', params: params)
+    end
+
     def verify_webhook(request_body, x_signature)
       signature = OpenSSL::HMAC.hexdigest('SHA256', @api_secret, request_body)
       signature == x_signature
