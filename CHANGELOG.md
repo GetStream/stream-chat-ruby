@@ -1,3 +1,6 @@
+## March 9th, 2021 - 2.6.0
+- Add get_rate_limits endpoint
+
 ## February 3rd, 2021 - 2.5.0
 - Add channel partial update
 - Increase convenience in query members
