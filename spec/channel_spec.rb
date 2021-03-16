@@ -5,7 +5,7 @@ require 'stream-chat'
 
 describe StreamChat::Channel do
   before(:all) do
-    @client = StreamChat::Client.new(ENV['STREAM_CHAT_API_KEY'], ENV['STREAM_CHAT_API_SECRET'], { base_url: ENV['STREAM_CHAT_API_HOST'] })
+    @client = StreamChat::Client.new(ENV['STREAM_CHAT_API_KEY'], ENV['STREAM_CHAT_API_SECRET'], base_url: ENV['STREAM_CHAT_API_HOST'])
   end
 
   before(:each) do
