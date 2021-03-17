@@ -248,7 +248,7 @@ describe StreamChat::Client do
     expect(resp['results'].length).to eq(1)
   end
 
-  describe 'blocklist', if: ENV['BLOCKLIST'] != 'false' do
+  describe 'blocklist' do
     before(:all) do
       @blocklist = SecureRandom.uuid
     end
