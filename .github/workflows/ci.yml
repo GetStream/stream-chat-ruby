@@ -6,9 +6,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      max-parallel: 1
       matrix:
         ruby: ['2.5', '2.6', '2.7', '3.0']
-    name: Ruby ${{ matrix.ruby }} sample
+    name: Ruby ${{ matrix.ruby }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-ruby@v1
@@ -18,7 +19,6 @@ jobs:
       - env:
           STREAM_CHAT_API_KEY: ${{ secrets.STREAM_CHAT_API_KEY }}
           STREAM_CHAT_API_SECRET: ${{ secrets.STREAM_CHAT_API_SECRET }}
-          BLOCKLIST: ${{ matrix.ruby == '2.7' }}
         run: |
           gem install bundler
           bundle install --jobs 4 --retry 3
