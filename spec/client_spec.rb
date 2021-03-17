@@ -6,7 +6,7 @@ require 'stream-chat'
 
 describe StreamChat::Client do
   before(:all) do
-    @client = StreamChat::Client.new(ENV['STREAM_CHAT_API_KEY'], ENV['STREAM_CHAT_API_SECRET'], { base_url: ENV['STREAM_CHAT_API_HOST'] })
+    @client = StreamChat::Client.new(ENV['STREAM_CHAT_API_KEY'], ENV['STREAM_CHAT_API_SECRET'], base_url: ENV['STREAM_CHAT_API_HOST'])
 
     @fellowship_of_the_ring = [
       { id: 'frodo-baggins', name: 'Frodo Baggins', race: 'Hobbit', age: 50 },
