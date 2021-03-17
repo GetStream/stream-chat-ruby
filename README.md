@@ -1,20 +1,20 @@
 # stream-chat-ruby
 
- [![build](https://github.com/GetStream/stream-chat-ruby/workflows/build/badge.svg)](https://github.com/GetStream/stream-chat-ruby/actions) [![Gem Version](https://badge.fury.io/rb/stream-chat-ruby.svg)](http://badge.fury.io/rb/stream-chat-ruby)
+[![build](https://github.com/GetStream/stream-chat-ruby/workflows/build/badge.svg)](https://github.com/GetStream/stream-chat-ruby/actions) [![Gem Version](https://badge.fury.io/rb/stream-chat-ruby.svg)](http://badge.fury.io/rb/stream-chat-ruby)
 
 stream-chat-ruby is the official Ruby client for [Stream chat](https://getstream.io/chat/) a service for building chat applications.
 
 You can sign up for a Stream account at https://getstream.io/chat/get_started/.
 
 You can use this library to access chat API endpoints server-side. For the
-client-side integrations (web and mobile) have a look at the Javascript, iOS and
+client-side integrations (web and mobile) have a look at the JavaScript, iOS and
 Android SDK libraries (https://getstream.io/chat/).
 
 ### Installation
 
 stream-chat-ruby supports:
 
-- Ruby (2.7, 2.6, 2.5)
+- Ruby (3.0, 2.7, 2.6, 2.5)
 
 #### Install
 
@@ -165,6 +165,7 @@ client.remove_device(jane_phone['id'], jane_phone['user_id'])
 ```
 
 ### Blocklists
+
 ```ruby
 # Create a blocklist
 client.create_blocklist('my_blocker', %w[fudge cream sugar])
@@ -180,6 +181,7 @@ client.delete_blocklist('my_blocker')
 ```
 
 ### Export Channels
+
 ```ruby
 # Register an export
 response = client.export_channels({type: 'messaging', id: 'jane'})
@@ -190,6 +192,7 @@ status_response = client.get_export_channel_status(response['task_id'])
 ```
 
 ### Rate limits
+
 ```ruby
 # Get all rate limits
 limits = client.get_rate_limits
