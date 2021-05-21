@@ -71,7 +71,7 @@ module StreamChat
 
     def query_message_flags(filter_conditions, **options)
       params = options.merge({
-                               filter_conditions: filter_conditions,
+                               filter_conditions: filter_conditions
                              })
       get('moderation/flags/message', params: { payload: params.to_json })
     end

@@ -155,7 +155,7 @@ describe StreamChat::Client do
       @client.flag_message(msg_id, user_id: @random_users[0][:id])
       response = @client.query_message_flags({ 'user_id' => { '$in' => [@random_user[:id]] } })
       expect(response['flags'].length).to eq 1
-    end
+  end
 
   it 'marks everything as read' do
     @client.mark_all_read(@random_user[:id])
