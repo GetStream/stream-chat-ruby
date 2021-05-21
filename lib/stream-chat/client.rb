@@ -69,6 +69,13 @@ module StreamChat
       post('moderation/unflag', data: payload)
     end
 
+    def query_message_flags(filter_conditions, **options)
+      params = options.merge({
+                               filter_conditions: filter_conditions,
+                             })
+      get('moderation/flags/message', params: { payload: params.to_json })
+    end
+
     def flag_user(id, **options)
       payload = { target_user_id: id }.merge(options)
       post('moderation/flag', data: payload)
