@@ -1,3 +1,7 @@
+## May 21st, 2021 - 2.8.0
+
+- Add query message flags support
+
 ## March 17th, 2021 - 2.7.0
 
 - Add Ruby 3.x support
