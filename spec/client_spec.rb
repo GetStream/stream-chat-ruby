@@ -146,15 +146,15 @@ describe StreamChat::Client do
   end
 
   it 'queries message flags' do
-      msg_id = SecureRandom.uuid
-      @channel.send_message({
-                              'id' => msg_id,
-                              'text' => 'Hello world'
-                            }, @random_user[:id])
+    msg_id = SecureRandom.uuid
+    @channel.send_message({
+                            'id' => msg_id,
+                            'text' => 'Hello world'
+                          }, @random_user[:id])
 
-      @client.flag_message(msg_id, user_id: @random_users[0][:id])
-      response = @client.query_message_flags({ 'user_id' => { '$in' => [@random_user[:id]] } })
-      expect(response['flags'].length).to eq 1
+    @client.flag_message(msg_id, user_id: @random_users[0][:id])
+    response = @client.query_message_flags({ 'user_id' => { '$in' => [@random_user[:id]] } })
+    expect(response['flags'].length).to eq 1
   end
 
   it 'marks everything as read' do
