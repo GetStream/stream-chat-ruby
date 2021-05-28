@@ -286,10 +286,8 @@ module StreamChat
     end
 
     def revoke_tokens(before)
-      if before.instance_of?(DateTime)
-        before = before.iso8601()
-      end
-      update_app_settings({'revoke_tokens_issued_before' => before})
+      before = before.iso8601 if before.instance_of?(DateTime)
+      update_app_settings({ 'revoke_tokens_issued_before' => before })
     end
 
     def revoke_user_token(user_id, before)
@@ -297,18 +295,16 @@ module StreamChat
     end
 
     def revoke_users_token(user_ids, before)
-      if before.instance_of?(DateTime)
-        before = before.iso8601()
-      end
+      before = before.iso8601 if before.instance_of?(DateTime)
 
       updates = []
-      for user_id in user_ids do
+      user_ids.each do |user_id|
         updates.push({
-          'id' => user_id,
-          'set' => {
-            'revoke_tokens_issued_before' => before
-          }
-        })
+                       'id' => user_id,
+                       'set' => {
+                         'revoke_tokens_issued_before' => before
+                       }
+                     })
       end
       update_users_partial(updates)
     end
