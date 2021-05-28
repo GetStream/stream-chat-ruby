@@ -4,6 +4,7 @@
 require 'open-uri'
 require 'faraday'
 require 'jwt'
+require 'time'
 require 'stream-chat/channel'
 require 'stream-chat/errors'
 require 'stream-chat/version'
@@ -45,9 +46,10 @@ module StreamChat
       end
     end
 
-    def create_token(user_id, exp = nil)
+    def create_token(user_id, exp = nil, iat = nil)
       payload = { user_id: user_id }
       payload['exp'] = exp unless exp.nil?
+      payload['iat'] = iat unless iat.nil?
       JWT.encode(payload, @api_secret, 'HS256')
     end
 
@@ -281,6 +283,34 @@ module StreamChat
 
     def get_export_channel_status(task_id)
       get("export_channels/#{task_id}")
+    end
+
+    def revoke_tokens(before)
+      if before.instance_of?(DateTime)
+        before = before.iso8601()
+      end
+      update_app_settings({'revoke_tokens_issued_before' => before})
+    end
+
+    def revoke_user_token(user_id, before)
+      revoke_users_token([user_id], before)
+    end
+
+    def revoke_users_token(user_ids, before)
+      if before.instance_of?(DateTime)
+        before = before.iso8601()
+      end
+
+      updates = []
+      for user_id in user_ids do
+        updates.push({
+          'id' => user_id,
+          'set' => {
+            'revoke_tokens_issued_before' => before
+          }
+        })
+      end
+      update_users_partial(updates)
     end
 
     def put(relative_url, params: nil, data: nil)
