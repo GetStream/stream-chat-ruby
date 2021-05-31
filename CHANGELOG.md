@@ -1,3 +1,7 @@
+## May 31st, 2021 - 2.9.0
+
+- Add support for app and user level token revoke
+
 ## May 21st, 2021 - 2.8.0
 
 - Add query message flags support
