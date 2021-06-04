@@ -1,3 +1,7 @@
+## June 4th, 2021 - 2.10.0
+
+- Add custom command CRUD support
+
 ## May 31st, 2021 - 2.9.0
 
 - Add support for app and user level token revoke
