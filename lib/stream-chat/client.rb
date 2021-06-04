@@ -352,6 +352,26 @@ module StreamChat
       post('check_sqs', data: { sqs_key: sqs_key, sqs_secret: sqs_secret, sqs_url: sqs_url })
     end
 
+    def create_command(command)
+      post('commands', data: command)
+    end
+
+    def get_command(name)
+      get("commands/#{name}")
+    end
+
+    def update_command(name, command)
+      put("commands/#{name}", data: command)
+    end
+
+    def delete_command(name)
+      delete("commands/#{name}")
+    end
+
+    def list_commands
+      get('commands')
+    end
+
     private
 
     def get_default_params
@@ -364,8 +384,8 @@ module StreamChat
 
     def get_default_headers
       {
-        "Content-Type": 'application/json',
-        "X-Stream-Client": get_user_agent
+        'Content-Type': 'application/json',
+        'X-Stream-Client': get_user_agent
       }
     end
 

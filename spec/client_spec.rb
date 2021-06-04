@@ -394,4 +394,39 @@ describe StreamChat::Client do
     expect(resp['status']).to eq 'error'
     expect(resp['error']).to include 'invalid SQS url'
   end
+
+  describe 'custom commands' do
+    before(:all) do
+      @cmd = SecureRandom.uuid
+    end
+
+    it 'create a command' do
+      cmd = @client.create_command({ name: @cmd, description: 'I am testing' })['command']
+      expect(cmd['name']).to eq @cmd
+      expect(cmd['description']).to eq 'I am testing'
+    end
+
+    it 'get that command' do
+      cmd = @client.get_command(@cmd)
+      expect(cmd['name']).to eq @cmd
+      expect(cmd['description']).to eq 'I am testing'
+    end
+
+    it 'update that command' do
+      cmd = @client.update_command(@cmd, { description: 'I tested' })['command']
+      expect(cmd['name']).to eq @cmd
+      expect(cmd['description']).to eq 'I tested'
+    end
+
+    it 'delete that command' do
+      @client.delete_command(@cmd)
+    end
+
+    it 'list commands' do
+      cmds = @client.list_commands['commands']
+      cmds.each do |cmd|
+        expect(cmd['name']).not_to eq @cmd
+      end
+    end
+  end
 end
