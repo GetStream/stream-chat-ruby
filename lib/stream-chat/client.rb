@@ -351,8 +351,8 @@ module StreamChat
 
     def get_default_headers
       {
-        "Content-Type": 'application/json',
-        "X-Stream-Client": get_user_agent
+        'Content-Type': 'application/json',
+        'X-Stream-Client': get_user_agent
       }
     end
 
