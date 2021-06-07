@@ -99,16 +99,6 @@ module StreamChat
       get('search', params: { payload: params.to_json })
     end
 
-    def search_v2(filter_conditions, query, sort, **options)
-      params = options.merge({
-                               filter_conditions: filter_conditions,
-                               query: query
-                               sort: sort
-                             })
-
-      get('search/v2', params: { payload: params.to_json })
-    end
-
     def update_users(users)
       payload = {}
       users.each do |user|

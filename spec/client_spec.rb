@@ -260,16 +260,16 @@ describe StreamChat::Client do
     expect(resp['results'].length).to eq(1)
   end
 
-  it 'search for messages v2' do
+  it 'search for messages with sorting' do
     text = SecureRandom.uuid
     message_ids = ['0-'+text, '1-'+text]
     @channel.send_message({ id:message_ids[0], text: text }, 'legolas')
     @channel.send_message({ id:message_ids[1], text: text }, 'legolas')
-    resp = @client.search_v2({ members: { '$in' => ['legolas'] } }, text, [{ 'created_at': -1 }], { limit: 1 })
-    expect(resp['results'].length).to eq(1)
+    resp = @client.search({ members: { '$in' => ['legolas'] } }, text, { limit: 1, sort: [{ 'created_at': -1 }] })
+    expect(resp['results'].length).to eq()
     expect(resp['results'][0]['message']['id']).to eq(message_ids[1])
     expect(resp['next']).not_to be_empty
-    resp = @client.search_v2({ members: { '$in' => ['legolas'] } }, text, [], { limit: 1, next: resp['next'] })
+    resp = @client.search({ members: { '$in' => ['legolas'] } }, text, { limit: 1, next: resp['next'] })
     expect(resp['results'].length).to eq(1)
     expect(resp['results'][0]['message']['id']).to eq(message_ids[0])
     expect(resp['previous']).not_to be_empty
