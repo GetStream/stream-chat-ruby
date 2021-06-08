@@ -91,11 +91,20 @@ module StreamChat
     end
 
     def search(filter_conditions, query, **options)
+      message_filter_conditions = options[:message_filter_conditions] || options['message_filter_conditions']
+      raise ArgumentError, 'cannot specify both message_filter_conditions and query' if message_filter_conditions && query
+      raise ArgumentError, 'must specify one of message_filter_conditions and query' if !message_filter_conditions && !query
+
+      sort = options[:sort] || options['sort']
+      offset = options[:offset] || options['offset']
+      next_value = options[:next] || options['next']
+      raise ArgumentError, 'cannot use offset with next or sort parameters' if offset&.positive? && (next_value || (!sort.nil? && !sort.empty?))
+
       params = options.merge({
                                filter_conditions: filter_conditions,
-                               query: query
+                               sort: get_sort_fields(sort)
                              })
-
+      params = params.merge({ query: query }) if query
       get('search', params: { payload: params.to_json })
     end
 
