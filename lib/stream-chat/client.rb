@@ -91,17 +91,20 @@ module StreamChat
     end
 
     def search(filter_conditions, query, sort = nil, **options)
-      offset = options[:offset] || options['offset']
-      next_value = options[:next] || options['next']
+      offset = options[:offset]
+      next_value = options[:next]
       raise ArgumentError, 'cannot use offset with next or sort parameters' if offset&.positive? && (next_value || (!sort.nil? && !sort.empty?))
 
-      params = options.merge({
-                               filter_conditions: filter_conditions,
-                               sort: get_sort_fields(sort)
-                             })
-      params = params.merge({ query: query }) if query.is_a? String
-      params = params.merge({ message_filter_conditions: query }) unless query.is_a? String
-      get('search', params: { payload: params.to_json })
+      to_merge = {
+        filter_conditions: filter_conditions,
+        sort: get_sort_fields(sort)
+      }
+      if query.is_a? String
+        to_merge[:query] = query
+      else
+        to_merge[:message_filter_conditions] = query
+      end
+      get('search', params: { payload: options.merge(to_merge).to_json })
     end
 
     def update_users(users)
@@ -343,8 +346,8 @@ module StreamChat
 
     def get_default_headers
       {
-        "Content-Type": 'application/json',
-        "X-Stream-Client": get_user_agent
+        'Content-Type': 'application/json',
+        'X-Stream-Client': get_user_agent
       }
     end
 
