@@ -268,12 +268,12 @@ describe StreamChat::Client do
     end
     it 'offset with sort should fail' do
       expect do
-        @client.search({ members: { '$in' => ['legolas'] } }, SecureRandom.uuid, [{ created_at: -1 }], { offset: 2 })
+        @client.search({ members: { '$in' => ['legolas'] } }, SecureRandom.uuid, sort: [{ created_at: -1 }], offset: 2)
       end.to raise_error(/cannot use offset with next or sort parameters/)
     end
     it 'offset with next should fail' do
       expect do
-        @client.search({ members: { '$in' => ['legolas'] } }, SecureRandom.uuid, { offset: 2, next: SecureRandom.uuid })
+        @client.search({ members: { '$in' => ['legolas'] } }, SecureRandom.uuid,  offset: 2, next: SecureRandom.uuid)
       end.to raise_error(/cannot use offset with next or sort parameters/)
     end
     xit 'search for messages with sorting' do
@@ -281,11 +281,11 @@ describe StreamChat::Client do
       message_ids = ["0-#{text}", "1-#{text}"]
       @channel.send_message({ id: message_ids[0], text: text }, 'legolas')
       @channel.send_message({ id: message_ids[1], text: text }, 'legolas')
-      page1 = @client.search({ members: { '$in' => ['legolas'] } }, text, [{ created_at: -1 }], { limit: 1 })
+      page1 = @client.search({ members: { '$in' => ['legolas'] } }, text, sort: [{ created_at: -1 }], limit: 1)
       expect(page1['results'].length).to eq
       expect(page1['results'][0]['message']['id']).to eq(message_ids[1])
       expect(page1['next']).not_to be_empty
-      page2 = @client.search({ members: { '$in' => ['legolas'] } }, text, { limit: 1, next: page1['next'] })
+      page2 = @client.search({ members: { '$in' => ['legolas'] } }, text, limit: 1, next: page1['next'])
       expect(page2['results'].length).to eq(1)
       expect(page2['results'][0]['message']['id']).to eq(message_ids[0])
       expect(page2['previous']).not_to be_empty

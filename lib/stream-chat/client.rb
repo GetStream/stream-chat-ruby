@@ -90,7 +90,7 @@ module StreamChat
       get("messages/#{id}")
     end
 
-    def search(filter_conditions, query, sort = nil, **options)
+    def search(filter_conditions, query, sort: nil, **options)
       offset = options[:offset]
       next_value = options[:next]
       raise ArgumentError, 'cannot use offset with next or sort parameters' if offset&.positive? && (next_value || (!sort.nil? && !sort.empty?))
