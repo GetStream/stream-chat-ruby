@@ -1,3 +1,7 @@
+## June 25th, 2021 - 2.11.0
+
+- Add support for improved search
+
 ## June 4th, 2021 - 2.10.0
 
 - Add custom command CRUD support
