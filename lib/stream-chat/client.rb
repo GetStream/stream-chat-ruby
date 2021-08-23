@@ -14,7 +14,7 @@ module StreamChat
   DEFAULT_BLOCKLIST = 'profanity_en_2020_v1'
 
   class Client
-    BASE_URL = 'https://chat-us-east-1.stream-io-api.com'
+    BASE_URL = 'https://chat.stream-io-api.com'
 
     attr_reader :api_key
     attr_reader :api_secret
