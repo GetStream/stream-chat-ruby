@@ -1,3 +1,11 @@
+## October 5th, 2021 - 2.11.2
+
+- Add Codeowners file
+- Fix StreamChannelException raises
+- Fix rubocop linting error
+- Fix channel export test
+- Update Github action
+
 ## August 23rd, 2021 - 2.11.1
 
 - Use edge as base url
