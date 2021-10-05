@@ -413,7 +413,7 @@ module StreamChat
       headers['Authorization'] = @auth_token
       headers['stream-auth-type'] = 'jwt'
       url = [@base_url, relative_url].join('/')
-      params = params.nil? ? {} : params
+      params = {} if params.nil?
       params = (get_default_params.merge(params).sort_by { |k, _v| k.to_s }).to_h
       url = "#{url}?#{URI.encode_www_form(params)}"
 
