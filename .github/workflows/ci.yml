@@ -1,9 +1,9 @@
-name: build
+name: test
 
 on: [pull_request]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 1
@@ -12,15 +12,14 @@ jobs:
     name: Ruby ${{ matrix.ruby }}
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-ruby@v1
+      - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
 
       - env:
           STREAM_CHAT_API_KEY: ${{ secrets.STREAM_CHAT_API_KEY }}
           STREAM_CHAT_API_SECRET: ${{ secrets.STREAM_CHAT_API_SECRET }}
         run: |
-          gem install bundler
-          bundle install --jobs 4 --retry 3
           bundle exec rake rubocop
           bundle exec rake test
