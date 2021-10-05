@@ -364,7 +364,6 @@ describe StreamChat::Client do
 
     it 'should not block messages anymore' do
       resp = @channel.send_message({ text: 'put some sugar and fudge on that!' }, @random_user[:id])
-      puts resp
       expect(resp['message']['text']).to eq 'put some sugar and fudge on that!'
     end
 
@@ -414,7 +413,7 @@ describe StreamChat::Client do
       if resp['status'] == 'completed'
         expect(resp['result']).not_to be_empty
         expect(resp['result']['url']).not_to be_empty
-        expect(resp['error']).not_to be_empty
+        expect(resp).not_to include 'error'
         break
       end
       sleep(0.5)
