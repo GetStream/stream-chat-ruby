@@ -12,6 +12,8 @@ require 'stream-chat/util'
 
 module StreamChat
   DEFAULT_BLOCKLIST = 'profanity_en_2020_v1'
+  SOFT_DELETE = 'soft'
+  HARD_DELETE = 'hard'
 
   class Client
     BASE_URL = 'https://chat.stream-io-api.com'
@@ -291,6 +293,18 @@ module StreamChat
 
     def get_export_channel_status(task_id)
       get("export_channels/#{task_id}")
+    end
+
+    def get_task(task_id)
+      get("tasks/#{task_id}")
+    end
+
+    def delete_users(user_ids, user: SOFT_DELETE, messages: nil, conversations: nil)
+      post('users/delete', data: { user_ids: user_ids, user: user, messages: messages, conversations: conversations })
+    end
+
+    def delete_channels(cids, hard_delete: false)
+      post('channels/delete', data: { cids: cids, hard_delete: hard_delete })
     end
 
     def revoke_tokens(before)
