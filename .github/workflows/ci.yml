@@ -6,7 +6,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 1
       matrix:
         ruby: ['2.5', '2.6', '2.7', '3.0']
     name: Ruby ${{ matrix.ruby }}
