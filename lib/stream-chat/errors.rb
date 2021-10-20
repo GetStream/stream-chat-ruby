@@ -30,7 +30,7 @@ module StreamChat
     end
 
     def to_s
-      "#<#{self.class.to_s} #{message}>"
+      message
     end
   end
 
