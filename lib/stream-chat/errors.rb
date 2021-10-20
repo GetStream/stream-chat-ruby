@@ -28,10 +28,10 @@ module StreamChat
         "StreamChat error HTTP code: #{@response.status}"
       end
     end
-  end
 
-  def to_s
-	"<#{self.class.to_s} #{message}>"
+    def to_s
+      "#<#{self.class.to_s} #{message}>"
+    end
   end
 
   class StreamChannelException < StandardError; end
