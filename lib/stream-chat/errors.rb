@@ -4,6 +4,9 @@
 
 module StreamChat
   class StreamAPIException < StandardError
+    attr_reader :error_code
+    attr_reader :error_message
+
     def initialize(response)
       super()
       @response = response
@@ -23,6 +26,14 @@ module StreamChat
       else
         "StreamChat error HTTP code: #{@response.status}"
       end
+    end
+
+    def json_response?
+      @json_response
+    end
+
+    def to_s
+      message
     end
   end
 
