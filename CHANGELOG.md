@@ -1,3 +1,8 @@
+## October 22nd, 2021 - 2.11.3
+
+- Don't log the entire response when creating exception
+- Access error details through StreamAPIException class attr_readers
+
 ## October 5th, 2021 - 2.11.2
 
 - Add Codeowners file
