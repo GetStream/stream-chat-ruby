@@ -1,3 +1,10 @@
+## November 1st, 2021 - 2.12.0
+
+- Add support for async endpoints
+  - get_task
+  - delete_channels
+  _ delete_users
+
 ## October 22nd, 2021 - 2.11.3
 
 - Don't log the entire response when creating exception
