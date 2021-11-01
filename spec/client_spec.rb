@@ -462,7 +462,7 @@ describe StreamChat::Client do
   it 'request delete users' do
     user_id1 = SecureRandom.uuid
     user_id2 = SecureRandom.uuid
-    @client.update_users({user_id: user_id1}, {user_id: user_id2})
+    @client.update_users({ user_id: user_id1 }, { user_id: user_id2 })
 
     ch1 = @client.channel('messaging', channel_id: SecureRandom.uuid)
     ch1.create(user_id1)
