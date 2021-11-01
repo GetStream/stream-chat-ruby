@@ -390,6 +390,14 @@ describe StreamChat::Client do
     )
   end
 
+  it 'check status for a task that does not exist' do
+    expect do
+      @client.get_task(SecureRandom.uuid)
+    end.to raise_error(
+      /Can't find task with id/
+    )
+  end
+
   it 'request the export for a channel that does not exist' do
     expect do
       @client.export_channels({ type: 'messaging', id: SecureRandom.uuid })
@@ -414,6 +422,74 @@ describe StreamChat::Client do
         expect(resp['result']).not_to be_empty
         expect(resp['result']['url']).not_to be_empty
         expect(resp).not_to include 'error'
+        break
+      end
+      sleep(0.5)
+    end
+  end
+
+  it 'request delete channels' do
+    ch1 = @client.channel('messaging', channel_id: SecureRandom.uuid)
+    ch1.create(@random_user[:id])
+    ch1.send_message({ text: 'Hey Joni' }, @random_user[:id])
+    cid1 = "#{ch1.channel_type}:#{ch1.id}"
+
+    ch2 = @client.channel('messaging', channel_id: SecureRandom.uuid)
+    ch2.create(@random_user[:id])
+    ch2.send_message({ text: 'Hey Joni' }, @random_user[:id])
+    cid2 = "#{ch2.channel_type}:#{ch2.id}"
+
+    resp = @client.delete_channels([cid1, cid2], hard_delete: true)
+    expect(resp['task_id']).not_to be_empty
+
+    task_id = resp['task_id']
+    loop do
+      resp = @client.get_task(task_id)
+      expect(resp['status']).not_to be_empty
+      expect(resp['created_at']).not_to be_empty
+      expect(resp['updated_at']).not_to be_empty
+      if resp['status'] == 'completed'
+        result = resp['result']
+        expect(result).not_to be_empty
+        expect(result[cid1]).not_to be_empty
+        expect(result[cid1]['status']).to eq 'ok'
+        expect(result[cid2]).not_to be_empty
+        expect(result[cid2]['status']).to eq 'ok'
+        break
+      end
+      sleep(0.5)
+    end
+  end
+
+  it 'request delete users' do
+    user_id1 = SecureRandom.uuid
+    user_id2 = SecureRandom.uuid
+    @client.update_users([{ id: user_id1 }, { id: user_id2 }])
+
+    ch1 = @client.channel('messaging', channel_id: SecureRandom.uuid)
+    ch1.create(user_id1)
+    ch1.send_message({ text: 'Hey Joni' }, user_id1)
+
+    ch2 = @client.channel('messaging', channel_id: SecureRandom.uuid)
+    ch2.create(user_id2)
+    ch2.send_message({ text: 'Hey Joni' }, user_id1)
+
+    resp = @client.delete_users([user_id1, user_id2], user: StreamChat::HARD_DELETE)
+    expect(resp['task_id']).not_to be_empty
+
+    task_id = resp['task_id']
+    loop do
+      resp = @client.get_task(task_id)
+      expect(resp['status']).not_to be_empty
+      expect(resp['created_at']).not_to be_empty
+      expect(resp['updated_at']).not_to be_empty
+      if resp['status'] == 'completed'
+        result = resp['result']
+        expect(result).not_to be_empty
+        expect(result[user_id1]).not_to be_empty
+        expect(result[user_id1]['status']).to eq 'ok'
+        expect(result[user_id2]).not_to be_empty
+        expect(result[user_id2]['status']).to eq 'ok'
         break
       end
       sleep(0.5)
