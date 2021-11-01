@@ -3,7 +3,7 @@
 - Add support for async endpoints
   - get_task
   - delete_channels
-  _ delete_users
+  - delete_users
 
 ## October 22nd, 2021 - 2.11.3
 
