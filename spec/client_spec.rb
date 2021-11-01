@@ -437,7 +437,7 @@ describe StreamChat::Client do
     ch2.create(@random_user[:id])
     ch2.send_message({ text: 'Hey Joni' }, @random_user[:id])
 
-    resp = @client.delete_channels([ch1.channel_id, ch2.channel_id], hard_delete: true)
+    resp = @client.delete_channels(["#{ch1.id}:#{ch1.channel_type}", "#{ch2.id}:#{ch2.channel_type}"], hard_delete: true)
     expect(resp['task_id']).not_to be_empty
 
     task_id = resp['task_id']
@@ -462,7 +462,7 @@ describe StreamChat::Client do
   it 'request delete users' do
     user_id1 = SecureRandom.uuid
     user_id2 = SecureRandom.uuid
-    @client.update_users({ user_id: user_id1 }, { user_id: user_id2 })
+    @client.update_users([{ user_id: user_id1 }, { user_id: user_id2 }])
 
     ch1 = @client.channel('messaging', channel_id: SecureRandom.uuid)
     ch1.create(user_id1)
