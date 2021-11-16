@@ -120,6 +120,30 @@ describe StreamChat::Client do
     expect(response['user']['name']).to eq('Gandalf the Grey')
   end
 
+  it 'shadow bans a user' do
+    @client.shadow_ban(@random_user[:id], user_id: @random_users[0][:id])
+
+    msg_id = SecureRandom.uuid
+    response = @channel.send_message({
+                            'id' => msg_id,
+                            'text' => 'Hello world'
+                          }, @random_user[:id])
+    expect(response['message']['shadowed']).to eq(false)
+    response = @client.get_message(msg_id)
+    expect(response['message']['shadowed']).to eq(true)
+
+    @client.remove_shadow_ban(@random_user[:id], user_id: @random_users[0][:id])
+
+    msg_id = SecureRandom.uuid
+    response = @channel.send_message({
+                                       'id' => msg_id,
+                                       'text' => 'Hello world'
+                                     }, @random_user[:id])
+    expect(response['message']['shadowed']).to eq(false)
+    response = @client.get_message(msg_id)
+    expect(response['message']['shadowed']).to eq(false)
+  end
+
   it 'bans a user' do
     @client.ban_user(@random_user[:id], user_id: @random_users[0][:id])
   end
@@ -170,7 +194,7 @@ describe StreamChat::Client do
 
     expect(@client.get_message(msg_id)[:message]).to eq(message)
   end
-  
+
   it 'pins and unpins a message' do
     msg_id = SecureRandom.uuid
     response = @channel.send_message({

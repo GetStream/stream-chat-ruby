@@ -160,6 +160,16 @@ module StreamChat
       delete('moderation/ban', params: params)
     end
 
+    def shadow_ban(target_id, **options)
+      payload = { target_user_id: target_id, shadow: true }.merge(options)
+      post('moderation/ban', data: payload)
+    end
+
+    def remove_shadow_ban(target_id, **options)
+      params = { target_user_id: target_id, shadow: true }.merge(options)
+      delete('moderation/ban', params: params)
+    end
+
     def mute_user(target_id, user_id)
       payload = { target_id: target_id, user_id: user_id }
       post('moderation/mute', data: payload)
