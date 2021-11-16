@@ -181,6 +181,12 @@ module StreamChat
       post("messages/#{message['id']}", data: { message: message })
     end
 
+    def update_message_partial(message_id, updates, user_id: nil, **options)
+      params = updates.merge(options)
+      params["user"] = {"id"=> user_id} if user_id
+      put("messages/#{message_id}", data: params)
+    end
+
     def delete_message(message_id)
       delete("messages/#{message_id}")
     end
