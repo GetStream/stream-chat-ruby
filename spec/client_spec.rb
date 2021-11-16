@@ -125,8 +125,8 @@ describe StreamChat::Client do
 
     msg_id = SecureRandom.uuid
     response = @channel.send_message({
-                                       'id': msg_id,
-                                       'text': 'Hello world'
+                                       id: msg_id,
+                                       text: 'Hello world'
                                      }, @random_user[:id])
     expect(response['message']['shadowed']).to eq(false)
     response = @client.get_message(msg_id)
@@ -136,8 +136,8 @@ describe StreamChat::Client do
 
     msg_id = SecureRandom.uuid
     response = @channel.send_message({
-                                       'id' => msg_id,
-                                       'text' => 'Hello world'
+                                       id: msg_id,
+                                       text: 'Hello world'
                                      }, @random_user[:id])
     expect(response['message']['shadowed']).to eq(false)
     response = @client.get_message(msg_id)
