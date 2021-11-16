@@ -189,7 +189,7 @@ module StreamChat
       updates = {
         "set": {
           "pinned": true,
-          "pin_expires": expiration,
+          "pin_expires": expiration
         }
       }
       update_message_partial(message_id, updates, user_id: user_id)
@@ -198,7 +198,7 @@ module StreamChat
     def unpin_message(message_id, user_id)
       updates = {
         "set": {
-          "pinned": false,
+          "pinned": false
         }
       }
       update_message_partial(message_id, updates, user_id: user_id)
@@ -212,7 +212,7 @@ module StreamChat
 
     def update_message_partial(message_id, updates, user_id: nil, **options)
       params = updates.merge(options)
-      params["user"] = {"id": user_id} if user_id
+      params['user'] = { "id": user_id } if user_id
       put("messages/#{message_id}", data: params)
     end
 

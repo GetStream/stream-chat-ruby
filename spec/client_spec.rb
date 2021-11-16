@@ -125,9 +125,9 @@ describe StreamChat::Client do
 
     msg_id = SecureRandom.uuid
     response = @channel.send_message({
-                            'id' => msg_id,
-                            'text' => 'Hello world'
-                          }, @random_user[:id])
+                                       'id': msg_id,
+                                       'text': 'Hello world'
+                                     }, @random_user[:id])
     expect(response['message']['shadowed']).to eq(false)
     response = @client.get_message(msg_id)
     expect(response['message']['shadowed']).to eq(true)
@@ -225,16 +225,20 @@ describe StreamChat::Client do
 
   it 'updates a message partially' do
     msg_id = SecureRandom.uuid
-    response = @channel.send_message({
-                                       'id' => msg_id,
-                                       'text' => 'Hello world'
-                                     }, @random_user[:id])
+    response = @channel.send_message(
+      {
+        'id': msg_id,
+        'text': 'Hello world'
+      }, @random_user[:id]
+    )
     expect(response['message']['text']).to eq('Hello world')
-    response = @client.update_message_partial(msg_id, {
-      'set' => {
-        'awesome': true,
-        'text': 'helloworld'
-      } }, user_id: @random_user[:id])
+    response = @client.update_message_partial(msg_id,
+                                              {
+                                                'set': {
+                                                  'awesome': true,
+                                                  'text': 'helloworld'
+                                                }
+                                              }, user_id: @random_user[:id])
     expect(response['message']['text']).to eq('helloworld')
     expect(response['message']['awesome']).to eq(true)
   end
