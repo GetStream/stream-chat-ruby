@@ -227,16 +227,16 @@ describe StreamChat::Client do
     msg_id = SecureRandom.uuid
     response = @channel.send_message(
       {
-        'id': msg_id,
-        'text': 'Hello world'
+        id: msg_id,
+        text: 'Hello world'
       }, @random_user[:id]
     )
     expect(response['message']['text']).to eq('Hello world')
     response = @client.update_message_partial(msg_id,
                                               {
-                                                'set': {
-                                                  'awesome': true,
-                                                  'text': 'helloworld'
+                                                set: {
+                                                  awesome: true,
+                                                  text: 'helloworld'
                                                 }
                                               }, user_id: @random_user[:id])
     expect(response['message']['text']).to eq('helloworld')
