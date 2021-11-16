@@ -170,6 +170,19 @@ describe StreamChat::Client do
 
     expect(@client.get_message(msg_id)[:message]).to eq(message)
   end
+  
+  it 'pins and unpins a message' do
+    msg_id = SecureRandom.uuid
+    response = @channel.send_message({
+                                       'id' => msg_id,
+                                       'text' => 'Hello world'
+                                     }, @random_user[:id])
+    response = @client.pin_message(response['message']['id'], @random_user[:id])
+    expect(response['message']['pinned_by']['id']).to eq(@random_user[:id])
+
+    response = @client.unpin_message(response['message']['id'], @random_user[:id])
+    expect(response['message']['pinned_by']).to eq(nil)
+  end
 
   it 'updates a message' do
     msg_id = SecureRandom.uuid

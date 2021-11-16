@@ -175,6 +175,25 @@ module StreamChat
       post('channels/read', data: payload)
     end
 
+    def pin_message(message_id, user_id, expiration: nil)
+      updates = {
+        "set": {
+          "pinned": true,
+          "pin_expires": expiration,
+        }
+      }
+      update_message_partial(message_id, updates, user_id: user_id)
+    end
+
+    def unpin_message(message_id, user_id)
+      updates = {
+        "set": {
+          "pinned": false,
+        }
+      }
+      update_message_partial(message_id, updates, user_id: user_id)
+    end
+
     def update_message(message)
       raise ArgumentError 'message must have an id' unless message.key? 'id'
 
@@ -183,7 +202,7 @@ module StreamChat
 
     def update_message_partial(message_id, updates, user_id: nil, **options)
       params = updates.merge(options)
-      params["user"] = {"id"=> user_id} if user_id
+      params["user"] = {"id": user_id} if user_id
       put("messages/#{message_id}", data: params)
     end
 
