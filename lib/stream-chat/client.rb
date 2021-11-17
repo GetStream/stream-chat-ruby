@@ -450,7 +450,7 @@ module StreamChat
     end
 
     def create_role(name)
-      post('roles', data: {name: name})
+      post('roles', data: { name: name })
     end
 
     def delete_role(name)

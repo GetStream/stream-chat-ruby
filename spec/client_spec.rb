@@ -601,16 +601,16 @@ describe StreamChat::Client do
     end
 
     it 'create a permission' do
-      @client.create_permission({ 
-        id: @permission_id, 
-        name: @permission_id,
-        action: 'CreateChannel',
-        owner: false,
-        same_team: false,
-        condition: {
-          '$subject.magic_custom_field': 'custom'
-        }
-        })
+      @client.create_permission({
+                                  id: @permission_id,
+                                  name: @permission_id,
+                                  action: 'CreateChannel',
+                                  owner: false,
+                                  same_team: false,
+                                  condition: {
+                                    '$subject.magic_custom_field': 'custom'
+                                  }
+                                })
     end
 
     it 'get that permission' do
@@ -620,15 +620,15 @@ describe StreamChat::Client do
     end
 
     it 'update that permission' do
-      @client.update_permission(@permission_id, { 
-        id: @permission_id, 
-        name: @permission_id, 
-        description: 'desc', 
-        action: 'CreateChannel',
-        condition: {
-          '$subject.magic_custom_field': 'custom'
-        }
-        })
+      @client.update_permission(@permission_id, {
+                                  id: @permission_id,
+                                  name: @permission_id,
+                                  description: 'desc',
+                                  action: 'CreateChannel',
+                                  condition: {
+                                    '$subject.magic_custom_field': 'custom'
+                                  }
+                                })
       permission = @client.get_permission(@permission_id)
       expect(permission['permission']['name']).to eq @permission_id
       expect(permission['permission']['description']).to eq 'desc'
