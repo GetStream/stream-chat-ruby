@@ -630,8 +630,8 @@ describe StreamChat::Client do
         }
         })
       permission = @client.get_permission(@permission_id)
-      expect(permission['name']).to eq @permission_id
-      expect(permission['description']).to eq 'desc'
+      expect(permission['permission']['name']).to eq @permission_id
+      expect(permission['permission']['description']).to eq 'desc'
     end
 
     it 'list permissions' do

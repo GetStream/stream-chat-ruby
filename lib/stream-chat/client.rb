@@ -446,7 +446,7 @@ module StreamChat
     end
 
     def delete_permission(id)
-      delete("permission/#{id}")
+      delete("permissions/#{id}")
     end
 
     def create_role(name)
