@@ -593,4 +593,61 @@ describe StreamChat::Client do
       end
     end
   end
+
+  describe 'permissions' do
+    before(:all) do
+      @permission_id = SecureRandom.uuid
+    end
+
+    it 'create a permission' do
+      @client.create_permission({ 
+        id: @permission_id, 
+        name: @permission_id,
+        action: 'CreateChannel',
+        owner: false,
+        same_team: false,
+        condition: {
+          '$subject.magic_custom_field': 'custom'
+        }
+        })
+    end
+
+    it 'get that permission' do
+      permission = @client.get_permission(@permission_id)
+      expect(permission['id']).to eq @cmd
+      expect(permission['name']).to eq @cmd
+    end
+
+    it 'update that permission' do
+      @client.update_permission(@permission_id, { 
+        id: @permission_id, 
+        name: @permission_id, 
+        description: 'desc', 
+        action: 'CreateChannel',
+        condition: {
+          '$subject.magic_custom_field': 'custom'
+        }
+        })
+      permission = @client.get_permission(@permission_id)
+      expect(permission['name']).to eq @permission_id
+      expect(permission['description']).to eq 'desc'
+    end
+
+    it 'list permissions' do
+      permissions = @client.list_permissions['permissions']
+      found = false
+      permissions.each do |permission|
+        if permission['id'] == @permission_id
+          found = true
+          break
+        end
+      end
+
+      expect(found).to be true
+    end
+
+    it 'delete that permission' do
+      @client.delete_permission(@permission_id)
+    end
+  end
 end
