@@ -1,3 +1,15 @@
+## November 17th, 2021 - 2.13.0
+
+- Add support for shadow banning user
+  - shadow_ban
+  - remove_shadow_ban
+- Add support for pinning messages
+  - pin_message
+  - unpin_message
+- Add support for partial updating messages
+  - update_message_partial
+- Add support for updating channel ownership for Deleted Users
+
 ## November 1st, 2021 - 2.12.0
 
 - Add support for async endpoints
