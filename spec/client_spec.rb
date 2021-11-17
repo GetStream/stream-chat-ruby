@@ -458,7 +458,7 @@ describe StreamChat::Client do
   it 'request the export for a channel that does not exist' do
     expect do
       @client.export_channels({ type: 'messaging', id: SecureRandom.uuid })
-    end.to raise_error
+    end.to raise_error StreamAPIException
   end
 
   it 'request the channel export' do
