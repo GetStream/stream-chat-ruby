@@ -115,7 +115,7 @@ module StreamChat
       @client.post(url, data: { remove_members: user_ids })
     end
 
-    def assign_roles(members, message=nil)
+    def assign_roles(members, message = nil)
       @client.post(url, data: { assign_roles: members, message: message })
     end
 
