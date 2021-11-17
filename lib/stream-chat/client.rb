@@ -160,6 +160,16 @@ module StreamChat
       delete('moderation/ban', params: params)
     end
 
+    def shadow_ban(target_id, **options)
+      payload = { target_user_id: target_id, shadow: true }.merge(options)
+      post('moderation/ban', data: payload)
+    end
+
+    def remove_shadow_ban(target_id, **options)
+      params = { target_user_id: target_id, shadow: true }.merge(options)
+      delete('moderation/ban', params: params)
+    end
+
     def mute_user(target_id, user_id)
       payload = { target_id: target_id, user_id: user_id }
       post('moderation/mute', data: payload)
@@ -175,10 +185,35 @@ module StreamChat
       post('channels/read', data: payload)
     end
 
+    def pin_message(message_id, user_id, expiration: nil)
+      updates = {
+        set: {
+          pinned: true,
+          pin_expires: expiration
+        }
+      }
+      update_message_partial(message_id, updates, user_id: user_id)
+    end
+
+    def unpin_message(message_id, user_id)
+      updates = {
+        set: {
+          pinned: false
+        }
+      }
+      update_message_partial(message_id, updates, user_id: user_id)
+    end
+
     def update_message(message)
       raise ArgumentError 'message must have an id' unless message.key? 'id'
 
       post("messages/#{message['id']}", data: { message: message })
+    end
+
+    def update_message_partial(message_id, updates, user_id: nil, **options)
+      params = updates.merge(options)
+      params['user'] = { id: user_id } if user_id
+      put("messages/#{message_id}", data: params)
     end
 
     def delete_message(message_id)
