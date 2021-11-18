@@ -20,6 +20,7 @@ jobs:
       - env:
           STREAM_CHAT_API_KEY: ${{ secrets.STREAM_CHAT_API_KEY }}
           STREAM_CHAT_API_SECRET: ${{ secrets.STREAM_CHAT_API_SECRET }}
+          STREAM_CHAT_API_HOST: ${{ secrets.STREAM_CHAT_API_HOST }}
         run: |
           bundle exec rake rubocop
           bundle exec rake test
