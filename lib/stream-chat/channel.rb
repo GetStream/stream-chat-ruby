@@ -95,8 +95,8 @@ module StreamChat
       @client.delete(url)
     end
 
-    def truncate
-      @client.post("#{url}/truncate")
+    def truncate(**options)
+      @client.post("#{url}/truncate", data: options)
     end
 
     def add_members(user_ids)

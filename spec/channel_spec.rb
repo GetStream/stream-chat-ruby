@@ -82,6 +82,13 @@ describe StreamChat::Channel do
     expect(response).to include 'channel'
   end
 
+  it 'can truncate with message' do
+    message = SecureRandom.uuid.to_s
+    response = @channel.truncate(user_id: @random_user[:id], message: { text: message })
+    expect(response).to include 'message'
+    expect(response['message']['text']).to eq(message)
+  end
+
   it 'can add members' do
     response = @channel.remove_members([@random_user[:id]])
     expect(response['members'].length).to eq 0
