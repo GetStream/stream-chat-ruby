@@ -84,7 +84,7 @@ describe StreamChat::Channel do
 
   it 'can truncate with message' do
     text = SecureRandom.uuid.to_s
-    response = @channel.truncate(user_id: @random_user[:id], message: { text: text })
+    response = @channel.truncate(message: { text: text, user_id: @random_user[:id] })
     expect(response).to include 'message'
     expect(response['message']['text']).to eq(text)
   end
