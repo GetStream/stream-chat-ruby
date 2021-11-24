@@ -466,7 +466,8 @@ describe StreamChat::Client do
     ch.create(@random_user[:id])
     ch.send_message({ text: 'Hey Joni' }, @random_user[:id])
 
-    resp = @client.export_channels({ type: ch.channel_type, id: ch.id })
+    options = { clear_deleted_message_text: true, include_truncated_messages: true }
+    resp = @client.export_channels({ type: ch.channel_type, id: ch.id }, **options)
     expect(resp['task_id']).not_to be_empty
 
     task_id = resp['task_id']

@@ -322,8 +322,8 @@ module StreamChat
       delete("blocklists/#{name}")
     end
 
-    def export_channels(*channels)
-      post('export_channels', data: { channels: channels })
+    def export_channels(*channels, **options)
+      post('export_channels', data: { channels: channels, **options })
     end
 
     def get_export_channel_status(task_id)
