@@ -1,3 +1,9 @@
+## November 24th, 2021 - 2.14.0
+
+- Add new flags for export channels
+  - clear_deleted_message_text (default: false)
+  - include_truncated_messages (default: false)
+
 ## November 17th, 2021 - 2.13.0
 
 - Add support for shadow banning user
