@@ -1,3 +1,11 @@
+## November 25th, 2021 - 2.15.0
+
+- Add configuration support for channel truncate
+  - truncated_at: to truncate channel up to given time
+  - message: a system message to be added via truncation
+  - skip_push: don't send a push notification for system message
+  - hard_delete: true if truncation should delete messages instead of hiding
+
 ## November 24th, 2021 - 2.14.0
 
 - Add new flags for export channels
