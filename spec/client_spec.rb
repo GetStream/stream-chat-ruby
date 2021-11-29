@@ -5,15 +5,13 @@ require 'securerandom'
 require 'stream-chat'
 
 describe StreamChat::Client do
-  def loopTimes(times)
+  def loop_times(times)
     loop do
       begin
         yield()
         return
       rescue StandardError, RSpec::Expectations::ExpectationNotMetError
-        if times == 0 # if we are out of tries - raise to parent.
-          raise
-        end
+        raise if times == 0
       end
 
       sleep(1)
@@ -630,7 +628,7 @@ describe StreamChat::Client do
     end
 
     it 'get permission' do
-      loopTimes 10 do
+      loop_times 10 do
         permission = @client.get_permission(@permission_id)
         expect(permission['id']).to eq @cmd
         expect(permission['name']).to eq @cmd
@@ -638,7 +636,7 @@ describe StreamChat::Client do
     end
 
     it 'update that permission' do
-      loopTimes 10 do 
+      loop_times 10 do
         @client.update_permission(@permission_id, {
                                     id: @permission_id,
                                     name: @permission_id,
@@ -655,7 +653,7 @@ describe StreamChat::Client do
     end
 
     it 'list permissions' do
-      loopTimes 10 do
+      loop_times 10 do
         permissions = @client.list_permissions['permissions']
         found = false
         permissions.each do |permission|
@@ -670,7 +668,7 @@ describe StreamChat::Client do
     end
 
     it 'delete that permission' do
-      loopTimes 10 do
+      loop_times 10 do
         @client.delete_permission(@permission_id)
       end
     end
