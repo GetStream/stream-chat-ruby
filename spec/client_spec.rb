@@ -672,5 +672,29 @@ describe StreamChat::Client do
         @client.delete_permission(@permission_id)
       end
     end
+
+    it 'create role' do
+      @client.create_role(@permission_id)
+    end
+
+    it 'list new role' do
+      loop_times 10 do
+        roles = @client.list_roles['roles']
+        found = false
+        roles.each do |role|
+          if role['name'] == @permission_id
+            found = true
+            break
+          end
+        end
+        expect(found).to be true
+      end
+    end
+
+    it 'delete role' do
+      loop_times 10 do
+        @client.delete_role @permission_id
+      end
+    end
   end
 end
