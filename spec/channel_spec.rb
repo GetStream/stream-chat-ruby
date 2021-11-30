@@ -98,7 +98,7 @@ describe StreamChat::Channel do
 
   it 'can truncate with message' do
     text = SecureRandom.uuid.to_s
-    @channel.truncate(message: { text: text, user_id: @random_user[:id] } )
+    @channel.truncate(message: { text: text, user_id: @random_user[:id] })
 
     loop_times 60 do
       channel_state = @channel.query
