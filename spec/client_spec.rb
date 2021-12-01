@@ -5,6 +5,20 @@ require 'securerandom'
 require 'stream-chat'
 
 describe StreamChat::Client do
+  def loop_times(times)
+    loop do
+      begin
+        yield()
+        return
+      rescue StandardError, RSpec::Expectations::ExpectationNotMetError
+        raise if times == 0
+      end
+
+      sleep(1)
+      times -= 1
+    end
+  end
+
   before(:all) do
     @client = StreamChat::Client.new(ENV['STREAM_CHAT_API_KEY'], ENV['STREAM_CHAT_API_SECRET'], base_url: ENV['STREAM_CHAT_API_HOST'])
 
@@ -458,7 +472,7 @@ describe StreamChat::Client do
   it 'request the export for a channel that does not exist' do
     expect do
       @client.export_channels({ type: 'messaging', id: SecureRandom.uuid })
-    end.to raise_error
+    end.to raise_error StreamChat::StreamAPIException
   end
 
   it 'request the channel export' do
@@ -591,6 +605,95 @@ describe StreamChat::Client do
       cmds = @client.list_commands['commands']
       cmds.each do |cmd|
         expect(cmd['name']).not_to eq @cmd
+      end
+    end
+  end
+
+  describe 'permissions' do
+    before(:all) do
+      @permission_id = SecureRandom.uuid
+    end
+
+    it 'create a permission' do
+      @client.create_permission({
+                                  id: @permission_id,
+                                  name: @permission_id,
+                                  action: 'CreateChannel',
+                                  owner: false,
+                                  same_team: false,
+                                  condition: {
+                                    '$subject.magic_custom_field': 'custom'
+                                  }
+                                })
+    end
+
+    it 'get permission' do
+      loop_times 10 do
+        permission = @client.get_permission(@permission_id)
+        expect(permission['id']).to eq @cmd
+        expect(permission['name']).to eq @cmd
+      end
+    end
+
+    it 'update that permission' do
+      loop_times 10 do
+        @client.update_permission(@permission_id, {
+                                    id: @permission_id,
+                                    name: @permission_id,
+                                    description: 'desc',
+                                    action: 'CreateChannel',
+                                    condition: {
+                                      '$subject.magic_custom_field': 'custom'
+                                    }
+                                  })
+        permission = @client.get_permission(@permission_id)['permission']
+        expect(permission['name']).to eq @permission_id
+        expect(permission['description']).to eq 'desc'
+      end
+    end
+
+    it 'list permissions' do
+      loop_times 10 do
+        permissions = @client.list_permissions['permissions']
+        found = false
+        permissions.each do |permission|
+          if permission['id'] == @permission_id
+            found = true
+            break
+          end
+        end
+
+        expect(found).to be true
+      end
+    end
+
+    it 'delete that permission' do
+      loop_times 10 do
+        @client.delete_permission(@permission_id)
+      end
+    end
+
+    it 'create role' do
+      @client.create_role(@permission_id)
+    end
+
+    it 'list new role' do
+      loop_times 10 do
+        roles = @client.list_roles['roles']
+        found = false
+        roles.each do |role|
+          if role['name'] == @permission_id
+            found = true
+            break
+          end
+        end
+        expect(found).to be true
+      end
+    end
+
+    it 'delete role' do
+      loop_times 10 do
+        @client.delete_role @permission_id
       end
     end
   end

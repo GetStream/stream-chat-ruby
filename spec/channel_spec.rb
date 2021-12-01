@@ -4,6 +4,20 @@ require 'securerandom'
 require 'stream-chat'
 
 describe StreamChat::Channel do
+  def loop_times(times)
+    loop do
+      begin
+        yield()
+        return
+      rescue StandardError, RSpec::Expectations::ExpectationNotMetError
+        raise if times == 0
+      end
+
+      sleep(1)
+      times -= 1
+    end
+  end
+
   before(:all) do
     @client = StreamChat::Client.new(ENV['STREAM_CHAT_API_KEY'], ENV['STREAM_CHAT_API_SECRET'], base_url: ENV['STREAM_CHAT_API_HOST'])
   end
@@ -84,9 +98,13 @@ describe StreamChat::Channel do
 
   it 'can truncate with message' do
     text = SecureRandom.uuid.to_s
-    response = @channel.truncate(message: { text: text, user_id: @random_user[:id] })
-    expect(response).to include 'message'
-    expect(response['message']['text']).to eq(text)
+    @channel.truncate(message: { text: text, user_id: @random_user[:id] })
+
+    loop_times 60 do
+      channel_state = @channel.query
+      expect(channel_state).to include 'messages'
+      expect(channel_state['messages'][0]['text']).to eq(text)
+    end
   end
 
   it 'can add members' do

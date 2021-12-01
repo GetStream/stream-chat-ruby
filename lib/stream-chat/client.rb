@@ -429,6 +429,38 @@ module StreamChat
       get('commands')
     end
 
+    def list_permissions
+      get('permissions')
+    end
+
+    def get_permission(id)
+      get("permissions/#{id}")
+    end
+
+    def create_permission(permission)
+      post('permissions', data: permission)
+    end
+
+    def update_permission(id, permission)
+      put("permissions/#{id}", data: permission)
+    end
+
+    def delete_permission(id)
+      delete("permissions/#{id}")
+    end
+
+    def create_role(name)
+      post('roles', data: { name: name })
+    end
+
+    def delete_role(name)
+      delete("roles/#{name}")
+    end
+
+    def list_roles
+      get('roles')
+    end
+
     private
 
     def get_default_params

@@ -115,6 +115,10 @@ module StreamChat
       @client.post(url, data: { remove_members: user_ids })
     end
 
+    def assign_roles(members, message = nil)
+      @client.post(url, data: { assign_roles: members, message: message })
+    end
+
     def demote_moderators(user_ids)
       @client.post(url, data: { demote_moderators: user_ids })
     end
