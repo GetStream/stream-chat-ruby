@@ -1,3 +1,7 @@
+## December 1st, 2021 - 2.16.0
+
+- Add permissions v2 APIs
+
 ## November 25th, 2021 - 2.15.0
 
 - Add configuration support for channel truncate
