@@ -99,8 +99,9 @@ module StreamChat
       @client.post("#{url}/truncate", data: options)
     end
 
-    def add_members(user_ids)
-      @client.post(url, data: { add_members: user_ids })
+    def add_members(user_ids, **options)
+      payload = options.merge({ add_members: user_ids })
+      @client.post(url, data: payload)
     end
 
     def invite_members(user_ids)
