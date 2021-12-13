@@ -10,7 +10,7 @@ describe StreamChat::Channel do
         yield()
         return
       rescue StandardError, RSpec::Expectations::ExpectationNotMetError
-        raise if times == 0
+        raise if times.zero?
       end
 
       sleep(1)
@@ -108,12 +108,15 @@ describe StreamChat::Channel do
   end
 
   it 'can add members' do
-    response = @channel.remove_members([@random_user[:id]])
+    response = @channel.remove_members([@random_users[0][:id], @random_users[1][:id]])
     expect(response['members'].length).to eq 0
 
-    response = @channel.add_members([@random_user[:id]])
-    expect(response['members'].length).to eq 1
-    expect(response['members'][0].fetch('is_moderator', false)).to be false
+    @channel.add_members([@random_users[0][:id]])
+    response = @channel.add_members([@random_users[1][:id]], hide_history: true)
+    expect(response['members'].length).to eq 2
+    response['members']&.each do |m|
+      expect(m.fetch('is_moderator', false)).to be false
+    end
   end
 
   it 'can invite members' do
