@@ -14,7 +14,7 @@ Android SDK libraries (https://getstream.io/chat/).
 
 stream-chat-ruby supports:
 
-- Ruby (3.0, 2.7, 2.6, 2.5)
+- Ruby (2.5, 2.6, 2.7, 3.0, 3.1)
 
 #### Install
 
@@ -216,12 +216,16 @@ First, make sure you can run the test suite. Tests are run via rspec
 STREAM_CHAT_API_KEY=my_api_key STREAM_CHAT_API_SECRET=my_api_secret bundle exec rake spec
 ```
 
+This repository follows a commit message convention in order to automatically generate the [CHANGELOG](./CHANGELOG.md). Make sure you follow the rules of [conventional commits](https://www.conventionalcommits.org/) when opening a pull request.
+
 ### Releasing a new version
 
 In order to release new version you need to be a maintainer of the library.
 
-- Update CHANGELOG
-- Update the version in `lib/stream-chat/version.rb`
-- Commit and push to GitHub
-- Build the gem with `bundle exec rake build`
-- Publish the gem with `bundle exec rake release`
+- Kick off a job called `initiate_release` ([link](https://github.com/GetStream/stream-chat-ruby/actions/workflows/initiate_release.yml)).
+
+The job creates a pull request with the changelog. Check if it looks good.
+
+- Merge the pull request.
+
+Once the PR is merged, it automatically kicks off another job which will upload the Gem to RubyGems.org and creates a GitHub release.

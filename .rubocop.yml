@@ -21,9 +21,6 @@ Metrics/MethodLength:
 Naming/AccessorMethodName:
   Enabled: false
 
-Security/Open:
-  Enabled: false
-
 Style/AccessorGrouping:
   Enabled: false
 Style/Documentation:
@@ -31,4 +28,7 @@ Style/Documentation:
 Style/DoubleCopDisableDirective:
   Enabled: false
 Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Gemspec/RequireMFA:
   Enabled: false

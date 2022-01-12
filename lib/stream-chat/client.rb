@@ -3,6 +3,7 @@
 # lib/client.rb
 require 'open-uri'
 require 'faraday'
+require 'faraday/multipart'
 require 'jwt'
 require 'time'
 require 'stream-chat/channel'
@@ -389,10 +390,9 @@ module StreamChat
     def send_file(relative_url, file_url, user, content_type = 'application/octet-stream')
       url = [@base_url, relative_url].join('/')
 
-      file = open(file_url)
       body = { user: user.to_json }
 
-      body[:file] = Faraday::UploadIO.new(file, content_type)
+      body[:file] = Faraday::UploadIO.new(file_url, content_type)
 
       response = @conn.post url do |req|
         req.headers['X-Stream-Client'] = get_user_agent

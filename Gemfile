@@ -13,6 +13,7 @@ end
 
 group :test do
   gem 'faraday'
+  gem 'faraday-multipart'
   gem 'rack'
   gem 'simplecov'
 end
