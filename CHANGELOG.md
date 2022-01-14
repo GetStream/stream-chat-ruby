@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.17.0](https://github.com/GetStream/stream-chat-ruby/compare/v2.16.0...v2.17.0) (2022-01-14)
+
+
+### Features
+
+* add options to add members ([#63](https://github.com/GetStream/stream-chat-ruby/issues/63)) ([89c9fa9](https://github.com/GetStream/stream-chat-ruby/commit/89c9fa98e19565c4b5353077523a1d407e1f10c9))
+
 ## [2.16.0](https://github.com/GetStream/stream-chat-ruby/compare/v2.15.0...v2.16.0) (2021-12-01)
 
 - Add permissions v2 APIs by @ffenix113 in #62
