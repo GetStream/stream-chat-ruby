@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-## [2.16.0](https://github.com/GetStream/stream-chat-ruby/compare/v2.15.0...v2.16.0) (2021-11-25)
+## [2.16.0](https://github.com/GetStream/stream-chat-ruby/compare/v2.15.0...v2.16.0) (2021-12-01)
 
 - Add permissions v2 APIs by @ffenix113 in #62
 
