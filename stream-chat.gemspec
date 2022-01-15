@@ -19,6 +19,7 @@ Gem::Specification.new do |gem|
   gem.required_ruby_version = '>=2.5.0'
 
   gem.add_dependency 'faraday'
+  gem.add_dependency 'faraday-multipart'
   gem.add_dependency 'jwt'
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'rspec'
