@@ -3,5 +3,5 @@
 # lib/version.rb
 
 module StreamChat
-  VERSION = '2.17.1'
+  VERSION = '2.17.2'
 end
