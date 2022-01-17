@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.17.1](https://github.com/GetStream/stream-chat-ruby/compare/v2.17.0...v2.17.1) (2022-01-17)
+
+
+### Bug Fixes
+
+* load faraday-mutipart error ([#67](https://github.com/GetStream/stream-chat-ruby/issues/67)) ([55ec107](https://github.com/GetStream/stream-chat-ruby/commit/55ec107fb4d6af887aa562c1e04d90a669c630cb))
+
 ## [2.17.0](https://github.com/GetStream/stream-chat-ruby/compare/v2.16.0...v2.17.0) (2022-01-14)
 
 
