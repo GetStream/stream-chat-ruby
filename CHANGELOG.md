@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.17.2](https://github.com/GetStream/stream-chat-ruby/compare/v2.17.1...v2.17.2) (2022-01-17)
+
+### Features
+* added some new metadata to the gemspec ([#69](https://github.com/GetStream/stream-chat-ruby/issues/69)) ([3e747bc](https://github.com/GetStream/stream-chat-ruby/commit/3e747bcd6aa338b08e136febfb0cf06f29d366b5))
+
 ### [2.17.1](https://github.com/GetStream/stream-chat-ruby/compare/v2.17.0...v2.17.1) (2022-01-17)
 
 
