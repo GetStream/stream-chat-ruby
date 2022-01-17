@@ -17,6 +17,14 @@ Gem::Specification.new do |gem|
     `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   end
   gem.required_ruby_version = '>=2.5.0'
+  gem.metadata = {
+    'rubygems_mfa_required' => 'false',
+    'homepage_uri' => 'https://getstream.io/chat/docs/',
+    'bug_tracker_uri' => 'https://github.com/GetStream/stream-chat-ruby/issues',
+    'documentation_uri' => 'https://getstream.io/chat/docs/ruby/?language=ruby',
+    'changelog_uri' => 'https://github.com/GetStream/stream-chat-ruby/blob/master/CHANGELOG.md',
+    'source_code_uri' => 'https://github.com/GetStream/stream-chat-ruby'
+  }
 
   gem.add_dependency 'faraday'
   gem.add_dependency 'faraday-multipart'
@@ -24,5 +32,4 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'rspec'
   gem.add_development_dependency 'simplecov'
-  gem.metadata['rubygems_mfa_required'] = 'false'
 end
