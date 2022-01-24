@@ -19,7 +19,7 @@ describe StreamChat::Channel do
   end
 
   before(:all) do
-    @client = StreamChat::Client.new(ENV['STREAM_CHAT_API_KEY'], ENV['STREAM_CHAT_API_SECRET'], base_url: ENV['STREAM_CHAT_API_HOST'])
+    @client = StreamChat::Client.new(ENV['STREAM_KEY'], ENV['STREAM_SECRET'], base_url: ENV['STREAM_CHAT_URL'])
   end
 
   before(:each) do
@@ -49,6 +49,12 @@ describe StreamChat::Channel do
     expect(response['event']['type']).to eq 'typing.start'
   end
 
+  it 'can get many messages' do
+    msg = @channel.send_message({ text: 'hi' }, @random_user[:id])
+    response = @channel.get_messages([msg['message']['id']])
+    expect(response['messages']).not_to be_empty
+  end
+
   it 'can send reactions' do
     msg = @channel.send_message({ 'text' => 'hi' }, @random_user[:id])
     response = @channel.send_reaction(msg['message']['id'], { 'type' => 'love' }, @random_user[:id])
@@ -63,6 +69,13 @@ describe StreamChat::Channel do
     response = @channel.delete_reaction(msg['message']['id'], 'love', @random_user[:id])
     expect(response).to include 'message'
     expect(response['message']['latest_reactions'].length).to eq 0
+  end
+
+  it 'can mute and unmute a channel' do
+    response = @channel.mute(@random_user[:id])
+    expect(response['channel_mute']['channel']['cid']).not_to be_empty
+
+    @channel.unmute(@random_user[:id])
   end
 
   it 'can update metadata' do

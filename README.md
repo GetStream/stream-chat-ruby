@@ -213,7 +213,7 @@ See [an example rails application using the Ruby SDK](https://github.com/GetStre
 First, make sure you can run the test suite. Tests are run via rspec
 
 ```bash
-STREAM_CHAT_API_KEY=my_api_key STREAM_CHAT_API_SECRET=my_api_secret bundle exec rake spec
+STREAM_KEY=my_api_key STREAM_SECRET=my_api_secret bundle exec rake spec
 ```
 
 This repository follows a commit message convention in order to automatically generate the [CHANGELOG](./CHANGELOG.md). Make sure you follow the rules of [conventional commits](https://www.conventionalcommits.org/) when opening a pull request.
@@ -229,3 +229,10 @@ The job creates a pull request with the changelog. Check if it looks good.
 - Merge the pull request.
 
 Once the PR is merged, it automatically kicks off another job which will upload the Gem to RubyGems.org and creates a GitHub release.
+
+## We are hiring!
+
+We've recently closed a [$38 million Series B funding round](https://techcrunch.com/2021/03/04/stream-raises-38m-as-its-chat-and-activity-feed-apis-power-communications-for-1b-users/) and we keep actively growing.
+Our APIs are used by more than a billion end-users, and you'll have a chance to make a huge impact on the product within a team of the strongest engineers all over the world.
+
+Check out our current openings and apply via [Stream's website](https://getstream.io/team/#jobs).

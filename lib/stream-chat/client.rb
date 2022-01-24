@@ -35,12 +35,12 @@ module StreamChat
     #   StreamChat::Client.new('my_key', 'my_secret', 3.0)
     #
     def initialize(api_key = '', api_secret = '', timeout = 6.0, **options)
-      @api_key = api_key
-      @api_secret = api_secret
-      @timeout = timeout
+      @api_key = api_key || ENV['STREAM_KEY']
+      @api_secret = api_secret || ENV['STREAM_SECRET']
+      @timeout = timeout || ENV['STREAM_CHAT_TIMEOUT']
       @options = options
       @auth_token = JWT.encode({ server: true }, @api_secret, 'HS256')
-      @base_url = options[:base_url] || BASE_URL
+      @base_url = options[:base_url] || ENV['STREAM_CHAT_URL'] || BASE_URL
       @conn = Faraday.new(url: @base_url) do |faraday|
         faraday.options[:open_timeout] = @timeout
         faraday.options[:timeout] = @timeout
@@ -221,6 +221,14 @@ module StreamChat
       delete("messages/#{message_id}")
     end
 
+    def query_banned_users(filter_conditions, sort: nil, **options)
+      params = options.merge({
+                               filter_conditions: filter_conditions,
+                               sort: get_sort_fields(sort)
+                             })
+      get('query_banned_users', params: { payload: params.to_json })
+    end
+
     def query_users(filter_conditions, sort: nil, **options)
       params = options.merge({
                                filter_conditions: filter_conditions,
@@ -301,6 +309,22 @@ module StreamChat
     def verify_webhook(request_body, x_signature)
       signature = OpenSSL::HMAC.hexdigest('SHA256', @api_secret, request_body)
       signature == x_signature
+    end
+
+    def send_user_event(user_id, event)
+      post("users/#{user_id}/event", data: event)
+    end
+
+    def translate_message(message_id, language)
+      post("messages/#{message_id}/translate", data: { language: language })
+    end
+
+    def run_message_action(message_id, data)
+      post("messages/#{message_id}/action", data: data)
+    end
+
+    def create_guest(user)
+      post('guests', data: user)
     end
 
     def list_blocklists
@@ -403,6 +427,10 @@ module StreamChat
       end
 
       parse_response(response)
+    end
+
+    def check_push(push_data)
+      post('check_push', data: push_data)
     end
 
     def check_sqs(sqs_key = nil, sqs_secret = nil, sqs_url = nil)

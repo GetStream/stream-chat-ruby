@@ -13,6 +13,7 @@ module StreamChat
     def initialize(client, channel_type, channel_id = nil, custom_data = nil)
       @channel_type = channel_type
       @id = channel_id
+      @cid = "#{@channel_type}:#{@id}"
       @client = client
       @custom_data = custom_data
       @custom_data = {} if @custom_data.nil?
@@ -22,6 +23,10 @@ module StreamChat
       raise StreamChannelException, 'channel does not have an id' if @id.nil?
 
       "channels/#{@channel_type}/#{@id}"
+    end
+
+    def get_messages(message_ids)
+      @client.get("#{url}/messages", params: { 'ids' => message_ids.join(',') })
     end
 
     def send_message(message, user_id)
@@ -97,6 +102,16 @@ module StreamChat
 
     def truncate(**options)
       @client.post("#{url}/truncate", data: options)
+    end
+
+    def mute(user_id, expiration = nil)
+      data = { user_id: user_id, channel_cid: @cid }
+      data['expiration'] = expiration if expiration
+      @client.post('moderation/mute/channel', data: data)
+    end
+
+    def unmute(user_id)
+      @client.post('moderation/unmute/channel', data: { 'user_id' => user_id, 'channel_cid' => @cid })
     end
 
     def add_members(user_ids, **options)
