@@ -11,7 +11,7 @@ describe StreamChat::Client do
         yield()
         return
       rescue StandardError, RSpec::Expectations::ExpectationNotMetError
-        raise if times == 0
+        raise if times.zero?
       end
 
       sleep(1)
@@ -20,7 +20,7 @@ describe StreamChat::Client do
   end
 
   before(:all) do
-    @client = StreamChat::Client.new(ENV['STREAM_CHAT_API_KEY'], ENV['STREAM_CHAT_API_SECRET'], base_url: ENV['STREAM_CHAT_API_HOST'])
+    @client = StreamChat::Client.new(ENV['STREAM_KEY'], ENV['STREAM_SECRET'], base_url: ENV['STREAM_CHAT_URL'])
 
     @fellowship_of_the_ring = [
       { id: 'frodo-baggins', name: 'Frodo Baggins', race: 'Hobbit', age: 50 },
@@ -266,6 +266,12 @@ describe StreamChat::Client do
     @client.delete_message(msg_id)
   end
 
+  it 'query banned users' do
+    @client.ban_user(@random_user[:id], user_id: @random_users[0][:id], reason: 'rubytest')
+    response = @client.query_banned_users({ 'reason' => 'rubytest' }, limit: 1)
+    expect(response['bans'].length).to eq 1
+  end
+
   it 'queries users' do
     response = @client.query_users({ 'race' => { '$eq' => 'Hobbit' } }, sort: { 'age' => -1 })
     expect(response['users'].length).to eq 2
@@ -277,6 +283,11 @@ describe StreamChat::Client do
     expect(response['channels'].length).to eq 1
     expect(response['channels'][0]['channel']['id']).to eq 'fellowship-of-the-ring'
     expect(response['channels'][0]['members'].length).to eq 4
+  end
+
+  xit 'run message action' do
+    resp = @channel.send_message({ text: '/giphy wave' }, @random_user[:id])
+    @client.run_message_action(resp['message']['id'], { user: { id: @random_user[:id] }, form_data: { image_action: 'shuffle' } })
   end
 
   it 'handles devices' do
@@ -331,22 +342,26 @@ describe StreamChat::Client do
       resp = @client.search({ members: { '$in' => ['legolas'] } }, text)
       expect(resp['results'].length).to eq(1)
     end
+
     it 'search for messages with filter conditions' do
       text = SecureRandom.uuid
       @channel.send_message({ text: text }, 'legolas')
       resp = @client.search({ members: { '$in' => ['legolas'] } }, { text: { '$q': text } })
       expect(resp['results'].length).to eq(1)
     end
+
     it 'offset with sort should fail' do
       expect do
         @client.search({ members: { '$in' => ['legolas'] } }, SecureRandom.uuid, sort: [{ created_at: -1 }], offset: 2)
       end.to raise_error(/cannot use offset with next or sort parameters/)
     end
+
     it 'offset with next should fail' do
       expect do
         @client.search({ members: { '$in' => ['legolas'] } }, SecureRandom.uuid,  offset: 2, next: SecureRandom.uuid)
       end.to raise_error(/cannot use offset with next or sort parameters/)
     end
+
     xit 'search for messages with sorting' do
       text = SecureRandom.uuid
       message_ids = ["0-#{text}", "1-#{text}"]
@@ -568,10 +583,35 @@ describe StreamChat::Client do
     end
   end
 
+  it 'check push notification test are working' do
+    message_id = SecureRandom.uuid
+    @channel.send_message({ id: message_id, text: SecureRandom.uuid }, 'legolas')
+    resp = @client.check_push({ message_id: message_id, skip_devices: true, user_id: @random_user[:id] })
+    expect(resp['rendered_message']).not_to be_empty
+  end
+
   it 'check_sqs with an invalid queue url should fail' do
     resp = @client.check_sqs('key', 'secret', 'https://foo.com/bar')
     expect(resp['status']).to eq 'error'
     expect(resp['error']).to include 'invalid SQS url'
+  end
+
+  it 'can create a guest if it"s allowed' do
+    guest_user = @client.create_guest({ user: { id: SecureRandom.uuid } })
+    expect(guest_user['access_token']).not_to be_empty
+  rescue StreamChat::StreamAPIException
+    # Guest user isn't turned on for every test app, so ignore it
+  end
+
+  it 'can send custom events' do
+    @client.send_user_event(@random_user[:id], { event: { type: 'friendship-request' } })
+  end
+
+  it 'can translate a message' do
+    message_id = SecureRandom.uuid
+    @channel.send_message({ id: message_id, text: SecureRandom.uuid }, 'legolas')
+    response = @client.translate_message(message_id, 'hu')
+    expect(response['message']).not_to be_empty
   end
 
   describe 'custom commands' do
