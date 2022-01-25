@@ -8,6 +8,7 @@ require 'jwt'
 require 'time'
 require 'stream-chat/channel'
 require 'stream-chat/errors'
+require 'stream-chat/stream_response'
 require 'stream-chat/version'
 require 'stream-chat/util'
 
@@ -514,7 +515,7 @@ module StreamChat
       end
       raise StreamAPIException, response if response.status >= 399
 
-      parsed_result
+      StreamResponse.new(parsed_result, response)
     end
 
     def make_http_request(method, relative_url, params: nil, data: nil)
