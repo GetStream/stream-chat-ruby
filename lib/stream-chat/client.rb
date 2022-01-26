@@ -4,6 +4,7 @@
 require 'open-uri'
 require 'faraday'
 require 'faraday/multipart'
+require 'faraday/net_http_persistent'
 require 'jwt'
 require 'time'
 require 'stream-chat/channel'
@@ -46,7 +47,10 @@ module StreamChat
         faraday.options[:open_timeout] = @timeout
         faraday.options[:timeout] = @timeout
         faraday.request :multipart
-        faraday.adapter :net_http
+        faraday.adapter :net_http_persistent, pool_size: 5 do |http|
+          # AWS load balancer idle timeout is 60 secs, so let's make it 59
+          http.idle_timeout = 59
+        end
       end
     end
 
