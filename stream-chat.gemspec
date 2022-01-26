@@ -12,9 +12,9 @@ Gem::Specification.new do |gem|
   gem.summary = 'The low level client for serverside calls for Stream Chat.'
   gem.email = 'support@getstream.io'
   gem.homepage = 'http://github.com/GetStream/stream-chat-ruby'
-  gem.authors = ['Mircea Cosbuc']
+  gem.authors = ['getstream.io']
   gem.files = Dir.chdir(File.expand_path(__dir__)) do
-    `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
+    `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|\.github|scripts)/}) }
   end
   gem.required_ruby_version = '>=2.5.0'
   gem.metadata = {

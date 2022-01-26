@@ -43,6 +43,16 @@ describe StreamChat::Client do
     @client.update_users(@random_users)
   end
 
+  it 'properly handles stream response class' do
+    response = @client.get_app_settings
+    expect(response.rate_limit.limit).to be > 0
+    expect(response.rate_limit.remaining).to be > 0
+    expect(response.rate_limit.reset).to be_within(120).of Time.now.utc
+    expect(response.status_code).to be 200
+    expect(response.to_json).not_to include 'rate_limit'
+    expect(response.to_json).not_to include 'status_code'
+  end
+
   it 'mutes users' do
     response = @client.mute_user(@random_users[0][:id], @random_users[1][:id])
     expect(response).to include 'mute'
