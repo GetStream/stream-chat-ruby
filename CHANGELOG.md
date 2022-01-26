@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.18.0](https://github.com/GetStream/stream-chat-ruby/compare/v2.17.2...v2.18.0) (2022-01-26)
+
+
+### Features
+
+* expose rate limits ([#72](https://github.com/GetStream/stream-chat-ruby/issues/72)) ([3f1ad5c](https://github.com/GetStream/stream-chat-ruby/commit/3f1ad5c8f43263424e934055d0ac283cdcce9376))
+* full feature parity ([#71](https://github.com/GetStream/stream-chat-ruby/issues/71)) ([a25a1b6](https://github.com/GetStream/stream-chat-ruby/commit/a25a1b66f9eadd77d09b99d5c3cfba27bba52f17))
+
 ### [2.17.2](https://github.com/GetStream/stream-chat-ruby/compare/v2.17.1...v2.17.2) (2022-01-17)
 
 ### Features
