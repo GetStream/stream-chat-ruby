@@ -30,8 +30,8 @@ module StreamChat
     #
     # @param [string] api_key your application api_key
     # @param [string] api_secret your application secret
-    # @param [string]
-    # @param [hash] options extra options
+    # @param [float] timeout the timeout for the http requests
+    # @param [hash] options extra options such as base_url
     #
     # @example initialized the client with a timeout setting
     #   StreamChat::Client.new('my_key', 'my_secret', 3.0)
@@ -52,6 +52,19 @@ module StreamChat
           http.idle_timeout = 59
         end
       end
+    end
+
+    # initializes a Stream Chat API Client from STREAM_KEY and STREAM_SECRET
+    # environmental variables.
+    def self.from_env
+      Client.new(ENV['STREAM_KEY'], ENV['STREAM_SECRET'])
+    end
+
+    # Sets the underlying Faraday http client.
+    #
+    # @param [client] an instance of Faraday::Connection
+    def set_http_client(client)
+      @conn = client
     end
 
     def create_token(user_id, exp = nil, iat = nil)
@@ -526,10 +539,9 @@ module StreamChat
       headers = get_default_headers
       headers['Authorization'] = @auth_token
       headers['stream-auth-type'] = 'jwt'
-      url = [@base_url, relative_url].join('/')
       params = {} if params.nil?
       params = (get_default_params.merge(params).sort_by { |k, _v| k.to_s }).to_h
-      url = "#{url}?#{URI.encode_www_form(params)}"
+      url = "#{relative_url}?#{URI.encode_www_form(params)}"
 
       body = data.to_json if %w[patch post put].include? method.to_s
 
