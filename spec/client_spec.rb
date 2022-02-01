@@ -20,7 +20,7 @@ describe StreamChat::Client do
   end
 
   before(:all) do
-    @client = StreamChat::Client.new(ENV['STREAM_KEY'], ENV['STREAM_SECRET'], base_url: ENV['STREAM_CHAT_URL'])
+    @client = StreamChat::Client.from_env
 
     @fellowship_of_the_ring = [
       { id: 'frodo-baggins', name: 'Frodo Baggins', race: 'Hobbit', age: 50 },
@@ -41,6 +41,17 @@ describe StreamChat::Client do
     expect(response).to include 'users'
     expect(response['users']).to include @random_user[:id]
     @client.update_users(@random_users)
+  end
+
+  it 'properly sets up a new client' do
+    client = StreamChat::Client.from_env
+
+    client.set_http_client(Faraday.new(url: 'https://getstream.io'))
+    expect { client.get_app_settings }.to raise_error(StreamChat::StreamAPIException)
+
+    client.set_http_client(Faraday.new(url: 'https://chat.stream-io-api.com'))
+    response = client.get_app_settings
+    expect(response).to include 'app'
   end
 
   it 'properly handles stream response class' do

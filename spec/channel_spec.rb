@@ -19,7 +19,7 @@ describe StreamChat::Channel do
   end
 
   before(:all) do
-    @client = StreamChat::Client.new(ENV['STREAM_KEY'], ENV['STREAM_SECRET'], base_url: ENV['STREAM_CHAT_URL'])
+    @client = StreamChat::Client.from_env
   end
 
   before(:each) do
