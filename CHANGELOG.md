@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.19.0](https://github.com/GetStream/stream-chat-ruby/compare/v2.18.0...v2.19.0) (2022-02-02)
+
+
+### Features
+
+* ability to provide custom http client ([#75](https://github.com/GetStream/stream-chat-ruby/issues/75)) ([bfff20d](https://github.com/GetStream/stream-chat-ruby/commit/bfff20d06232c49a1a8d0eee255a718bfffbb351))
+* add connection pooling and idle timeout ([#74](https://github.com/GetStream/stream-chat-ruby/issues/74)) ([7891005](https://github.com/GetStream/stream-chat-ruby/commit/78910053b3a15b1efa3183a71299068e63b128e3))
+* env var handling enhancement ([#76](https://github.com/GetStream/stream-chat-ruby/issues/76)) ([0cdc38a](https://github.com/GetStream/stream-chat-ruby/commit/0cdc38abd671bfaa8cefa7f403b9e2ac8b642272))
+> 🚨 Note: if you used `STREAM_CHAT_URL` env var, you'll need to provide it manually in the `**options` as `base_url`. See the initializer of `Client` class for more information.
+
 ## [2.18.0](https://github.com/GetStream/stream-chat-ruby/compare/v2.17.2...v2.18.0) (2022-01-26)
 
 
