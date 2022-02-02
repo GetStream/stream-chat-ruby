@@ -19,7 +19,8 @@ module StreamChat
   HARD_DELETE = 'hard'
 
   class Client
-    BASE_URL = 'https://chat.stream-io-api.com'
+    DEFAULT_BASE_URL = 'https://chat.stream-io-api.com'
+    DEFAULT_TIMEOUT = 6.0
 
     attr_reader :api_key
     attr_reader :api_secret
@@ -36,13 +37,15 @@ module StreamChat
     # @example initialized the client with a timeout setting
     #   StreamChat::Client.new('my_key', 'my_secret', 3.0)
     #
-    def initialize(api_key = '', api_secret = '', timeout = 6.0, **options)
-      @api_key = api_key || ENV['STREAM_KEY']
-      @api_secret = api_secret || ENV['STREAM_SECRET']
-      @timeout = timeout || ENV['STREAM_CHAT_TIMEOUT']
+    def initialize(api_key, api_secret, timeout = nil, **options)
+      raise ArgumentError, 'api_key and api_secret are required' if api_key.to_s.empty? || api_secret.to_s.empty?
+
+      @api_key = api_key
+      @api_secret = api_secret
+      @timeout = timeout || DEFAULT_TIMEOUT
       @options = options
       @auth_token = JWT.encode({ server: true }, @api_secret, 'HS256')
-      @base_url = options[:base_url] || ENV['STREAM_CHAT_URL'] || BASE_URL
+      @base_url = options[:base_url] || DEFAULT_BASE_URL
       @conn = Faraday.new(url: @base_url) do |faraday|
         faraday.options[:open_timeout] = @timeout
         faraday.options[:timeout] = @timeout
@@ -55,9 +58,14 @@ module StreamChat
     end
 
     # initializes a Stream Chat API Client from STREAM_KEY and STREAM_SECRET
-    # environmental variables.
-    def self.from_env
-      Client.new(ENV['STREAM_KEY'], ENV['STREAM_SECRET'])
+    # environmental variables. STREAM_CHAT_TIMEOUT and STREAM_CHAT_URL
+    # variables are optional.
+    # @param [hash] options extra options
+    def self.from_env(**options)
+      Client.new(ENV['STREAM_KEY'],
+                 ENV['STREAM_SECRET'],
+                 ENV['STREAM_CHAT_TIMEOUT'],
+                 **{ base_url: ENV['STREAM_CHAT_URL'] }.merge(options))
     end
 
     # Sets the underlying Faraday http client.

@@ -54,6 +54,10 @@ describe StreamChat::Client do
     expect(response).to include 'app'
   end
 
+  it 'raises ArgumentError if no api_key is provided' do
+    expect { StreamChat::Client.new(nil, nil) }.to raise_error(ArgumentError)
+  end
+
   it 'properly handles stream response class' do
     response = @client.get_app_settings
     expect(response.rate_limit.limit).to be > 0
