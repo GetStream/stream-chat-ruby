@@ -141,6 +141,20 @@ describe StreamChat::Channel do
     expect(response['members'][0].fetch('invited', false)).to be true
   end
 
+  it 'can accept invitation' do
+    @channel.remove_members([@random_user[:id]])
+    @channel.invite_members([@random_user[:id]])
+
+    @channel.accept_invite(@random_user[:id])
+  end
+
+  it 'can reject invitation' do
+    @channel.remove_members([@random_user[:id]])
+    @channel.invite_members([@random_user[:id]])
+
+    @channel.reject_invite(@random_user[:id])
+  end
+
   it 'can add moderators' do
     response = @channel.add_moderators([@random_user[:id]])
     expect(response['members'][0]['is_moderator']).to be true
