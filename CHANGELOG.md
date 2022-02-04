@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.20.0](https://github.com/GetStream/stream-chat-ruby/compare/v2.19.0...v2.20.0) (2022-02-04)
+
+
+### Features
+
+* add helper for invitation acceptance and rejection ([#78](https://github.com/GetStream/stream-chat-ruby/issues/78)) ([c950694](https://github.com/GetStream/stream-chat-ruby/commit/c950694a0ac2b0906d7bedb4ebc9a1af00eea606))
+
 ## [2.19.0](https://github.com/GetStream/stream-chat-ruby/compare/v2.18.0...v2.19.0) (2022-02-02)
 
 
