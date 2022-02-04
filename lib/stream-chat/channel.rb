@@ -84,8 +84,8 @@ module StreamChat
       @client.get('members', params: { payload: params.to_json })
     end
 
-    def update(channel_data, update_message = nil)
-      payload = { data: channel_data, message: update_message }
+    def update(channel_data, update_message = nil, **options)
+      payload = { data: channel_data, message: update_message }.merge(options)
       @client.post(url, data: payload)
     end
 
@@ -116,27 +116,38 @@ module StreamChat
 
     def add_members(user_ids, **options)
       payload = options.merge({ add_members: user_ids })
-      @client.post(url, data: payload)
+      update(nil, nil, **payload)
     end
 
-    def invite_members(user_ids)
-      @client.post(url, data: { invites: user_ids })
+    def invite_members(user_ids, **options)
+      payload = options.merge({ invites: user_ids })
+      update(nil, nil, **payload)
+    end
+
+    def accept_invite(user_id, **options)
+      payload = options.merge({ user_id: user_id, accept_invite: true })
+      update(nil, nil, **payload)
+    end
+
+    def reject_invite(user_id, **options)
+      payload = options.merge({ user_id: user_id, reject_invite: true })
+      update(nil, nil, **payload)
     end
 
     def add_moderators(user_ids)
-      @client.post(url, data: { add_moderators: user_ids })
+      update(nil, nil, add_moderators: user_ids)
     end
 
     def remove_members(user_ids)
-      @client.post(url, data: { remove_members: user_ids })
+      update(nil, nil, remove_members: user_ids)
     end
 
     def assign_roles(members, message = nil)
-      @client.post(url, data: { assign_roles: members, message: message })
+      update(nil, message, assign_roles: members)
     end
 
     def demote_moderators(user_ids)
-      @client.post(url, data: { demote_moderators: user_ids })
+      update(nil, nil, demote_moderators: user_ids)
     end
 
     def mark_read(user_id, **options)
