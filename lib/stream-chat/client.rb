@@ -243,8 +243,8 @@ module StreamChat
       put("messages/#{message_id}", data: params)
     end
 
-    def delete_message(message_id)
-      delete("messages/#{message_id}")
+    def delete_message(message_id, **options)
+      delete("messages/#{message_id}", params: options)
     end
 
     def query_banned_users(filter_conditions, sort: nil, **options)

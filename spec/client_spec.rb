@@ -291,6 +291,15 @@ describe StreamChat::Client do
     @client.delete_message(msg_id)
   end
 
+  it 'hard deletes a message' do
+    msg_id = SecureRandom.uuid
+    @channel.send_message({
+                            'id' => msg_id,
+                            'text' => 'hello world'
+                          }, @random_user[:id])
+    @client.delete_message(msg_id, hard: true)
+  end
+
   it 'query banned users' do
     @client.ban_user(@random_user[:id], user_id: @random_users[0][:id], reason: 'rubytest')
     response = @client.query_banned_users({ 'reason' => 'rubytest' }, limit: 1)
