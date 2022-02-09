@@ -2,7 +2,6 @@
 
 # lib/util.rb
 # typed: true
-
 module StreamChat
   extend T::Sig
   T::Configuration.default_checked_level = :never
@@ -10,12 +9,5 @@ module StreamChat
   # We will enable it with a major bump in the future,
   # but for now, let's just run a static type check.
 
-  sig { params(sort: T.nilable(Hash)).returns(T::Array[Hash]) }
-  def self.get_sort_fields(sort)
-    sort_fields = []
-    sort&.each do |k, v|
-      sort_fields << { field: k, direction: v }
-    end
-    sort_fields
-  end
+  StringKeyDictionary = T.type_alias { T::Hash[T.any(String, Symbol), T.untyped] }
 end
