@@ -9,6 +9,7 @@ require 'faraday/multipart'
 require 'faraday/net_http_persistent'
 require 'jwt'
 require 'time'
+require 'sorbet-runtime'
 require 'stream-chat/channel'
 require 'stream-chat/errors'
 require 'stream-chat/stream_response'
@@ -21,6 +22,8 @@ module StreamChat
   HARD_DELETE = 'hard'
 
   class Client
+    extend T::Sig
+    T::Configuration.default_checked_level = :never
     DEFAULT_BASE_URL = 'https://chat.stream-io-api.com'
     DEFAULT_TIMEOUT = 6.0
 
@@ -39,6 +42,7 @@ module StreamChat
     # @example initialized the client with a timeout setting
     #   StreamChat::Client.new('my_key', 'my_secret', 3.0)
     #
+    sig { params(api_key: String, api_secret: String, timeout: T.nilable(T.any(Float, String)), options: T.untyped).void }
     def initialize(api_key, api_secret, timeout = nil, **options)
       raise ArgumentError, 'api_key and api_secret are required' if api_key.to_s.empty? || api_secret.to_s.empty?
 
@@ -64,8 +68,8 @@ module StreamChat
     # variables are optional.
     # @param [hash] options extra options
     def self.from_env(**options)
-      Client.new(ENV['STREAM_KEY'],
-                 ENV['STREAM_SECRET'],
+      Client.new(T.must(ENV['STREAM_KEY']),
+                 T.must(ENV['STREAM_SECRET']),
                  ENV['STREAM_CHAT_TIMEOUT'],
                  **{ base_url: ENV['STREAM_CHAT_URL'] }.merge(options))
     end
