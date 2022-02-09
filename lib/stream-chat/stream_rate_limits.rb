@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 # lib/stream_rate_limits.rb
+# typed: true
 
 module StreamChat
   class StreamRateLimits

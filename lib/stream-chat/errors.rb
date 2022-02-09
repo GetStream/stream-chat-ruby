@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 # lib/errors.rb
+# typed: true
 
 module StreamChat
   class StreamAPIException < StandardError

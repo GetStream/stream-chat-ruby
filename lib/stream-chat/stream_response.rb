@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 # lib/stream_response.rb
+# typed: true
+
 require 'stream-chat/stream_rate_limits'
 
 module StreamChat

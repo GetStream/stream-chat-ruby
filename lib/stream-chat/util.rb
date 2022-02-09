@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 # lib/util.rb
+# typed: true
 
 def get_sort_fields(sort)
   sort_fields = []

@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 # lib/client.rb
+# typed: true
+
 require 'open-uri'
 require 'faraday'
 require 'faraday/multipart'
@@ -83,7 +85,7 @@ module StreamChat
     end
 
     def update_app_settings(**settings)
-      patch('app', **settings)
+      patch('app', params: settings)
     end
 
     def get_app_settings
@@ -166,11 +168,11 @@ module StreamChat
     end
 
     def deactivate_user(user_id, **options)
-      post("users/#{user_id}/deactivate", **options)
+      post("users/#{user_id}/deactivate", params: options)
     end
 
     def reactivate_user(user_id, **options)
-      post("users/#{user_id}/reactivate", **options)
+      post("users/#{user_id}/reactivate", params: options)
     end
 
     def export_user(user_id, **options)
@@ -232,7 +234,7 @@ module StreamChat
     end
 
     def update_message(message)
-      raise ArgumentError 'message must have an id' unless message.key? 'id'
+      raise ArgumentError, 'message must have an id' unless message.key? 'id'
 
       post("messages/#{message['id']}", data: { message: message })
     end

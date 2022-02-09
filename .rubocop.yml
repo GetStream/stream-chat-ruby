@@ -2,6 +2,9 @@ AllCops:
   DisabledByDefault: false
   NewCops: enable
   TargetRubyVersion: 2.5
+  Exclude:
+    - sorbet/**/*.rbi
+    - vendor/bundle/**/*
 
 Layout/LineLength:
   Enabled: false
