@@ -1,6 +1,7 @@
 # typed: strict
 # frozen_string_literal: true
 
+require 'stream-chat/client'
 require 'stream-chat/errors'
 require 'stream-chat/util'
 require 'stream-chat/types'
@@ -25,7 +26,7 @@ module StreamChat
     sig { returns(T::Array[StringKeyHash]) }
     attr_reader :members
 
-    sig { params(client: Client, channel_type: String, channel_id: T.nilable(String), custom_data: T.nilable(StringKeyHash)).void }
+    sig { params(client: StreamChat::Client, channel_type: String, channel_id: T.nilable(String), custom_data: T.nilable(StringKeyHash)).void }
     def initialize(client, channel_type, channel_id = nil, custom_data = nil)
       @channel_type = channel_type
       @id = channel_id
