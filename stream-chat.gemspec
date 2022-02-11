@@ -14,7 +14,7 @@ Gem::Specification.new do |gem|
   gem.homepage = 'http://github.com/GetStream/stream-chat-ruby'
   gem.authors = ['getstream.io']
   gem.files = Dir.chdir(File.expand_path(__dir__)) do
-    `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|\.github|scripts)/}) }
+    `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|sorbet|spec|\.github|scripts)/}) }
   end
   gem.required_ruby_version = '>=2.5.0'
   gem.metadata = {
@@ -31,6 +31,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'faraday-net_http_persistent'
   gem.add_dependency 'jwt'
   gem.add_dependency 'net-http-persistent'
+  gem.add_dependency 'sorbet-runtime'
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'rspec'
   gem.add_development_dependency 'simplecov'
