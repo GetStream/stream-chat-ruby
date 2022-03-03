@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.21.0](https://github.com/GetStream/stream-chat-ruby/compare/v2.20.0...v2.21.0) (2022-03-03)
+
+
+### Features
+
+* add options to delete message ([#80](https://github.com/GetStream/stream-chat-ruby/issues/80)) ([6a343e9](https://github.com/GetStream/stream-chat-ruby/commit/6a343e9fa9409150c27afc4246765f07bb12e571))
+* add sorbet type checker ([#83](https://github.com/GetStream/stream-chat-ruby/issues/83)) ([f2fcee5](https://github.com/GetStream/stream-chat-ruby/commit/f2fcee58ecc0c3b4016721e997c42c44753bba9a))
+
+
+### Bug Fixes
+
+* update app settings ([#86](https://github.com/GetStream/stream-chat-ruby/issues/86)) ([3f88185](https://github.com/GetStream/stream-chat-ruby/commit/3f88185117c5710e0b3e66f7f402f2c8969dec2f))
+
 ## [2.20.0](https://github.com/GetStream/stream-chat-ruby/compare/v2.19.0...v2.20.0) (2022-02-04)
 
 
