@@ -100,7 +100,7 @@ module StreamChat
 
     sig { params(settings: T.untyped).returns(StreamChat::StreamResponse) }
     def update_app_settings(**settings)
-      patch('app', params: settings)
+      patch('app', data: settings)
     end
 
     sig { returns(StreamChat::StreamResponse) }

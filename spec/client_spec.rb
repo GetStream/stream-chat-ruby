@@ -97,6 +97,11 @@ describe StreamChat::Client do
     expect(response).to include 'app'
   end
 
+  it 'updates application settings' do
+    response = @client.update_app_settings(enforce_unique_usernames: 'no')
+    expect(response.status_code).to be 200
+  end
+
   it 'updates a user' do
     user = { id: SecureRandom.uuid }
     response = @client.update_user(user)
