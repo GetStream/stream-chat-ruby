@@ -225,6 +225,25 @@ describe StreamChat::Client do
     expect(response['flags'].length).to eq 1
   end
 
+  it 'queries flag reports' do
+    msg_id = SecureRandom.uuid
+    @channel.send_message({
+                            'id' => msg_id,
+                            'text' => 'Hello world'
+                          }, @random_user[:id])
+    @client.flag_message(msg_id, user_id: @random_users[0][:id])
+    response = @client.query_flag_reports(message_id: msg_id)
+    expect(response['flag_reports'].length).to eq 1
+
+    response = @client.review_flag_report(
+      response['flag_reports'][0]['id'],
+      'reviewed',
+      @random_user[:id],
+      custom: 'reason_a'
+    )
+    expect(response['flag_report']).not_to be_nil
+  end
+
   it 'marks everything as read' do
     @client.mark_all_read(@random_user[:id])
   end

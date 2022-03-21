@@ -140,6 +140,22 @@ module StreamChat
       post('moderation/unflag', data: payload)
     end
 
+    sig { params(options: T.untyped).returns(StreamChat::StreamResponse) }
+    def query_flag_reports(**options)
+      data = { filter_conditions: options }
+      post('moderation/reports', data: data)
+    end
+
+    sig { params(report_id: String, review_result: String, user_id: String, details: T.untyped).returns(StreamChat::StreamResponse) }
+    def review_flag_report(report_id, review_result, user_id, **details)
+      data = {
+        review_result: review_result,
+        user_id: user_id,
+        review_details: details
+      }
+      patch("moderation/reports/#{report_id}", data: data)
+    end
+
     sig { params(id: String).returns(StreamChat::StreamResponse) }
     def get_message(id)
       get("messages/#{id}")
