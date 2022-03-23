@@ -628,6 +628,21 @@ module StreamChat
       get('roles')
     end
 
+    sig { params(push_provider: StringKeyHash).returns(StreamChat::StreamResponse) }
+    def upsert_push_provider(push_provider)
+      post('push_providers', data: { push_provider: push_provider })
+    end
+
+    sig { params(type: String, name: String).returns(StreamChat::StreamResponse) }
+    def delete_push_provider(type, name)
+      delete("push_providers/#{type}/#{name}")
+    end
+
+    sig { returns(StreamChat::StreamResponse) }
+    def list_push_providers
+      get('push_providers')
+    end
+
     private
 
     sig { returns(T::Hash[String, String]) }
