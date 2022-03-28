@@ -375,11 +375,12 @@ module StreamChat
       StreamChat::Channel.new(self, channel_type, channel_id, data)
     end
 
-    sig { params(device_id: String, push_provider: String, user_id: String).returns(StreamChat::StreamResponse) }
-    def add_device(device_id, push_provider, user_id)
+    sig { params(device_id: String, push_provider: String, user_id: String, push_provider_name: T.nilable(String)).returns(StreamChat::StreamResponse) }
+    def add_device(device_id, push_provider, user_id, push_provider_name = nil)
       post('devices', data: {
              id: device_id,
              push_provider: push_provider,
+             push_provider_name: push_provider_name,
              user_id: user_id
            })
     end
