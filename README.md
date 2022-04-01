@@ -67,7 +67,7 @@ client.create_token('bob-1')
 ### Create/Update users
 
 ```ruby
-client.update_user({
+client.upsert_user({
     :id => 'bob-1',
     :role => 'admin',
     :name => 'Robert Tables'
@@ -76,7 +76,7 @@ client.update_user({
 # Batch update is also supported
 jane = {:id => 'jane-1'}
 june = {:id => 'june-1'}
-client.update_users([jane, june])
+client.upsert_users([jane, june])
 ```
 
 ### Channel types

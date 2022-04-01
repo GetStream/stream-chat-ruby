@@ -179,8 +179,22 @@ module StreamChat
       get('search', params: { payload: options.merge(to_merge).to_json })
     end
 
+    # <b>DEPRECATED:</b> Please use <tt>upsert_users</tt> instead.
     sig { params(users: T::Array[StringKeyHash]).returns(StreamChat::StreamResponse) }
     def update_users(users)
+      warn '[DEPRECATION] `update_users` is deprecated.  Please use `upsert_users` instead.'
+      upsert_users(users)
+    end
+
+    # <b>DEPRECATED:</b> Please use <tt>upsert_user</tt> instead.
+    sig { params(user: StringKeyHash).returns(StreamChat::StreamResponse) }
+    def update_user(user)
+      warn '[DEPRECATION] `update_user` is deprecated.  Please use `upsert_user` instead.'
+      upsert_user(user)
+    end
+
+    sig { params(users: T::Array[StringKeyHash]).returns(StreamChat::StreamResponse) }
+    def upsert_users(users)
       payload = {}
       users.each do |user|
         id = user[:id] || user['id']
@@ -192,8 +206,8 @@ module StreamChat
     end
 
     sig { params(user: StringKeyHash).returns(StreamChat::StreamResponse) }
-    def update_user(user)
-      update_users([user])
+    def upsert_user(user)
+      upsert_users([user])
     end
 
     sig { params(updates: T::Array[StringKeyHash]).returns(StreamChat::StreamResponse) }
