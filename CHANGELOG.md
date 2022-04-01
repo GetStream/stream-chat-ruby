@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.22.0](https://github.com/GetStream/stream-chat-ruby/compare/v2.21.0...v2.22.0) (2022-04-01)
+
+
+### Features
+
+* add new device field ([#90](https://github.com/GetStream/stream-chat-ruby/issues/90)) ([aa6723c](https://github.com/GetStream/stream-chat-ruby/commit/aa6723cd54e58aab0f1b8c55bc4e54211ab39f3c))
+* add new moderation apis ([#88](https://github.com/GetStream/stream-chat-ruby/issues/88)) ([573c586](https://github.com/GetStream/stream-chat-ruby/commit/573c58650392eaa5a6d38b4423e170e30b3e98df))
+* add push provider apis ([#89](https://github.com/GetStream/stream-chat-ruby/issues/89)) ([d592fba](https://github.com/GetStream/stream-chat-ruby/commit/d592fba4c0041102fa18d0fee11961f881414337))
+* **update_user:** deprecate update in favor of upsert ([#91](https://github.com/GetStream/stream-chat-ruby/issues/91)) ([74d3163](https://github.com/GetStream/stream-chat-ruby/commit/74d316339b277b0f9cf0f94f40f11aae30fd7644))
+
 ## [2.21.0](https://github.com/GetStream/stream-chat-ruby/compare/v2.20.0...v2.21.0) (2022-03-03)
 
 
