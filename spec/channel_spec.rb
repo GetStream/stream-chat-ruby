@@ -24,10 +24,10 @@ describe StreamChat::Channel do
 
   before(:each) do
     @random_users = [{ id: SecureRandom.uuid, name: 'b' }, { id: SecureRandom.uuid, name: 'a' }]
-    @client.update_users(@random_users)
+    @client.upsert_users(@random_users)
 
     @random_user = { id: SecureRandom.uuid }
-    response = @client.update_user(@random_user)
+    response = @client.upsert_user(@random_user)
     expect(response).to include 'users'
     expect(response['users']).to include @random_user[:id]
 
