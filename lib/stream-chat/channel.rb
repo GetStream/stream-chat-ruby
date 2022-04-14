@@ -100,8 +100,8 @@ module StreamChat
 
     # Queries members of a channel.
     #
-    # The queryMembers endpoint allows you to list and paginate members for a channel. The
-    # endpoint supports filtering on numerous criteria to efficiently return member information.
+    # The queryMembers endpoint allows you to list and paginate members from a channel. The
+    # endpoint supports filtering on numerous criteria to efficiently return members information.
     # This endpoint is useful for channels that have large lists of members and
     # you want to search members or if you want to display the full list of members for a channel.
     sig { params(filter_conditions: StringKeyHash, sort: T.nilable(T::Hash[String, Integer]), options: T.untyped).returns(StreamChat::StreamResponse) }
@@ -165,11 +165,6 @@ module StreamChat
     end
 
     # Unmutes a channel.
-    #
-    # Messages added to a muted channel will not trigger push notifications, nor change the
-    # unread count for the users that muted it. By default, mutes stay in place indefinitely
-    # until the user removes it; however, you can optionally set an expiration time. The list
-    # of muted channels and their expiration time is returned when the user connects.
     sig { params(user_id: String).returns(StreamChat::StreamResponse) }
     def unmute(user_id)
       @client.post('moderation/unmute/channel', data: { 'user_id' => user_id, 'channel_cid' => @cid })

@@ -95,8 +95,7 @@ module StreamChat
     # Stream uses JWT (JSON Web Tokens) to authenticate chat users, enabling them to login.
     # Knowing whether a user is authorized to perform certain actions is managed
     # separately via a role based permissions system.
-    # By default, user tokens are valid indefinitely. You can set an `exp`
-    # or issued at (`iat`) claim as well.
+    # You can set an `exp` (expires at) or `iat` (issued at) claim as well.
     sig { params(user_id: String, exp: T.nilable(Integer), iat: T.nilable(Integer)).returns(String) }
     def create_token(user_id, exp = nil, iat = nil)
       payload = { user_id: user_id }
@@ -111,7 +110,7 @@ module StreamChat
       patch('app', data: settings)
     end
 
-    # Returns the application settings.
+    # Returns application settings.
     sig { returns(StreamChat::StreamResponse) }
     def get_app_settings
       get('app')
@@ -129,10 +128,6 @@ module StreamChat
     end
 
     # Unflags a message.
-    #
-    # Any user is allowed to flag a message. This triggers the message.flagged
-    # webhook event and adds the message to the inbox of your
-    # Stream Dashboard Chat Moderation view.
     sig { params(id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def unflag_message(id, **options)
       payload = { target_message_id: id }.merge(options)
@@ -192,7 +187,7 @@ module StreamChat
 
     # Searches for messages.
     #
-    # You can enable and/or disable the search indexing on a per channel
+    # You can enable and/or disable the search indexing on a per channel basis
     # type through the Stream Dashboard.
     sig { params(filter_conditions: StringKeyHash, query: T.any(String, StringKeyHash), sort: T.nilable(T::Hash[String, Integer]), options: T.untyped).returns(StreamChat::StreamResponse) }
     def search(filter_conditions, query, sort: nil, **options)
@@ -226,7 +221,7 @@ module StreamChat
       upsert_user(user)
     end
 
-    # Creates new or updates existing users.
+    # Creates or updates users.
     sig { params(users: T::Array[StringKeyHash]).returns(StreamChat::StreamResponse) }
     def upsert_users(users)
       payload = {}
@@ -239,7 +234,7 @@ module StreamChat
       post('users', data: { users: payload })
     end
 
-    # Creates a new or updates an existing user.
+    # Creates or updates a user.
     sig { params(user: StringKeyHash).returns(StreamChat::StreamResponse) }
     def upsert_user(user)
       upsert_users([user])
@@ -294,9 +289,7 @@ module StreamChat
       post('moderation/ban', data: payload)
     end
 
-    # Unbans a user. Users can be banned from an app entirely or from a channel.
-    # When a user is banned, they will not be allowed to post messages until the
-    # ban is removed or expired but will be able to connect to Chat and to channels as before.
+    # Unbans a user.
     # To ban a user, use `ban_user` method.
     sig { params(target_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def unban_user(target_id, **options)
@@ -316,9 +309,6 @@ module StreamChat
     end
 
     # Removes a shadow ban of a user.
-    # When a user is shadow banned, they will still be allowed to post messages,
-    # but any message sent during the will only be visible to the messages author
-    # and invisible to other users of the App.
     # To shadow ban a user, use `shadow_ban` method.
     sig { params(target_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def remove_shadow_ban(target_id, **options)
@@ -365,11 +355,6 @@ module StreamChat
     end
 
     # Unpins a message.
-    #
-    # Pinned messages allow users to highlight important messages, make announcements, or temporarily
-    # promote content. Pinning a message is, by default, restricted to certain user roles,
-    # but this is flexible. Each channel can have multiple pinned messages and these can be created
-    # or updated with or without an expiration.
     sig { params(message_id: String, user_id: String).returns(StreamChat::StreamResponse) }
     def unpin_message(message_id, user_id)
       updates = {
@@ -542,9 +527,7 @@ module StreamChat
       post("users/#{user_id}/event", data: event)
     end
 
-    # Translates a message.
-    #
-    # This API endpoint translates an existing message to another language. The source language
+    # Translates an existing message to another language. The source language
     # is inferred from the user language or detected automatically by analyzing its text.
     # If possible it is recommended to store the user language. See the documentation.
     sig { params(message_id: String, language: String).returns(StreamChat::StreamResponse) }
