@@ -15,4 +15,5 @@ end
 group :test do
   gem 'rack'
   gem 'simplecov'
+  gem 'simplecov-console'
 end

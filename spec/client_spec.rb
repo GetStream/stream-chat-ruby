@@ -28,7 +28,7 @@ describe StreamChat::Client do
       { id: 'gandalf', name: 'Gandalf the Grey', race: 'Istari' },
       { id: 'legolas', name: 'Legolas', race: 'Elf', age: 500 }
     ]
-    @client.update_users(@fellowship_of_the_ring)
+    @client.upsert_users(@fellowship_of_the_ring)
     @channel = @client.channel('team', channel_id: 'fellowship-of-the-ring',
                                        data: { members: @fellowship_of_the_ring.map { |fellow| fellow[:id] } })
     @channel.create('gandalf')
@@ -37,10 +37,10 @@ describe StreamChat::Client do
   before(:each) do
     @random_users = [{ id: SecureRandom.uuid }, { id: SecureRandom.uuid }]
     @random_user = { id: SecureRandom.uuid }
-    response = @client.update_user(@random_user)
+    response = @client.upsert_user(@random_user)
     expect(response).to include 'users'
     expect(response['users']).to include @random_user[:id]
-    @client.update_users(@random_users)
+    @client.upsert_users(@random_users)
   end
 
   it 'properly sets up a new client' do

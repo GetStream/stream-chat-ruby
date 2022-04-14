@@ -30,7 +30,7 @@ jobs:
       - run: bundle exec srb tc
         if: ${{ matrix.ruby == '2.5' }}
 
-      - run: bundle exec rake test
+      - run: bundle exec rspec ./spec --require spec_helper
         env:
           STREAM_KEY: ${{ secrets.STREAM_CHAT_API_KEY }}
           STREAM_SECRET: ${{ secrets.STREAM_CHAT_API_SECRET }}
