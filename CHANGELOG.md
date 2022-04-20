@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.22.1](https://github.com/GetStream/stream-chat-ruby/compare/v2.22.0...v2.22.1) (2022-04-20)
+
+### Features
+
+* added comments to public methods ([#93](https://github.com/GetStream/stream-chat-ruby/issues/93)) ([3843fe4](https://github.com/GetStream/stream-chat-ruby/commit/3843fe41ea7716d2b6a787d695bbe54981b2b35e))
+
 ## [2.22.0](https://github.com/GetStream/stream-chat-ruby/compare/v2.21.0...v2.22.0) (2022-04-01)
 
 
