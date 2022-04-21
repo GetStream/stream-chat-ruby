@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.22.2](https://github.com/GetStream/stream-chat-ruby/compare/v2.22.1...v2.22.2) (2022-04-21)
+
+
+### Bug Fixes
+
+* **sorbet:** turn off runtime checks properly ([#98](https://github.com/GetStream/stream-chat-ruby/issues/98)) ([29e9e73](https://github.com/GetStream/stream-chat-ruby/commit/29e9e73ac07d163e8c1ca7b24516cb7ac61e93cd))
+
 ### [2.22.1](https://github.com/GetStream/stream-chat-ruby/compare/v2.22.0...v2.22.1) (2022-04-20)
 
 ### Features
