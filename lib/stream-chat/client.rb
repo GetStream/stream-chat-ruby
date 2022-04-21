@@ -22,7 +22,6 @@ module StreamChat
 
   class Client
     extend T::Sig
-    T::Configuration.default_checked_level = :never
     # For now we disable runtime type checks.
     # We will enable it with a major bump in the future,
     # but for now, let's just run a static type check.
@@ -30,13 +29,13 @@ module StreamChat
     DEFAULT_BASE_URL = 'https://chat.stream-io-api.com'
     DEFAULT_TIMEOUT = 6.0
 
-    sig { returns(String) }
+    T::Sig::WithoutRuntime.sig { returns(String) }
     attr_reader :api_key
 
-    sig { returns(String) }
+    T::Sig::WithoutRuntime.sig { returns(String) }
     attr_reader :api_secret
 
-    sig { returns(Faraday::Connection) }
+    T::Sig::WithoutRuntime.sig { returns(Faraday::Connection) }
     attr_reader :conn
 
     # initializes a Stream Chat API Client
@@ -49,7 +48,7 @@ module StreamChat
     # @example initialized the client with a timeout setting
     #   StreamChat::Client.new('my_key', 'my_secret', 3.0)
     #
-    sig { params(api_key: String, api_secret: String, timeout: T.nilable(T.any(Float, String)), options: T.untyped).void }
+    T::Sig::WithoutRuntime.sig { params(api_key: String, api_secret: String, timeout: T.nilable(T.any(Float, String)), options: T.untyped).void }
     def initialize(api_key, api_secret, timeout = nil, **options)
       raise ArgumentError, 'api_key and api_secret are required' if api_key.to_s.empty? || api_secret.to_s.empty?
 
@@ -74,18 +73,18 @@ module StreamChat
     # environmental variables. STREAM_CHAT_TIMEOUT and STREAM_CHAT_URL
     # variables are optional.
     # @param [StringKeyHash] options extra options
-    sig { params(options: T.untyped).returns(Client) }
+    T::Sig::WithoutRuntime.sig { params(options: T.untyped).returns(Client) }
     def self.from_env(**options)
-      Client.new(T.must(ENV['STREAM_KEY']),
-                 T.must(ENV['STREAM_SECRET']),
-                 ENV['STREAM_CHAT_TIMEOUT'],
-                 **{ base_url: ENV['STREAM_CHAT_URL'] }.merge(options))
+      Client.new(ENV.fetch('STREAM_KEY'),
+                 ENV.fetch('STREAM_SECRET'),
+                 ENV.fetch('STREAM_CHAT_TIMEOUT', DEFAULT_TIMEOUT),
+                 **{ base_url: ENV.fetch('STREAM_CHAT_URL', DEFAULT_BASE_URL) }.merge(options))
     end
 
     # Sets the underlying Faraday http client.
     #
     # @param [client] an instance of Faraday::Connection
-    sig { params(client: Faraday::Connection).void }
+    T::Sig::WithoutRuntime.sig { params(client: Faraday::Connection).void }
     def set_http_client(client)
       @conn = client
     end
@@ -96,7 +95,7 @@ module StreamChat
     # Knowing whether a user is authorized to perform certain actions is managed
     # separately via a role based permissions system.
     # You can set an `exp` (expires at) or `iat` (issued at) claim as well.
-    sig { params(user_id: String, exp: T.nilable(Integer), iat: T.nilable(Integer)).returns(String) }
+    T::Sig::WithoutRuntime.sig { params(user_id: String, exp: T.nilable(Integer), iat: T.nilable(Integer)).returns(String) }
     def create_token(user_id, exp = nil, iat = nil)
       payload = { user_id: user_id }
       payload['exp'] = exp unless exp.nil?
@@ -105,13 +104,13 @@ module StreamChat
     end
 
     # Updates application settings.
-    sig { params(settings: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(settings: T.untyped).returns(StreamChat::StreamResponse) }
     def update_app_settings(**settings)
       patch('app', data: settings)
     end
 
     # Returns application settings.
-    sig { returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { returns(StreamChat::StreamResponse) }
     def get_app_settings
       get('app')
     end
@@ -121,14 +120,14 @@ module StreamChat
     # Any user is allowed to flag a message. This triggers the message.flagged
     # webhook event and adds the message to the inbox of your
     # Stream Dashboard Chat Moderation view.
-    sig { params(id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def flag_message(id, **options)
       payload = { target_message_id: id }.merge(options)
       post('moderation/flag', data: payload)
     end
 
     # Unflags a message.
-    sig { params(id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def unflag_message(id, **options)
       payload = { target_message_id: id }.merge(options)
       post('moderation/unflag', data: payload)
@@ -139,7 +138,7 @@ module StreamChat
     # If you prefer to build your own in app moderation dashboard, rather than use the Stream
     # dashboard, then the query message flags endpoint lets you get flagged messages. Similar
     # to other queries in Stream Chat, you can filter the flags using query operators.
-    sig { params(filter_conditions: StringKeyHash, options: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(filter_conditions: StringKeyHash, options: T.untyped).returns(StreamChat::StreamResponse) }
     def query_message_flags(filter_conditions, **options)
       params = options.merge({
                                filter_conditions: filter_conditions
@@ -148,28 +147,28 @@ module StreamChat
     end
 
     # Flags a user.
-    sig { params(id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def flag_user(id, **options)
       payload = { target_user_id: id }.merge(options)
       post('moderation/flag', data: payload)
     end
 
     # Unflags a user.
-    sig { params(id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def unflag_user(id, **options)
       payload = { target_user_id: id }.merge(options)
       post('moderation/unflag', data: payload)
     end
 
     # Queries flag reports.
-    sig { params(options: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(options: T.untyped).returns(StreamChat::StreamResponse) }
     def query_flag_reports(**options)
       data = { filter_conditions: options }
       post('moderation/reports', data: data)
     end
 
     # Sends a flag report review.
-    sig { params(report_id: String, review_result: String, user_id: String, details: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(report_id: String, review_result: String, user_id: String, details: T.untyped).returns(StreamChat::StreamResponse) }
     def review_flag_report(report_id, review_result, user_id, **details)
       data = {
         review_result: review_result,
@@ -180,7 +179,7 @@ module StreamChat
     end
 
     # Returns a message.
-    sig { params(id: String).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(id: String).returns(StreamChat::StreamResponse) }
     def get_message(id)
       get("messages/#{id}")
     end
@@ -189,7 +188,7 @@ module StreamChat
     #
     # You can enable and/or disable the search indexing on a per channel basis
     # type through the Stream Dashboard.
-    sig { params(filter_conditions: StringKeyHash, query: T.any(String, StringKeyHash), sort: T.nilable(T::Hash[String, Integer]), options: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(filter_conditions: StringKeyHash, query: T.any(String, StringKeyHash), sort: T.nilable(T::Hash[String, Integer]), options: T.untyped).returns(StreamChat::StreamResponse) }
     def search(filter_conditions, query, sort: nil, **options)
       offset = T.cast(options[:offset], T.nilable(Integer))
       next_value = options[:next]
@@ -208,21 +207,21 @@ module StreamChat
     end
 
     # <b>DEPRECATED:</b> Please use <tt>upsert_users</tt> instead.
-    sig { params(users: T::Array[StringKeyHash]).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(users: T::Array[StringKeyHash]).returns(StreamChat::StreamResponse) }
     def update_users(users)
       warn '[DEPRECATION] `update_users` is deprecated.  Please use `upsert_users` instead.'
       upsert_users(users)
     end
 
     # <b>DEPRECATED:</b> Please use <tt>upsert_user</tt> instead.
-    sig { params(user: StringKeyHash).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(user: StringKeyHash).returns(StreamChat::StreamResponse) }
     def update_user(user)
       warn '[DEPRECATION] `update_user` is deprecated.  Please use `upsert_user` instead.'
       upsert_user(user)
     end
 
     # Creates or updates users.
-    sig { params(users: T::Array[StringKeyHash]).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(users: T::Array[StringKeyHash]).returns(StreamChat::StreamResponse) }
     def upsert_users(users)
       payload = {}
       users.each do |user|
@@ -235,25 +234,25 @@ module StreamChat
     end
 
     # Creates or updates a user.
-    sig { params(user: StringKeyHash).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(user: StringKeyHash).returns(StreamChat::StreamResponse) }
     def upsert_user(user)
       upsert_users([user])
     end
 
     # Updates multiple users partially.
-    sig { params(updates: T::Array[StringKeyHash]).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(updates: T::Array[StringKeyHash]).returns(StreamChat::StreamResponse) }
     def update_users_partial(updates)
       patch('users', data: { users: updates })
     end
 
     # Updates a single user partially.
-    sig { params(update: StringKeyHash).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(update: StringKeyHash).returns(StreamChat::StreamResponse) }
     def update_user_partial(update)
       update_users_partial([update])
     end
 
     # Deletes a user synchronously.
-    sig { params(user_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(user_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def delete_user(user_id, **options)
       delete("users/#{user_id}", params: options)
     end
@@ -261,20 +260,20 @@ module StreamChat
     # Deactivates a user.
     # Deactivated users cannot connect to Stream Chat, and can't send or receive messages.
     # To reactivate a user, use `reactivate_user` method.
-    sig { params(user_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(user_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def deactivate_user(user_id, **options)
       post("users/#{user_id}/deactivate", params: options)
     end
 
     # Reactivates a deactivated user. Use deactivate_user to deactivate a user.
-    sig { params(user_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(user_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def reactivate_user(user_id, **options)
       post("users/#{user_id}/reactivate", params: options)
     end
 
     # Exports a user. It exports a user and returns an object
     # containing all of it's data.
-    sig { params(user_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(user_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def export_user(user_id, **options)
       get("users/#{user_id}/export", params: options)
     end
@@ -283,7 +282,7 @@ module StreamChat
     # When a user is banned, they will not be allowed to post messages until the
     # ban is removed or expired but will be able to connect to Chat and to channels as before.
     # To unban a user, use `unban_user` method.
-    sig { params(target_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(target_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def ban_user(target_id, **options)
       payload = { target_user_id: target_id }.merge(options)
       post('moderation/ban', data: payload)
@@ -291,7 +290,7 @@ module StreamChat
 
     # Unbans a user.
     # To ban a user, use `ban_user` method.
-    sig { params(target_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(target_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def unban_user(target_id, **options)
       params = { target_user_id: target_id }.merge(options)
       delete('moderation/ban', params: params)
@@ -302,7 +301,7 @@ module StreamChat
     # but any message sent during the will only be visible to the messages author
     # and invisible to other users of the App.
     # To remove a shadow ban, use `remove_shadow_ban` method.
-    sig { params(target_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(target_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def shadow_ban(target_id, **options)
       payload = { target_user_id: target_id, shadow: true }.merge(options)
       post('moderation/ban', data: payload)
@@ -310,28 +309,28 @@ module StreamChat
 
     # Removes a shadow ban of a user.
     # To shadow ban a user, use `shadow_ban` method.
-    sig { params(target_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(target_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def remove_shadow_ban(target_id, **options)
       params = { target_user_id: target_id, shadow: true }.merge(options)
       delete('moderation/ban', params: params)
     end
 
     # Mutes a user.
-    sig { params(target_id: String, user_id: String).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(target_id: String, user_id: String).returns(StreamChat::StreamResponse) }
     def mute_user(target_id, user_id)
       payload = { target_id: target_id, user_id: user_id }
       post('moderation/mute', data: payload)
     end
 
     # Unmutes a user.
-    sig { params(target_id: String, user_id: String).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(target_id: String, user_id: String).returns(StreamChat::StreamResponse) }
     def unmute_user(target_id, user_id)
       payload = { target_id: target_id, user_id: user_id }
       post('moderation/unmute', data: payload)
     end
 
     # Marks all messages as read for a user.
-    sig { params(user_id: String).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(user_id: String).returns(StreamChat::StreamResponse) }
     def mark_all_read(user_id)
       payload = { user: { id: user_id } }
       post('channels/read', data: payload)
@@ -343,7 +342,7 @@ module StreamChat
     # promote content. Pinning a message is, by default, restricted to certain user roles,
     # but this is flexible. Each channel can have multiple pinned messages and these can be created
     # or updated with or without an expiration.
-    sig { params(message_id: String, user_id: String, expiration: T.nilable(String)).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(message_id: String, user_id: String, expiration: T.nilable(String)).returns(StreamChat::StreamResponse) }
     def pin_message(message_id, user_id, expiration: nil)
       updates = {
         set: {
@@ -355,7 +354,7 @@ module StreamChat
     end
 
     # Unpins a message.
-    sig { params(message_id: String, user_id: String).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(message_id: String, user_id: String).returns(StreamChat::StreamResponse) }
     def unpin_message(message_id, user_id)
       updates = {
         set: {
@@ -367,7 +366,7 @@ module StreamChat
 
     # Updates a message. Fully overwrites a message.
     # For partial update, use `update_message_partial` method.
-    sig { params(message: StringKeyHash).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(message: StringKeyHash).returns(StreamChat::StreamResponse) }
     def update_message(message)
       raise ArgumentError, 'message must have an id' unless message.key? 'id'
 
@@ -377,7 +376,7 @@ module StreamChat
     # Updates a message partially.
     # A partial update can be used to set and unset specific fields when
     # it is necessary to retain additional data fields on the object. AKA a patch style update.
-    sig { params(message_id: String, updates: StringKeyHash, user_id: T.nilable(String), options: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(message_id: String, updates: StringKeyHash, user_id: T.nilable(String), options: T.untyped).returns(StreamChat::StreamResponse) }
     def update_message_partial(message_id, updates, user_id: nil, **options)
       params = updates.merge(options)
       params['user'] = { id: user_id } if user_id
@@ -385,7 +384,7 @@ module StreamChat
     end
 
     # Deletes a message.
-    sig { params(message_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(message_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def delete_message(message_id, **options)
       delete("messages/#{message_id}", params: options)
     end
@@ -397,7 +396,7 @@ module StreamChat
     # 2) User Search: you can add the banned:true condition to your search. Please note that
     # this will only return users that were banned at the app-level and not the ones
     # that were banned only on channels.
-    sig { params(filter_conditions: StringKeyHash, sort: T.nilable(T::Hash[String, Integer]), options: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(filter_conditions: StringKeyHash, sort: T.nilable(T::Hash[String, Integer]), options: T.untyped).returns(StreamChat::StreamResponse) }
     def query_banned_users(filter_conditions, sort: nil, **options)
       params = options.merge({
                                filter_conditions: filter_conditions,
@@ -408,7 +407,7 @@ module StreamChat
 
     # Allows you to search for users and see if they are online/offline.
     # You can filter and sort on the custom fields you've set for your user, the user id, and when the user was last active.
-    sig { params(filter_conditions: StringKeyHash, sort: T.nilable(T::Hash[String, Integer]), options: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(filter_conditions: StringKeyHash, sort: T.nilable(T::Hash[String, Integer]), options: T.untyped).returns(StreamChat::StreamResponse) }
     def query_users(filter_conditions, sort: nil, **options)
       params = options.merge({
                                filter_conditions: filter_conditions,
@@ -423,7 +422,7 @@ module StreamChat
     # Multiple filters can be combined using AND, OR logical operators, each filter can use its
     # comparison (equality, inequality, greater than, greater or equal, etc.).
     # You can find the complete list of supported operators in the query syntax section of the docs.
-    sig { params(filter_conditions: StringKeyHash, sort: T.nilable(T::Hash[String, Integer]), options: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(filter_conditions: StringKeyHash, sort: T.nilable(T::Hash[String, Integer]), options: T.untyped).returns(StreamChat::StreamResponse) }
     def query_channels(filter_conditions, sort: nil, **options)
       data = { state: true, watch: false, presence: false }
       data = data.merge(options).merge({
@@ -434,32 +433,32 @@ module StreamChat
     end
 
     # Creates a new channel type.
-    sig { params(data: StringKeyHash).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(data: StringKeyHash).returns(StreamChat::StreamResponse) }
     def create_channel_type(data)
       data['commands'] = ['all'] unless data.key?('commands') || data['commands'].nil? || data['commands'].empty?
       post('channeltypes', data: data)
     end
 
     # Returns a channel types.
-    sig { params(channel_type: String).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(channel_type: String).returns(StreamChat::StreamResponse) }
     def get_channel_type(channel_type)
       get("channeltypes/#{channel_type}")
     end
 
     # Returns a list of channel types.
-    sig { returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { returns(StreamChat::StreamResponse) }
     def list_channel_types
       get('channeltypes')
     end
 
     # Updates a channel type.
-    sig { params(channel_type: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(channel_type: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def update_channel_type(channel_type, **options)
       put("channeltypes/#{channel_type}", data: options)
     end
 
     # Deletes a channel type.
-    sig { params(channel_type: String).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(channel_type: String).returns(StreamChat::StreamResponse) }
     def delete_channel_type(channel_type)
       delete("channeltypes/#{channel_type}")
     end
@@ -472,13 +471,13 @@ module StreamChat
     #
     # @return [StreamChat::Channel]
     #
-    sig { params(channel_type: String, channel_id: T.nilable(String), data: T.nilable(StringKeyHash)).returns(StreamChat::Channel) }
+    T::Sig::WithoutRuntime.sig { params(channel_type: String, channel_id: T.nilable(String), data: T.nilable(StringKeyHash)).returns(StreamChat::Channel) }
     def channel(channel_type, channel_id: nil, data: nil)
       StreamChat::Channel.new(self, channel_type, channel_id, data)
     end
 
     # Adds a device to a user.
-    sig { params(device_id: String, push_provider: String, user_id: String, push_provider_name: T.nilable(String)).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(device_id: String, push_provider: String, user_id: String, push_provider_name: T.nilable(String)).returns(StreamChat::StreamResponse) }
     def add_device(device_id, push_provider, user_id, push_provider_name = nil)
       post('devices', data: {
              id: device_id,
@@ -489,20 +488,20 @@ module StreamChat
     end
 
     # Delete a device.
-    sig { params(device_id: String, user_id: String).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(device_id: String, user_id: String).returns(StreamChat::StreamResponse) }
     def delete_device(device_id, user_id)
       delete('devices', params: { id: device_id, user_id: user_id })
     end
 
     # Returns a list of devices.
-    sig { params(user_id: String).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(user_id: String).returns(StreamChat::StreamResponse) }
     def get_devices(user_id)
       get('devices', params: { user_id: user_id })
     end
 
     # Get rate limit quotas and usage.
     # If no params are toggled, all limits for all endpoints are returned.
-    sig { params(server_side: T::Boolean, android: T::Boolean, ios: T::Boolean, web: T::Boolean, endpoints: T::Array[String]).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(server_side: T::Boolean, android: T::Boolean, ios: T::Boolean, web: T::Boolean, endpoints: T::Array[String]).returns(StreamChat::StreamResponse) }
     def get_rate_limits(server_side: false, android: false, ios: false, web: false, endpoints: [])
       params = {}
       params['server_side'] = server_side if server_side
@@ -515,14 +514,14 @@ module StreamChat
     end
 
     # Verify the signature added to a webhook event.
-    sig { params(request_body: String, x_signature: String).returns(T::Boolean) }
+    T::Sig::WithoutRuntime.sig { params(request_body: String, x_signature: String).returns(T::Boolean) }
     def verify_webhook(request_body, x_signature)
       signature = OpenSSL::HMAC.hexdigest('SHA256', @api_secret, request_body)
       signature == x_signature
     end
 
     # Allows you to send custom events to a connected user.
-    sig { params(user_id: String, event: StringKeyHash).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(user_id: String, event: StringKeyHash).returns(StreamChat::StreamResponse) }
     def send_user_event(user_id, event)
       post("users/#{user_id}/event", data: event)
     end
@@ -530,13 +529,13 @@ module StreamChat
     # Translates an existing message to another language. The source language
     # is inferred from the user language or detected automatically by analyzing its text.
     # If possible it is recommended to store the user language. See the documentation.
-    sig { params(message_id: String, language: String).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(message_id: String, language: String).returns(StreamChat::StreamResponse) }
     def translate_message(message_id, language)
       post("messages/#{message_id}/translate", data: { language: language })
     end
 
     # Runs a message command action.
-    sig { params(message_id: String, data: StringKeyHash).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(message_id: String, data: StringKeyHash).returns(StreamChat::StreamResponse) }
     def run_message_action(message_id, data)
       post("messages/#{message_id}/action", data: data)
     end
@@ -547,7 +546,7 @@ module StreamChat
     # Support and livestreams are common use cases for guests users because really
     # often you want a visitor to be able to use chat on your application without (or before)
     # they have a regular user account.
-    sig { params(user: StringKeyHash).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(user: StringKeyHash).returns(StreamChat::StreamResponse) }
     def create_guest(user)
       post('guests', data: user)
     end
@@ -559,7 +558,7 @@ module StreamChat
     # of the most common profane words.
     # You can manage your own block lists via the Stream dashboard or APIs to a manage
     # blocklists and configure your channel types to use them.
-    sig { returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { returns(StreamChat::StreamResponse) }
     def list_blocklists
       get('blocklists')
     end
@@ -571,7 +570,7 @@ module StreamChat
     # of the most common profane words.
     # You can manage your own block lists via the Stream dashboard or APIs to a manage
     # blocklists and configure your channel types to use them.
-    sig { params(name: String).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(name: String).returns(StreamChat::StreamResponse) }
     def get_blocklist(name)
       get("blocklists/#{name}")
     end
@@ -583,7 +582,7 @@ module StreamChat
     # of the most common profane words.
     # You can manage your own block lists via the Stream dashboard or APIs to a manage
     # blocklists and configure your channel types to use them.
-    sig { params(name: String, words: StringKeyHash).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(name: String, words: StringKeyHash).returns(StreamChat::StreamResponse) }
     def create_blocklist(name, words)
       post('blocklists', data: { name: name, words: words })
     end
@@ -595,7 +594,7 @@ module StreamChat
     # of the most common profane words.
     # You can manage your own block lists via the Stream dashboard or APIs to a manage
     # blocklists and configure your channel types to use them.
-    sig { params(name: String, words: StringKeyHash).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(name: String, words: StringKeyHash).returns(StreamChat::StreamResponse) }
     def update_blocklist(name, words)
       put("blocklists/#{name}", data: { words: words })
     end
@@ -607,7 +606,7 @@ module StreamChat
     # of the most common profane words.
     # You can manage your own block lists via the Stream dashboard or APIs to a manage
     # blocklists and configure your channel types to use them.
-    sig { params(name: String).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(name: String).returns(StreamChat::StreamResponse) }
     def delete_blocklist(name)
       delete("blocklists/#{name}")
     end
@@ -617,51 +616,51 @@ module StreamChat
     # Channel exports are created asynchronously, you can use the Task ID returned by
     # the APIs to keep track of the status and to download the final result when it is ready.
     # Use `get_task` to check the status of the export.
-    sig { params(channels: StringKeyHash, options: T.untyped).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(channels: StringKeyHash, options: T.untyped).returns(StreamChat::StreamResponse) }
     def export_channels(*channels, **options)
       post('export_channels', data: { channels: channels, **options })
     end
 
     # Returns the status of a channel export. It contains the URL to the JSON file.
-    sig { params(task_id: String).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(task_id: String).returns(StreamChat::StreamResponse) }
     def get_export_channel_status(task_id)
       get("export_channels/#{task_id}")
     end
 
     # Returns the status of a task.
-    sig { params(task_id: String).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(task_id: String).returns(StreamChat::StreamResponse) }
     def get_task(task_id)
       get("tasks/#{task_id}")
     end
 
     # Delete users asynchronously. Use `get_task` to check the status of the task.
-    sig { params(user_ids: T::Array[String], user: String, messages: T.nilable(StringKeyHash), conversations: T.nilable(String)).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(user_ids: T::Array[String], user: String, messages: T.nilable(StringKeyHash), conversations: T.nilable(String)).returns(StreamChat::StreamResponse) }
     def delete_users(user_ids, user: SOFT_DELETE, messages: nil, conversations: nil)
       post('users/delete', data: { user_ids: user_ids, user: user, messages: messages, conversations: conversations })
     end
 
     # Deletes multiple channels. This is an asynchronous operation and the returned value is a task Id.
     # You can use `get_task` method to check the status of the task.
-    sig { params(cids: T::Array[String], hard_delete: T::Boolean).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(cids: T::Array[String], hard_delete: T::Boolean).returns(StreamChat::StreamResponse) }
     def delete_channels(cids, hard_delete: false)
       post('channels/delete', data: { cids: cids, hard_delete: hard_delete })
     end
 
     # Revoke tokens for an application issued since the given date.
-    sig { params(before: T.any(DateTime, String)).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(before: T.any(DateTime, String)).returns(StreamChat::StreamResponse) }
     def revoke_tokens(before)
       before = T.cast(before, DateTime).rfc3339 if before.instance_of?(DateTime)
       update_app_settings({ 'revoke_tokens_issued_before' => before })
     end
 
     # Revoke tokens for a user issued since the given date.
-    sig { params(user_id: String, before: T.any(DateTime, String)).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(user_id: String, before: T.any(DateTime, String)).returns(StreamChat::StreamResponse) }
     def revoke_user_token(user_id, before)
       revoke_users_token([user_id], before)
     end
 
     # Revoke tokens for users issued since.
-    sig { params(user_ids: T::Array[String], before: T.any(DateTime, String)).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(user_ids: T::Array[String], before: T.any(DateTime, String)).returns(StreamChat::StreamResponse) }
     def revoke_users_token(user_ids, before)
       before = T.cast(before, DateTime).rfc3339 if before.instance_of?(DateTime)
 
@@ -677,27 +676,27 @@ module StreamChat
       update_users_partial(updates)
     end
 
-    sig { params(relative_url: String, params: T.nilable(StringKeyHash), data: T.nilable(StringKeyHash)).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(relative_url: String, params: T.nilable(StringKeyHash), data: T.nilable(StringKeyHash)).returns(StreamChat::StreamResponse) }
     def put(relative_url, params: nil, data: nil)
       make_http_request(:put, relative_url, params: params, data: data)
     end
 
-    sig { params(relative_url: String, params: T.nilable(StringKeyHash), data: T.nilable(StringKeyHash)).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(relative_url: String, params: T.nilable(StringKeyHash), data: T.nilable(StringKeyHash)).returns(StreamChat::StreamResponse) }
     def post(relative_url, params: nil, data: nil)
       make_http_request(:post, relative_url, params: params, data: data)
     end
 
-    sig { params(relative_url: String, params: T.nilable(StringKeyHash)).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(relative_url: String, params: T.nilable(StringKeyHash)).returns(StreamChat::StreamResponse) }
     def get(relative_url, params: nil)
       make_http_request(:get, relative_url, params: params)
     end
 
-    sig { params(relative_url: String, params: T.nilable(StringKeyHash)).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(relative_url: String, params: T.nilable(StringKeyHash)).returns(StreamChat::StreamResponse) }
     def delete(relative_url, params: nil)
       make_http_request(:delete, relative_url, params: params)
     end
 
-    sig { params(relative_url: String, params: T.nilable(StringKeyHash), data: T.nilable(StringKeyHash)).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(relative_url: String, params: T.nilable(StringKeyHash), data: T.nilable(StringKeyHash)).returns(StreamChat::StreamResponse) }
     def patch(relative_url, params: nil, data: nil)
       make_http_request(:patch, relative_url, params: params, data: data)
     end
@@ -706,7 +705,7 @@ module StreamChat
     #
     # This functionality defaults to using the Stream CDN. If you would like, you can
     # easily change the logic to upload to your own CDN of choice.
-    sig { params(relative_url: String, file_url: String, user: StringKeyHash, content_type: T.nilable(String)).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(relative_url: String, file_url: String, user: StringKeyHash, content_type: T.nilable(String)).returns(StreamChat::StreamResponse) }
     def send_file(relative_url, file_url, user, content_type = nil)
       url = [@base_url, relative_url].join('/')
 
@@ -726,7 +725,7 @@ module StreamChat
     end
 
     # Check push notification settings.
-    sig { params(push_data: StringKeyHash).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(push_data: StringKeyHash).returns(StreamChat::StreamResponse) }
     def check_push(push_data)
       post('check_push', data: push_data)
     end
@@ -734,120 +733,120 @@ module StreamChat
     # Check SQS Push settings
     #
     # When no parameters are given, the current SQS app settings are used.
-    sig { params(sqs_key: T.nilable(String), sqs_secret: T.nilable(String), sqs_url: T.nilable(String)).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(sqs_key: T.nilable(String), sqs_secret: T.nilable(String), sqs_url: T.nilable(String)).returns(StreamChat::StreamResponse) }
     def check_sqs(sqs_key = nil, sqs_secret = nil, sqs_url = nil)
       post('check_sqs', data: { sqs_key: sqs_key, sqs_secret: sqs_secret, sqs_url: sqs_url })
     end
 
     # Creates a new command.
-    sig { params(command: StringKeyHash).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(command: StringKeyHash).returns(StreamChat::StreamResponse) }
     def create_command(command)
       post('commands', data: command)
     end
 
     # Gets a comamnd.
-    sig { params(name: String).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(name: String).returns(StreamChat::StreamResponse) }
     def get_command(name)
       get("commands/#{name}")
     end
 
     # Updates a command.
-    sig { params(name: String, command: StringKeyHash).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(name: String, command: StringKeyHash).returns(StreamChat::StreamResponse) }
     def update_command(name, command)
       put("commands/#{name}", data: command)
     end
 
     # Deletes a command.
-    sig { params(name: String).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(name: String).returns(StreamChat::StreamResponse) }
     def delete_command(name)
       delete("commands/#{name}")
     end
 
     # Lists all commands.
-    sig { returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { returns(StreamChat::StreamResponse) }
     def list_commands
       get('commands')
     end
 
     # Lists all permissions.
-    sig { returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { returns(StreamChat::StreamResponse) }
     def list_permissions
       get('permissions')
     end
 
     # Gets a permission.
-    sig { params(id: String).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(id: String).returns(StreamChat::StreamResponse) }
     def get_permission(id)
       get("permissions/#{id}")
     end
 
     # Creates a new permission.
-    sig { params(permission: StringKeyHash).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(permission: StringKeyHash).returns(StreamChat::StreamResponse) }
     def create_permission(permission)
       post('permissions', data: permission)
     end
 
     # Updates a permission.
-    sig { params(id: String, permission: StringKeyHash).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(id: String, permission: StringKeyHash).returns(StreamChat::StreamResponse) }
     def update_permission(id, permission)
       put("permissions/#{id}", data: permission)
     end
 
     # Deletes a permission by id.
-    sig { params(id: String).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(id: String).returns(StreamChat::StreamResponse) }
     def delete_permission(id)
       delete("permissions/#{id}")
     end
 
     # Create a new role.
-    sig { params(name: String).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(name: String).returns(StreamChat::StreamResponse) }
     def create_role(name)
       post('roles', data: { name: name })
     end
 
     # Delete a role by name.
-    sig { params(name: String).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(name: String).returns(StreamChat::StreamResponse) }
     def delete_role(name)
       delete("roles/#{name}")
     end
 
     # List all roles.
-    sig { returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { returns(StreamChat::StreamResponse) }
     def list_roles
       get('roles')
     end
 
     # Create or update a push provider.
-    sig { params(push_provider: StringKeyHash).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(push_provider: StringKeyHash).returns(StreamChat::StreamResponse) }
     def upsert_push_provider(push_provider)
       post('push_providers', data: { push_provider: push_provider })
     end
 
     # Delete a push provider by type and name.
-    sig { params(type: String, name: String).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(type: String, name: String).returns(StreamChat::StreamResponse) }
     def delete_push_provider(type, name)
       delete("push_providers/#{type}/#{name}")
     end
 
     # Lists all push providers.
-    sig { returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { returns(StreamChat::StreamResponse) }
     def list_push_providers
       get('push_providers')
     end
 
     private
 
-    sig { returns(T::Hash[String, String]) }
+    T::Sig::WithoutRuntime.sig { returns(T::Hash[String, String]) }
     def get_default_params
       { api_key: @api_key }
     end
 
-    sig { returns(String) }
+    T::Sig::WithoutRuntime.sig { returns(String) }
     def get_user_agent
       "stream-ruby-client-#{StreamChat::VERSION}"
     end
 
-    sig { returns(T::Hash[String, String]) }
+    T::Sig::WithoutRuntime.sig { returns(T::Hash[String, String]) }
     def get_default_headers
       {
         'Content-Type': 'application/json',
@@ -855,7 +854,7 @@ module StreamChat
       }
     end
 
-    sig { params(response: Faraday::Response).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(response: Faraday::Response).returns(StreamChat::StreamResponse) }
     def parse_response(response)
       begin
         parsed_result = JSON.parse(response.body)
@@ -867,7 +866,7 @@ module StreamChat
       StreamResponse.new(parsed_result, response)
     end
 
-    sig { params(method: Symbol, relative_url: String, params: T.nilable(StringKeyHash), data: T.nilable(StringKeyHash)).returns(StreamChat::StreamResponse) }
+    T::Sig::WithoutRuntime.sig { params(method: Symbol, relative_url: String, params: T.nilable(StringKeyHash), data: T.nilable(StringKeyHash)).returns(StreamChat::StreamResponse) }
     def make_http_request(method, relative_url, params: nil, data: nil)
       headers = get_default_headers
       headers['Authorization'] = @auth_token

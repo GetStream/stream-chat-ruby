@@ -4,21 +4,20 @@
 module StreamChat
   class StreamRateLimits
     extend T::Sig
-    T::Configuration.default_checked_level = :never
     # For now we disable runtime type checks.
     # We will enable it with a major bump in the future,
     # but for now, let's just run a static type check.
 
-    sig { returns(Integer) }
+    T::Sig::WithoutRuntime.sig { returns(Integer) }
     attr_reader :limit
 
-    sig { returns(Integer) }
+    T::Sig::WithoutRuntime.sig { returns(Integer) }
     attr_reader :remaining
 
-    sig { returns(Time) }
+    T::Sig::WithoutRuntime.sig { returns(Time) }
     attr_reader :reset
 
-    sig { params(limit: String, remaining: String, reset: String).void }
+    T::Sig::WithoutRuntime.sig { params(limit: String, remaining: String, reset: String).void }
     def initialize(limit, remaining, reset)
       @limit = T.let(limit.to_i, Integer)
       @remaining = T.let(remaining.to_i, Integer)
