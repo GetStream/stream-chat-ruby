@@ -5,12 +5,11 @@ require 'stream-chat/types'
 
 module StreamChat
   extend T::Sig
-  T::Configuration.default_checked_level = :never
   # For now we disable runtime type checks.
   # We will enable it with a major bump in the future,
   # but for now, let's just run a static type check.
 
-  sig { params(sort: T.nilable(T::Hash[String, Integer])).returns(SortArray) }
+  T::Sig::WithoutRuntime.sig { params(sort: T.nilable(T::Hash[String, Integer])).returns(SortArray) }
   def self.get_sort_fields(sort)
     sort_fields = T.let([], SortArray)
     sort&.each do |k, v|

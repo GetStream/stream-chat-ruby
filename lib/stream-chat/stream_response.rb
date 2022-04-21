@@ -7,21 +7,20 @@ require 'stream-chat/types'
 module StreamChat
   class StreamResponse < Hash
     extend T::Sig
-    T::Configuration.default_checked_level = :never
     # For now we disable runtime type checks.
     # We will enable it with a major bump in the future,
     # but for now, let's just run a static type check.
 
-    sig { returns(StreamRateLimits) }
+    T::Sig::WithoutRuntime.sig { returns(StreamRateLimits) }
     attr_reader :rate_limit
 
-    sig { returns(Integer) }
+    T::Sig::WithoutRuntime.sig { returns(Integer) }
     attr_reader :status_code
 
-    sig { returns(StringKeyHash) }
+    T::Sig::WithoutRuntime.sig { returns(StringKeyHash) }
     attr_reader :headers
 
-    sig { params(hash: T::Hash[T.untyped, T.untyped], response: Faraday::Response).void }
+    T::Sig::WithoutRuntime.sig { params(hash: T::Hash[T.untyped, T.untyped], response: Faraday::Response).void }
     def initialize(hash, response)
       super(nil)
       merge!(hash)
