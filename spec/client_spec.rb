@@ -3,6 +3,7 @@
 require 'jwt'
 require 'securerandom'
 require 'stream-chat'
+require 'faraday'
 
 describe StreamChat::Client do
   def loop_times(times)
@@ -704,6 +705,23 @@ describe StreamChat::Client do
       cmds.each do |cmd|
         expect(cmd['name']).not_to eq @cmd
       end
+    end
+
+    it 'import end2end' do
+      url_resp = @client.create_import_url("#{SecureRandom.uuid}.json'")
+      expect(url_resp['upload_url']).not_to be_empty
+      expect(url_resp['path']).not_to be_empty
+
+      Faraday.put(url_resp['upload_url'], '{}', 'Content-Type' => 'application/json')
+
+      create_resp = @client.create_import(url_resp['path'], 'upsert')
+      expect(create_resp['import_task']['id']).not_to be_empty
+
+      get_resp = @client.get_import(create_resp['import_task']['id'])
+      expect(get_resp['import_task']['id']).to eq create_resp['import_task']['id']
+
+      list_resp = @client.list_imports({ limit: 1 })
+      expect(list_resp['import_tasks'].length).to eq 1
     end
   end
 
