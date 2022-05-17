@@ -834,6 +834,26 @@ module StreamChat
       get('push_providers')
     end
 
+    T::Sig::WithoutRuntime.sig { params(filename: String).returns(StreamChat::StreamResponse) }
+    def create_import_url(filename)
+      post('import_urls', data: { filename: filename })
+    end
+
+    T::Sig::WithoutRuntime.sig { params(path: String, mode: String).returns(StreamChat::StreamResponse) }
+    def create_import(path, mode)
+      post('imports', data: { path: path, mode: mode })
+    end
+
+    T::Sig::WithoutRuntime.sig { params(id: String).returns(StreamChat::StreamResponse) }
+    def get_import(id)
+      get("imports/#{id}")
+    end
+
+    T::Sig::WithoutRuntime.sig { params(options: T.untyped).returns(StreamChat::StreamResponse) }
+    def list_imports(options)
+      get('imports', params: options)
+    end
+
     private
 
     T::Sig::WithoutRuntime.sig { returns(T::Hash[String, String]) }
