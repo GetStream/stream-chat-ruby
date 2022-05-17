@@ -35,6 +35,15 @@ describe StreamChat::Channel do
     @channel.create(@random_user[:id])
   end
 
+  after(:each) do
+    @client.delete_users(@random_users.map { |u| u[:id] } + [@random_user[:id]], user: StreamChat::HARD_DELETE, messages: StreamChat::HARD_DELETE)
+    begin
+      @channel.delete
+    rescue StreamChat::StreamAPIException
+      # if the channel is already deleted by the test, we can ignore the error
+    end
+  end
+
   it 'can create channel without id' do
     channel = @client.channel('messaging', data: { 'members' => @random_users.map { |u| u[:id] } })
     expect(channel.id).to eq nil

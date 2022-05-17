@@ -43,6 +43,10 @@ describe StreamChat::Client do
     @client.upsert_users(@random_users)
   end
 
+  after(:each) do
+    @client.delete_users(@random_users.map { |u| u[:id] } + [@random_user[:id]], user: StreamChat::HARD_DELETE, messages: StreamChat::HARD_DELETE)
+  end
+
   it 'properly sets up a new client' do
     client = StreamChat::Client.from_env
 
