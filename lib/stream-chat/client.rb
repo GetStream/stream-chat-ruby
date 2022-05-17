@@ -206,14 +206,14 @@ module StreamChat
       get('search', params: { payload: options.merge(to_merge).to_json })
     end
 
-    # <b>DEPRECATED:</b> Please use <tt>upsert_users</tt> instead.
+    # @deprecated Use {#upsert_users} instead.
     T::Sig::WithoutRuntime.sig { params(users: T::Array[StringKeyHash]).returns(StreamChat::StreamResponse) }
     def update_users(users)
       warn '[DEPRECATION] `update_users` is deprecated.  Please use `upsert_users` instead.'
       upsert_users(users)
     end
 
-    # <b>DEPRECATED:</b> Please use <tt>upsert_user</tt> instead.
+    # @deprecated Use {#upsert_user} instead.
     T::Sig::WithoutRuntime.sig { params(user: StringKeyHash).returns(StreamChat::StreamResponse) }
     def update_user(user)
       warn '[DEPRECATION] `update_user` is deprecated.  Please use `upsert_user` instead.'
@@ -834,24 +834,120 @@ module StreamChat
       get('push_providers')
     end
 
+    # Creates a signed URL for imports.
+    # @example
+    #   url_resp = client.create_import_url('myfile.json')
+    #   Faraday.put(url_resp['upload_url'], File.read('myfile.json'), 'Content-Type' => 'application/json')
+    #   client.create_import(url_resp['path'], 'upsert')
     T::Sig::WithoutRuntime.sig { params(filename: String).returns(StreamChat::StreamResponse) }
     def create_import_url(filename)
       post('import_urls', data: { filename: filename })
     end
 
+    # Creates a new import.
+    # @example
+    #   url_resp = client.create_import_url('myfile.json')
+    #   Faraday.put(url_resp['upload_url'], File.read('myfile.json'), 'Content-Type' => 'application/json')
+    #   client.create_import(url_resp['path'], 'upsert')
     T::Sig::WithoutRuntime.sig { params(path: String, mode: String).returns(StreamChat::StreamResponse) }
     def create_import(path, mode)
       post('imports', data: { path: path, mode: mode })
     end
 
+    # Returns an import by id.
     T::Sig::WithoutRuntime.sig { params(id: String).returns(StreamChat::StreamResponse) }
     def get_import(id)
       get("imports/#{id}")
     end
 
+    # Lists imports. Options dictionary can contain 'offset' and 'limit' keys for pagination.
     T::Sig::WithoutRuntime.sig { params(options: T.untyped).returns(StreamChat::StreamResponse) }
     def list_imports(options)
       get('imports', params: options)
+    end
+
+    # Creates a campaign.
+    T::Sig::WithoutRuntime.sig { params(campaign: StringKeyHash).returns(StreamChat::StreamResponse) }
+    def create_campaign(campaign)
+      post('campaigns', data: { campaign: campaign })
+    end
+
+    # Gets a campaign.
+    T::Sig::WithoutRuntime.sig { params(campaign_id: String).returns(StreamChat::StreamResponse) }
+    def get_campaign(campaign_id)
+      get("campaigns/#{campaign_id}")
+    end
+
+    # Lists all campaigns. Options dictionary can contain 'offset' and 'limit' keys for pagination.
+    T::Sig::WithoutRuntime.sig { params(options: StringKeyHash).returns(StreamChat::StreamResponse) }
+    def list_campaigns(options)
+      get('campaigns', params: options)
+    end
+
+    # Updates a campaign.
+    T::Sig::WithoutRuntime.sig { params(campaign_id: String, campaign: StringKeyHash).returns(StreamChat::StreamResponse) }
+    def update_campaign(campaign_id, campaign)
+      put("campaigns/#{campaign_id}", data: { campaign: campaign })
+    end
+
+    # Deletes a campaign.
+    T::Sig::WithoutRuntime.sig { params(campaign_id: String).returns(StreamChat::StreamResponse) }
+    def delete_campaign(campaign_id)
+      delete("campaigns/#{campaign_id}")
+    end
+
+    # Schedules a campaign.
+    T::Sig::WithoutRuntime.sig { params(campaign_id: String, send_at: Integer).returns(StreamChat::StreamResponse) }
+    def schedule_campaign(campaign_id, send_at)
+      patch("campaigns/#{campaign_id}/schedule", data: { send_at: send_at })
+    end
+
+    # Stops a campaign.
+    T::Sig::WithoutRuntime.sig { params(campaign_id: String).returns(StreamChat::StreamResponse) }
+    def stop_campaign(campaign_id)
+      patch("campaigns/#{campaign_id}/stop")
+    end
+
+    # Resumes a campaign.
+    T::Sig::WithoutRuntime.sig { params(campaign_id: String).returns(StreamChat::StreamResponse) }
+    def resume_campaign(campaign_id)
+      patch("campaigns/#{campaign_id}/resume")
+    end
+
+    # Tests a campaign.
+    T::Sig::WithoutRuntime.sig { params(campaign_id: String, users: T::Array[StringKeyHash]).returns(StreamChat::StreamResponse) }
+    def test_campaign(campaign_id, users)
+      post("campaigns/#{campaign_id}/test", data: { users: users })
+    end
+
+    # Creates a campaign segment.
+    T::Sig::WithoutRuntime.sig { params(segment: StringKeyHash).returns(StreamChat::StreamResponse) }
+    def create_segment(segment)
+      post('segments', data: { segment: segment })
+    end
+
+    # Gets a campaign segment.
+    T::Sig::WithoutRuntime.sig { params(segment_id: String).returns(StreamChat::StreamResponse) }
+    def get_segment(segment_id)
+      get("segments/#{segment_id}")
+    end
+
+    # Lists all campaign segments. Options dictionary can contain 'offset' and 'limit' keys for pagination.
+    T::Sig::WithoutRuntime.sig { params(options: StringKeyHash).returns(StreamChat::StreamResponse) }
+    def list_segments(options)
+      get('segments', params: options)
+    end
+
+    # Updates a campaign segment.
+    T::Sig::WithoutRuntime.sig { params(segment_id: String, segment: StringKeyHash).returns(StreamChat::StreamResponse) }
+    def update_segment(segment_id, segment)
+      put("segments/#{segment_id}", data: { segment: segment })
+    end
+
+    # Deletes a campaign segment.
+    T::Sig::WithoutRuntime.sig { params(segment_id: String).returns(StreamChat::StreamResponse) }
+    def delete_segment(segment_id)
+      delete("segments/#{segment_id}")
     end
 
     private
