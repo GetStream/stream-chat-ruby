@@ -2,5 +2,5 @@
 # frozen_string_literal: true
 
 module StreamChat
-  VERSION = '2.22.2'
+  VERSION = '2.23.0'
 end

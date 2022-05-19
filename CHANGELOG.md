@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.23.0](https://github.com/GetStream/stream-chat-ruby/compare/v2.22.2...v2.23.0) (2022-05-19)
+
+
+### Features
+
+* **campaign:** add campaign endpoints ([c8c698b](https://github.com/GetStream/stream-chat-ruby/commit/c8c698b51ee2c9f54819c2b9407a3fff7808efd5))
+* **import:** add import endpoints ([#102](https://github.com/GetStream/stream-chat-ruby/issues/102)) ([4d7358d](https://github.com/GetStream/stream-chat-ruby/commit/4d7358d39615c5346f9fdcb2b0dfbffa3c2ae79c))
+
 ### [2.22.2](https://github.com/GetStream/stream-chat-ruby/compare/v2.22.1...v2.22.2) (2022-04-21)
 
 
