@@ -9,23 +9,20 @@ require 'stream-chat/types'
 module StreamChat
   class Channel
     extend T::Sig
-    # For now we disable runtime type checks.
-    # We will enable it with a major bump in the future,
-    # but for now, let's just run a static type check.
 
-    T::Sig::WithoutRuntime.sig { returns(T.nilable(String)) }
+    sig { returns(T.nilable(String)) }
     attr_reader :id
 
-    T::Sig::WithoutRuntime.sig { returns(String) }
+    sig { returns(String) }
     attr_reader :channel_type
 
-    T::Sig::WithoutRuntime.sig { returns(StringKeyHash) }
+    sig { returns(StringKeyHash) }
     attr_reader :custom_data
 
-    T::Sig::WithoutRuntime.sig { returns(T::Array[StringKeyHash]) }
+    sig { returns(T::Array[StringKeyHash]) }
     attr_reader :members
 
-    T::Sig::WithoutRuntime.sig { params(client: StreamChat::Client, channel_type: String, channel_id: T.nilable(String), custom_data: T.nilable(StringKeyHash)).void }
+    sig { params(client: StreamChat::Client, channel_type: String, channel_id: T.nilable(String), custom_data: T.nilable(StringKeyHash)).void }
     def initialize(client, channel_type, channel_id = nil, custom_data = nil)
       @channel_type = channel_type
       @id = channel_id
@@ -35,7 +32,7 @@ module StreamChat
       @members = T.let([], T::Array[StringKeyHash])
     end
 
-    T::Sig::WithoutRuntime.sig { returns(String) }
+    sig { returns(String) }
     def url
       raise StreamChannelException, 'channel does not have an id' if @id.nil?
 
@@ -43,34 +40,34 @@ module StreamChat
     end
 
     # Gets multiple messages from the channel.
-    T::Sig::WithoutRuntime.sig { params(message_ids: T::Array[String]).returns(StreamChat::StreamResponse) }
+    sig { params(message_ids: T::Array[String]).returns(StreamChat::StreamResponse) }
     def get_messages(message_ids)
       @client.get("#{url}/messages", params: { 'ids' => message_ids.join(',') })
     end
 
     # Sends a message to this channel.
-    T::Sig::WithoutRuntime.sig { params(message: StringKeyHash, user_id: String).returns(StreamChat::StreamResponse) }
+    sig { params(message: StringKeyHash, user_id: String).returns(StreamChat::StreamResponse) }
     def send_message(message, user_id)
       payload = { message: add_user_id(message, user_id) }
       @client.post("#{url}/message", data: payload)
     end
 
     # Sends an event on this channel.
-    T::Sig::WithoutRuntime.sig { params(event: StringKeyHash, user_id: String).returns(StreamChat::StreamResponse) }
+    sig { params(event: StringKeyHash, user_id: String).returns(StreamChat::StreamResponse) }
     def send_event(event, user_id)
       payload = { 'event' => add_user_id(event, user_id) }
       @client.post("#{url}/event", data: payload)
     end
 
     # Sends a new reaction to a given message.
-    T::Sig::WithoutRuntime.sig { params(message_id: String, reaction: StringKeyHash, user_id: String).returns(StreamChat::StreamResponse) }
+    sig { params(message_id: String, reaction: StringKeyHash, user_id: String).returns(StreamChat::StreamResponse) }
     def send_reaction(message_id, reaction, user_id)
       payload = { reaction: add_user_id(reaction, user_id) }
       @client.post("messages/#{message_id}/reaction", data: payload)
     end
 
     # Delete a reaction from a message.
-    T::Sig::WithoutRuntime.sig { params(message_id: String, reaction_type: String, user_id: String).returns(StreamChat::StreamResponse) }
+    sig { params(message_id: String, reaction_type: String, user_id: String).returns(StreamChat::StreamResponse) }
     def delete_reaction(message_id, reaction_type, user_id)
       @client.delete(
         "messages/#{message_id}/reaction/#{reaction_type}",
@@ -79,14 +76,14 @@ module StreamChat
     end
 
     # Creates a channel with the given creator user.
-    T::Sig::WithoutRuntime.sig { params(user_id: String).returns(StreamChat::StreamResponse) }
+    sig { params(user_id: String).returns(StreamChat::StreamResponse) }
     def create(user_id)
       @custom_data['created_by'] = { id: user_id }
       query(watch: false, state: false, presence: false)
     end
 
     # Creates or returns a channel.
-    T::Sig::WithoutRuntime.sig { params(options: T.untyped).returns(StreamChat::StreamResponse) }
+    sig { params(options: T.untyped).returns(StreamChat::StreamResponse) }
     def query(**options)
       payload = { state: true, data: @custom_data }.merge(options)
       url = "channels/#{@channel_type}"
@@ -103,7 +100,7 @@ module StreamChat
     # endpoint supports filtering on numerous criteria to efficiently return members information.
     # This endpoint is useful for channels that have large lists of members and
     # you want to search members or if you want to display the full list of members for a channel.
-    T::Sig::WithoutRuntime.sig { params(filter_conditions: StringKeyHash, sort: T.nilable(T::Hash[String, Integer]), options: T.untyped).returns(StreamChat::StreamResponse) }
+    sig { params(filter_conditions: StringKeyHash, sort: T.nilable(T::Hash[String, Integer]), options: T.untyped).returns(StreamChat::StreamResponse) }
     def query_members(filter_conditions = {}, sort: nil, **options)
       params = {}.merge(options).merge({
                                          id: @id,
@@ -123,14 +120,14 @@ module StreamChat
     end
 
     # Updates a channel.
-    T::Sig::WithoutRuntime.sig { params(channel_data: T.nilable(StringKeyHash), update_message: T.nilable(StringKeyHash), options: T.untyped).returns(StreamChat::StreamResponse) }
+    sig { params(channel_data: T.nilable(StringKeyHash), update_message: T.nilable(StringKeyHash), options: T.untyped).returns(StreamChat::StreamResponse) }
     def update(channel_data, update_message = nil, **options)
       payload = { data: channel_data, message: update_message }.merge(options)
       @client.post(url, data: payload)
     end
 
     # Updates a channel partially.
-    T::Sig::WithoutRuntime.sig { params(set: T.nilable(StringKeyHash), unset: T.nilable(T::Array[String])).returns(StreamChat::StreamResponse) }
+    sig { params(set: T.nilable(StringKeyHash), unset: T.nilable(T::Array[String])).returns(StreamChat::StreamResponse) }
     def update_partial(set = nil, unset = nil)
       raise StreamChannelException, 'set or unset is needed' if set.nil? && unset.nil?
 
@@ -139,13 +136,13 @@ module StreamChat
     end
 
     # Deletes a channel.
-    T::Sig::WithoutRuntime.sig { returns(StreamChat::StreamResponse) }
+    sig { returns(StreamChat::StreamResponse) }
     def delete
       @client.delete(url)
     end
 
     # Removes all messages from the channel.
-    T::Sig::WithoutRuntime.sig { params(options: T.untyped).returns(StreamChat::StreamResponse) }
+    sig { params(options: T.untyped).returns(StreamChat::StreamResponse) }
     def truncate(**options)
       @client.post("#{url}/truncate", data: options)
     end
@@ -156,7 +153,7 @@ module StreamChat
     # unread count for the users that muted it. By default, mutes stay in place indefinitely
     # until the user removes it; however, you can optionally set an expiration time. The list
     # of muted channels and their expiration time is returned when the user connects.
-    T::Sig::WithoutRuntime.sig { params(user_id: String, expiration: T.nilable(Integer)).returns(StreamChat::StreamResponse) }
+    sig { params(user_id: String, expiration: T.nilable(Integer)).returns(StreamChat::StreamResponse) }
     def mute(user_id, expiration = nil)
       data = { user_id: user_id, channel_cid: @cid }
       data['expiration'] = expiration if expiration
@@ -164,104 +161,104 @@ module StreamChat
     end
 
     # Unmutes a channel.
-    T::Sig::WithoutRuntime.sig { params(user_id: String).returns(StreamChat::StreamResponse) }
+    sig { params(user_id: String).returns(StreamChat::StreamResponse) }
     def unmute(user_id)
       @client.post('moderation/unmute/channel', data: { 'user_id' => user_id, 'channel_cid' => @cid })
     end
 
     # Adds members to the channel.
-    T::Sig::WithoutRuntime.sig { params(user_ids: T::Array[String], options: T.untyped).returns(StreamChat::StreamResponse) }
+    sig { params(user_ids: T::Array[String], options: T.untyped).returns(StreamChat::StreamResponse) }
     def add_members(user_ids, **options)
       payload = options.merge({ add_members: user_ids })
       update(nil, nil, **payload)
     end
 
     # Invites users to the channel.
-    T::Sig::WithoutRuntime.sig { params(user_ids: T::Array[String], options: T.untyped).returns(StreamChat::StreamResponse) }
+    sig { params(user_ids: T::Array[String], options: T.untyped).returns(StreamChat::StreamResponse) }
     def invite_members(user_ids, **options)
       payload = options.merge({ invites: user_ids })
       update(nil, nil, **payload)
     end
 
     # Accepts an invitation to the channel.
-    T::Sig::WithoutRuntime.sig { params(user_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    sig { params(user_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def accept_invite(user_id, **options)
       payload = options.merge({ user_id: user_id, accept_invite: true })
       update(nil, nil, **payload)
     end
 
     # Rejects an invitation to the channel.
-    T::Sig::WithoutRuntime.sig { params(user_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    sig { params(user_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def reject_invite(user_id, **options)
       payload = options.merge({ user_id: user_id, reject_invite: true })
       update(nil, nil, **payload)
     end
 
     # Adds moderators to the channel.
-    T::Sig::WithoutRuntime.sig { params(user_ids: T::Array[String]).returns(StreamChat::StreamResponse) }
+    sig { params(user_ids: T::Array[String]).returns(StreamChat::StreamResponse) }
     def add_moderators(user_ids)
       update(nil, nil, add_moderators: user_ids)
     end
 
     # Removes members from the channel.
-    T::Sig::WithoutRuntime.sig { params(user_ids: T::Array[String]).returns(StreamChat::StreamResponse) }
+    sig { params(user_ids: T::Array[String]).returns(StreamChat::StreamResponse) }
     def remove_members(user_ids)
       update(nil, nil, remove_members: user_ids)
     end
 
     # Assigns roles to members in the channel.
-    T::Sig::WithoutRuntime.sig { params(members: T::Array[StringKeyHash], message: T.nilable(StringKeyHash)).returns(StreamChat::StreamResponse) }
+    sig { params(members: T::Array[StringKeyHash], message: T.nilable(StringKeyHash)).returns(StreamChat::StreamResponse) }
     def assign_roles(members, message = nil)
       update(nil, message, assign_roles: members)
     end
 
     # Demotes moderators in the channel.
-    T::Sig::WithoutRuntime.sig { params(user_ids: T::Array[String]).returns(StreamChat::StreamResponse) }
+    sig { params(user_ids: T::Array[String]).returns(StreamChat::StreamResponse) }
     def demote_moderators(user_ids)
       update(nil, nil, demote_moderators: user_ids)
     end
 
     # Sends the mark read event for this user, only works if the `read_events` setting is enabled.
-    T::Sig::WithoutRuntime.sig { params(user_id: String, options: StringKeyHash).returns(StreamChat::StreamResponse) }
+    sig { params(user_id: String, options: StringKeyHash).returns(StreamChat::StreamResponse) }
     def mark_read(user_id, **options)
       payload = add_user_id(options, user_id)
       @client.post("#{url}/read", data: payload)
     end
 
     # List the message replies for a parent message.
-    T::Sig::WithoutRuntime.sig { params(parent_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    sig { params(parent_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def get_replies(parent_id, **options)
       @client.get("messages/#{parent_id}/replies", params: options)
     end
 
     # List the reactions, supports pagination.
-    T::Sig::WithoutRuntime.sig { params(message_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    sig { params(message_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def get_reactions(message_id, **options)
       @client.get("messages/#{message_id}/reactions", params: options)
     end
 
     # Bans a user from this channel.
-    T::Sig::WithoutRuntime.sig { params(user_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    sig { params(user_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def ban_user(user_id, **options)
       @client.ban_user(user_id, type: @channel_type, id: @id, **options)
     end
 
     # Removes the ban for a user on this channel.
-    T::Sig::WithoutRuntime.sig { params(user_id: String).returns(StreamChat::StreamResponse) }
+    sig { params(user_id: String).returns(StreamChat::StreamResponse) }
     def unban_user(user_id)
       @client.unban_user(user_id, type: @channel_type, id: @id)
     end
 
     # Removes a channel from query channel requests for that user until a new message is added.
     # Use `show` to cancel this operation.
-    T::Sig::WithoutRuntime.sig { params(user_id: String).returns(StreamChat::StreamResponse) }
+    sig { params(user_id: String).returns(StreamChat::StreamResponse) }
     def hide(user_id)
       @client.post("#{url}/hide", data: { user_id: user_id })
     end
 
     # Shows a previously hidden channel.
     # Use `hide` to hide a channel.
-    T::Sig::WithoutRuntime.sig { params(user_id: String).returns(StreamChat::StreamResponse) }
+    sig { params(user_id: String).returns(StreamChat::StreamResponse) }
     def show(user_id)
       @client.post("#{url}/show", data: { user_id: user_id })
     end
@@ -270,7 +267,7 @@ module StreamChat
     #
     # This functionality defaults to using the Stream CDN. If you would like, you can
     # easily change the logic to upload to your own CDN of choice.
-    T::Sig::WithoutRuntime.sig { params(url: String, user: StringKeyHash, content_type: T.nilable(String)).returns(StreamChat::StreamResponse) }
+    sig { params(url: String, user: StringKeyHash, content_type: T.nilable(String)).returns(StreamChat::StreamResponse) }
     def send_file(url, user, content_type = nil)
       @client.send_file("#{self.url}/file", url, user, content_type)
     end
@@ -281,26 +278,26 @@ module StreamChat
     # image/heic, image/heic-sequence, image/heif, image/heif-sequence, image/svg+xml.
     # You can set a more restrictive list for your application if needed.
     # The maximum file size is 100MB.
-    T::Sig::WithoutRuntime.sig { params(url: String, user: StringKeyHash, content_type: T.nilable(String)).returns(StreamChat::StreamResponse) }
+    sig { params(url: String, user: StringKeyHash, content_type: T.nilable(String)).returns(StreamChat::StreamResponse) }
     def send_image(url, user, content_type = nil)
       @client.send_file("#{self.url}/image", url, user, content_type)
     end
 
     # Deletes a file by file url.
-    T::Sig::WithoutRuntime.sig { params(url: String).returns(StreamChat::StreamResponse) }
+    sig { params(url: String).returns(StreamChat::StreamResponse) }
     def delete_file(url)
       @client.delete("#{self.url}/file", params: { url: url })
     end
 
     # Deletes an image by image url.
-    T::Sig::WithoutRuntime.sig { params(url: String).returns(StreamChat::StreamResponse) }
+    sig { params(url: String).returns(StreamChat::StreamResponse) }
     def delete_image(url)
       @client.delete("#{self.url}/image", params: { url: url })
     end
 
     private
 
-    T::Sig::WithoutRuntime.sig { params(payload: StringKeyHash, user_id: String).returns(StringKeyHash) }
+    sig { params(payload: StringKeyHash, user_id: String).returns(StringKeyHash) }
     def add_user_id(payload, user_id)
       payload.merge({ user: { id: user_id } })
     end
