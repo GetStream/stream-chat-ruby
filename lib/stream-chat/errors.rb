@@ -4,23 +4,20 @@
 module StreamChat
   class StreamAPIException < StandardError
     extend T::Sig
-    # For now we disable runtime type checks.
-    # We will enable it with a major bump in the future,
-    # but for now, let's just run a static type check.
 
-    T::Sig::WithoutRuntime.sig { returns(Integer) }
+    sig { returns(Integer) }
     attr_reader :error_code
 
-    T::Sig::WithoutRuntime.sig { returns(String) }
+    sig { returns(String) }
     attr_reader :error_message
 
-    T::Sig::WithoutRuntime.sig { returns(T::Boolean) }
+    sig { returns(T::Boolean) }
     attr_reader :json_response
 
-    T::Sig::WithoutRuntime.sig { returns(Faraday::Response) }
+    sig { returns(Faraday::Response) }
     attr_reader :response
 
-    T::Sig::WithoutRuntime.sig { params(response: Faraday::Response).void }
+    sig { params(response: Faraday::Response).void }
     def initialize(response)
       super()
       @response = response
@@ -34,7 +31,7 @@ module StreamChat
       end
     end
 
-    T::Sig::WithoutRuntime.sig { returns(String) }
+    sig { returns(String) }
     def message
       if @json_response
         "StreamChat error code #{@error_code}: #{@error_message}"
@@ -43,7 +40,7 @@ module StreamChat
       end
     end
 
-    T::Sig::WithoutRuntime.sig { returns(String) }
+    sig { returns(String) }
     def to_s
       message
     end
