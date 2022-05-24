@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.0.0](https://github.com/GetStream/stream-chat-ruby/compare/v2.23.0...v3.0.0) (2022-05-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* **sorbet:** enable runtime typecheck (#104)
+
+> In this release we have enabled runtime level typechecking for Sorbet. This means that if you input parameters
+are invalid **your code will throw an error during runtime**. Please ensure that your code is properly tested
+before continuing with v3.0.0 of this library.
+
+### Features
+
+* **sorbet:** enable runtime typecheck ([#104](https://github.com/GetStream/stream-chat-ruby/issues/104)) ([97d5f29](https://github.com/GetStream/stream-chat-ruby/commit/97d5f299b652e8328af6e76d0d605c59f05a5cc3))
+
 ## [2.23.0](https://github.com/GetStream/stream-chat-ruby/compare/v2.22.2...v2.23.0) (2022-05-19)
 
 
