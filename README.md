@@ -47,6 +47,8 @@ client = StreamChat::Client.new(api_key='STREAM_KEY', api_secret='STREAM_SECRET'
 > 💡 Note: since v2.21.0 we implemented [Sorbet](https://sorbet.org/) type checker. As of v2.x.x we only use it for static type checks and you won't notice any difference, but from v3.0.0 **we will enable runtime checks** 🚨 🚨 🚨.
 
 > What this means, is that you'll receive an error during runtime if you pass an invalid type to our methods. To prepare for that, just make sure whatever you pass in, matches the method signature (`sig { ... }`).
+
+> **Update (2022-May-24)**: we have relased [v3.0.0](https://github.com/GetStream/stream-chat-ruby/releases/tag/v3.0.0) with enabled runtime checks.
  
 ---
 
