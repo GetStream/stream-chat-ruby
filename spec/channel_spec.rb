@@ -31,7 +31,7 @@ describe StreamChat::Channel do
     expect(response).to include 'users'
     expect(response['users']).to include @random_user[:id]
 
-    @channel = @client.channel('messaging', channel_id: SecureRandom.uuid, data: { 'test' => true, 'language' => 'ruby' })
+    @channel = @client.channel('messaging', channel_id: SecureRandom.uuid, data: { test: true, language: 'ruby' })
     @channel.create(@random_user[:id])
   end
 
@@ -209,6 +209,19 @@ describe StreamChat::Channel do
     response = @channel.get_reactions(msg['message']['id'], offset: 1)
     expect(response['reactions'].length).to eq 1
     expect(response['reactions'][0]['count']).to eq 42
+  end
+
+  it 'send message with pending metadata' do
+    options = {
+      is_pending_message: true,
+      pending_message_metadata: {
+        metadata: 'some_data'
+      }
+    }
+    msg = @channel.send_message({ text: 'hi' }, @random_user[:id], **options)
+    response = @client.get_message(msg['message']['id'])
+    expect(response['message']).not_to be_empty
+    expect(response['pending_message_metadata']['metadata']).to eq 'some_data'
   end
 
   it 'hides\shows channel for user' do
