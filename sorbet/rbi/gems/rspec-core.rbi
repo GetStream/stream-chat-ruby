@@ -7,7 +7,7 @@
 #
 #   https://github.com/sorbet/sorbet-typed/new/master?filename=lib/rspec-core/all/rspec-core.rbi
 #
-# rspec-core-3.10.1
+# rspec-core-3.11.0
 
 module RSpec
   def self.clear_examples; end
@@ -18,6 +18,8 @@ module RSpec
   def self.context(*args, &example_group_block); end
   def self.current_example; end
   def self.current_example=(example); end
+  def self.current_scope; end
+  def self.current_scope=(scope); end
   def self.describe(*args, &example_group_block); end
   def self.example_group(*args, &example_group_block); end
   def self.fcontext(*args, &example_group_block); end
@@ -483,8 +485,10 @@ end
 module RSpec::Core::MemoizedHelpers
   def __init_memoized; end
   def __memoized; end
+  def enforce_value_expectation(matcher, method_name); end
   def initialize(*arg0); end
   def is_expected; end
+  def matcher_supports_value_expectations?(matcher); end
   def self.define_helpers_on(example_group); end
   def self.get_constant_or_yield(example_group, name); end
   def self.module_for(example_group); end
@@ -578,7 +582,6 @@ module RSpec::Core::HashImitatable
   def compare_by_identity?(*args, &block); end
   def count(*args, &block); end
   def cycle(*args, &block); end
-  def deconstruct_keys(*args, &block); end
   def default(*args, &block); end
   def default=(*args, &block); end
   def default_proc(*args, &block); end
@@ -606,7 +609,6 @@ module RSpec::Core::HashImitatable
   def fetch_values(*args, &block); end
   def filter!(*args, &block); end
   def filter(*args, &block); end
-  def filter_map(*args, &block); end
   def find(*args, &block); end
   def find_all(*args, &block); end
   def find_index(*args, &block); end
@@ -667,7 +669,6 @@ module RSpec::Core::HashImitatable
   def sum(*args, &block); end
   def take(*args, &block); end
   def take_while(*args, &block); end
-  def tally(*args, &block); end
   def to_a(*args, &block); end
   def to_h; end
   def to_hash(*args, &block); end
@@ -752,6 +753,7 @@ class RSpec::Core::Formatters::Loader
   def existing_formatter_implements?(notification); end
   def find_formatter(formatter_to_use); end
   def formatters; end
+  def has_matching_output?(formatter, new_formatter); end
   def initialize(reporter); end
   def notifications_for(formatter_class); end
   def open_stream(path_or_wrapper); end
@@ -775,6 +777,9 @@ class RSpec::Core::Ordering::Random
   def jenkins_hash_digest(string); end
   def order(items); end
   def used?; end
+end
+class RSpec::Core::Ordering::RecentlyModified
+  def order(list); end
 end
 class RSpec::Core::Ordering::Custom
   def initialize(callable); end
@@ -824,6 +829,8 @@ class RSpec::Core::World
   def report_filter_message(message); end
   def reporter; end
   def reset; end
+  def rspec_is_quitting; end
+  def rspec_is_quitting=(arg0); end
   def shared_example_group_registry; end
   def source_from_file(path); end
   def syntax_highlighter; end
@@ -1001,7 +1008,6 @@ class RSpec::Core::OutputWrapper
   def rewind(*args, &block); end
   def seek(*args, &block); end
   def set_encoding(*args, &block); end
-  def set_encoding_by_bom(*args, &block); end
   def stat(*args, &block); end
   def sync(*args, &block); end
   def sync=(*args, &block); end
@@ -1651,7 +1657,7 @@ module RSpec::Support
   def self.require_rspec_core(f); end
 end
 class RSpec::Core::Time
-  def self.now(*arg0); end
+  def self.now; end
 end
 class Module
   def context(*a, &b); end

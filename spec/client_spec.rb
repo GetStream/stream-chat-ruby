@@ -23,6 +23,8 @@ describe StreamChat::Client do
   before(:all) do
     @client = StreamChat::Client.from_env
 
+    @created_users = []
+
     @fellowship_of_the_ring = [
       { id: 'frodo-baggins', name: 'Frodo Baggins', race: 'Hobbit', age: 50 },
       { id: 'sam-gamgee', name: 'Samwise Gamgee', race: 'Hobbit', age: 38 },
@@ -38,14 +40,25 @@ describe StreamChat::Client do
   before(:each) do
     @random_users = [{ id: SecureRandom.uuid }, { id: SecureRandom.uuid }]
     @random_user = { id: SecureRandom.uuid }
-    response = @client.upsert_user(@random_user)
-    expect(response).to include 'users'
-    expect(response['users']).to include @random_user[:id]
-    @client.upsert_users(@random_users)
+    users_to_insert = [@random_users[0], @random_users[1], @random_user]
+
+    @created_users.push(*users_to_insert.map { |u| u[:id] })
+
+    @client.upsert_users(users_to_insert)
   end
 
-  after(:each) do
-    @client.delete_users(@random_users.map { |u| u[:id] } + [@random_user[:id]], user: StreamChat::HARD_DELETE, messages: StreamChat::HARD_DELETE)
+  after(:all) do
+    curr_idx = 0
+    batch_size = 25
+
+    slice = @created_users.slice(0, batch_size)
+
+    while !slice.nil? && !slice.empty?
+      @client.delete_users(slice, user: StreamChat::HARD_DELETE, messages: StreamChat::HARD_DELETE)
+
+      curr_idx += batch_size
+      slice = @created_users.slice(curr_idx, batch_size)
+    end
   end
 
   it 'properly sets up a new client' do
@@ -403,6 +416,7 @@ describe StreamChat::Client do
       text = SecureRandom.uuid
       @channel.send_message({ text: text }, 'legolas')
       resp = @client.search({ members: { '$in' => ['legolas'] } }, text)
+      p resp
       expect(resp['results'].length).to eq(1)
     end
 

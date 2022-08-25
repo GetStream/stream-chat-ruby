@@ -7,11 +7,13 @@
 #
 #   https://github.com/sorbet/sorbet-typed/new/master?filename=lib/faraday/all/faraday.rbi
 #
-# faraday-1.8.0
+# faraday-2.5.2
 
 module Faraday
   def self.default_adapter; end
   def self.default_adapter=(adapter); end
+  def self.default_adapter_options; end
+  def self.default_adapter_options=(arg0); end
   def self.default_connection; end
   def self.default_connection=(arg0); end
   def self.default_connection_options; end
@@ -22,30 +24,63 @@ module Faraday
   def self.lib_path=(arg0); end
   def self.method_missing(name, *args, &block); end
   def self.new(url = nil, options = nil, &block); end
-  def self.require_lib(*libs); end
-  def self.require_libs(*libs); end
   def self.respond_to_missing?(symbol, include_private = nil); end
   def self.root_path; end
   def self.root_path=(arg0); end
 end
+class Faraday::Error < StandardError
+  def backtrace; end
+  def exc_msg_and_response!(exc, response = nil); end
+  def exc_msg_and_response(exc, response = nil); end
+  def initialize(exc = nil, response = nil); end
+  def inspect; end
+  def response; end
+  def response_body; end
+  def response_headers; end
+  def response_status; end
+  def wrapped_exception; end
+end
+class Faraday::ClientError < Faraday::Error
+end
+class Faraday::BadRequestError < Faraday::ClientError
+end
+class Faraday::UnauthorizedError < Faraday::ClientError
+end
+class Faraday::ForbiddenError < Faraday::ClientError
+end
+class Faraday::ResourceNotFound < Faraday::ClientError
+end
+class Faraday::ProxyAuthError < Faraday::ClientError
+end
+class Faraday::ConflictError < Faraday::ClientError
+end
+class Faraday::UnprocessableEntityError < Faraday::ClientError
+end
+class Faraday::ServerError < Faraday::Error
+end
+class Faraday::TimeoutError < Faraday::ServerError
+  def initialize(exc = nil, response = nil); end
+end
+class Faraday::NilStatusError < Faraday::ServerError
+  def initialize(exc, response = nil); end
+end
+class Faraday::ConnectionFailed < Faraday::Error
+end
+class Faraday::SSLError < Faraday::Error
+end
+class Faraday::ParsingError < Faraday::Error
+end
 module Faraday::MiddlewareRegistry
-  def fetch_middleware(key); end
   def load_middleware(key); end
   def lookup_middleware(key); end
   def middleware_mutex(&block); end
-  def register_middleware(autoload_path = nil, mapping = nil); end
+  def register_middleware(**mappings); end
+  def registered_middleware; end
   def unregister_middleware(key); end
-end
-module Faraday::DependencyLoader
-  def dependency(lib = nil); end
-  def inherited(subclass); end
-  def load_error; end
-  def load_error=(arg0); end
-  def loaded?; end
-  def new(*arg0); end
 end
 module Faraday::Utils
   def URI(url); end
+  def basic_header_from(login, pass); end
   def build_nested_query(params); end
   def build_query(params); end
   def deep_merge!(target, hash); end
@@ -59,6 +94,7 @@ module Faraday::Utils
   def parse_nested_query(query); end
   def parse_query(query); end
   def self.URI(url); end
+  def self.basic_header_from(login, pass); end
   def self.build_nested_query(params); end
   def self.build_query(params); end
   def self.deep_merge!(target, hash); end
@@ -176,6 +212,8 @@ class Anonymous_Faraday_Options_3 < Faraday::Options
   def verify=(_); end
   def verify_depth; end
   def verify_depth=(_); end
+  def verify_hostname; end
+  def verify_hostname=(_); end
   def verify_mode; end
   def verify_mode=(_); end
   def version; end
@@ -184,6 +222,7 @@ end
 class Faraday::SSLOptions < Anonymous_Faraday_Options_3
   def disable?; end
   def verify?; end
+  def verify_hostname?; end
 end
 class Anonymous_Faraday_Options_4 < Faraday::Options
   def password; end
@@ -289,6 +328,8 @@ class Faraday::Env < Anonymous_Faraday_Options_6
   def parse_body?; end
   def self.from(value); end
   def self.member_set; end
+  def stream_response(&block); end
+  def stream_response?; end
   def success?; end
   extend Forwardable
 end
@@ -326,9 +367,6 @@ end
 class Faraday::Connection
   def adapter(*args, &block); end
   def app(*args, &block); end
-  def authorization(type, token); end
-  def basic_auth(login, pass); end
-  def build(*args, &block); end
   def build_exclusive_url(url = nil, params = nil, params_encoder = nil); end
   def build_request(method); end
   def build_url(url = nil, extra_params = nil); end
@@ -369,11 +407,9 @@ class Faraday::Connection
   def run_request(method, url, body, headers); end
   def scheme(*args, &block); end
   def scheme=(*args, &block); end
-  def set_authorization_header(header_type, *args); end
   def set_basic_auth(user, password); end
   def ssl; end
   def support_parallel?(adapter); end
-  def token_auth(token, options = nil); end
   def trace(url = nil, params = nil, headers = nil); end
   def url_prefix; end
   def url_prefix=(url, encoder = nil); end
@@ -393,14 +429,15 @@ class Faraday::RackBuilder
   def adapter_set?; end
   def app; end
   def assert_index(index); end
-  def build(options = nil); end
+  def build; end
   def build_env(connection, request); end
   def build_response(connection, request); end
   def delete(handler); end
-  def dup; end
+  def ensure_adapter!; end
   def handlers; end
   def handlers=(arg0); end
-  def initialize(handlers = nil, adapter = nil, &block); end
+  def initialize(&block); end
+  def initialize_dup(original); end
   def insert(index, *args, &block); end
   def insert_after(index, *args, &block); end
   def insert_before(index, *args, &block); end
@@ -442,6 +479,8 @@ module Faraday::DecodeMethods
   def prepare_context(context, subkey, is_array, last_subkey); end
 end
 module Faraday::NestedParamsEncoder
+  def self.array_indices; end
+  def self.array_indices=(arg0); end
   def self.escape(*args, &block); end
   def self.sort_params; end
   def self.sort_params=(arg0); end
@@ -463,7 +502,6 @@ class Faraday::Middleware
   def close; end
   def initialize(app = nil, options = nil); end
   def options; end
-  extend Faraday::DependencyLoader
   extend Faraday::MiddlewareRegistry
 end
 class Faraday::Adapter
@@ -472,18 +510,120 @@ class Faraday::Adapter
   def connection(env); end
   def initialize(_app = nil, opts = nil, &block); end
   def request_timeout(type, options); end
-  def save_response(env, status, body, headers = nil, reason_phrase = nil); end
+  def save_response(env, status, body, headers = nil, reason_phrase = nil, finished: nil); end
   extend Faraday::Adapter::Parallelism
-  extend Faraday::AutoloadHelper
-  extend Faraday::DependencyLoader
   extend Faraday::MiddlewareRegistry
+end
+class Faraday::Adapter::Test < Faraday::Adapter
+  def call(env); end
+  def configure; end
+  def initialize(app, stubs = nil, &block); end
+  def stubs; end
+  def stubs=(arg0); end
+end
+class Faraday::Adapter::Test::Stubs
+  def delete(path, headers = nil, &block); end
+  def empty?; end
+  def get(path, headers = nil, &block); end
+  def head(path, headers = nil, &block); end
+  def initialize(strict_mode: nil); end
+  def match(env); end
+  def matches?(stack, env); end
+  def new_stub(request_method, path, headers = nil, body = nil, &block); end
+  def options(path, headers = nil, &block); end
+  def patch(path, body = nil, headers = nil, &block); end
+  def post(path, body = nil, headers = nil, &block); end
+  def put(path, body = nil, headers = nil, &block); end
+  def strict_mode=(value); end
+  def verify_stubbed_calls; end
+end
+class Faraday::Adapter::Test::Stubs::NotFound < StandardError
+end
+class Anonymous_Struct_7 < Struct
+  def block; end
+  def block=(_); end
+  def body; end
+  def body=(_); end
+  def headers; end
+  def headers=(_); end
+  def host; end
+  def host=(_); end
+  def path; end
+  def path=(_); end
+  def query; end
+  def query=(_); end
+  def self.[](*arg0); end
+  def self.inspect; end
+  def self.members; end
+  def self.new(*arg0); end
+  def strict_mode; end
+  def strict_mode=(_); end
+end
+class Faraday::Adapter::Test::Stub < Anonymous_Struct_7
+  def body_match?(request_body); end
+  def headers_match?(request_headers); end
+  def matches?(env); end
+  def params_match?(env); end
+  def path_match?(request_path, meta); end
+  def to_s; end
 end
 module Faraday::Adapter::Parallelism
   def inherited(subclass); end
   def supports_parallel=(arg0); end
   def supports_parallel?; end
 end
-class Anonymous_Struct_7 < Struct
+class Faraday::Request < Anonymous_Struct_8
+  def [](key); end
+  def []=(key, value); end
+  def headers=(hash); end
+  def marshal_dump; end
+  def marshal_load(serialised); end
+  def params=(hash); end
+  def self.create(request_method); end
+  def to_env(connection); end
+  def url(path, params = nil); end
+  extend Faraday::MiddlewareRegistry
+end
+class Faraday::Request::Authorization < Faraday::Middleware
+  def header_from(type, *params); end
+  def initialize(app, type, *params); end
+  def on_request(env); end
+end
+class Faraday::Request::Instrumentation < Faraday::Middleware
+  def call(env); end
+  def initialize(app, options = nil); end
+end
+class Anonymous_Faraday_Options_9 < Faraday::Options
+  def instrumenter; end
+  def instrumenter=(_); end
+  def name; end
+  def name=(_); end
+  def self.[](*arg0); end
+  def self.inspect; end
+  def self.members; end
+  def self.new(*arg0); end
+end
+class Faraday::Request::Instrumentation::Options < Anonymous_Faraday_Options_9
+  def instrumenter; end
+  def name; end
+end
+class Faraday::Request::Json < Faraday::Middleware
+  def body?(env); end
+  def encode(data); end
+  def match_content_type(env); end
+  def on_request(env); end
+  def process_request?(env); end
+  def request_type(env); end
+end
+class Faraday::Request::UrlEncoded < Faraday::Middleware
+  def call(env); end
+  def match_content_type(env); end
+  def process_request?(env); end
+  def request_type(env); end
+  def self.mime_type; end
+  def self.mime_type=(arg0); end
+end
+class Anonymous_Struct_8 < Struct
   def body; end
   def body=(_); end
   def headers; end
@@ -501,20 +641,6 @@ class Anonymous_Struct_7 < Struct
   def self.members; end
   def self.new(*arg0); end
 end
-class Faraday::Request < Anonymous_Struct_7
-  def [](key); end
-  def []=(key, value); end
-  def headers=(hash); end
-  def marshal_dump; end
-  def marshal_load(serialised); end
-  def method; end
-  def params=(hash); end
-  def self.create(request_method); end
-  def to_env(connection); end
-  def url(path, params = nil); end
-  extend Faraday::AutoloadHelper
-  extend Faraday::MiddlewareRegistry
-end
 class Faraday::Response
   def [](*args, &block); end
   def apply_request(request_env); end
@@ -531,99 +657,48 @@ class Faraday::Response
   def status; end
   def success?; end
   def to_hash; end
-  extend Faraday::AutoloadHelper
   extend Faraday::MiddlewareRegistry
   extend Forwardable
 end
-class Faraday::Response::Middleware < Faraday::Middleware
+class Faraday::Response::Json < Faraday::Middleware
+  def initialize(app = nil, parser_options: nil, content_type: nil, preserve_raw: nil); end
+  def on_complete(env); end
+  def parse(body); end
+  def parse_response?(env); end
+  def process_response(env); end
+  def process_response_type?(env); end
+  def response_type(env); end
+end
+module Faraday::Logging
+end
+class Faraday::Logging::Formatter
+  def apply_filters(output); end
+  def debug(*args, &block); end
+  def dump_body(body); end
+  def dump_headers(headers); end
+  def error(*args, &block); end
+  def fatal(*args, &block); end
+  def filter(filter_word, filter_replacement); end
+  def info(*args, &block); end
+  def initialize(logger:, options:); end
+  def log_body(type, body); end
+  def log_body?(type); end
+  def log_headers(type, headers); end
+  def log_headers?(type); end
+  def log_level; end
+  def pretty_inspect(body); end
+  def request(env); end
+  def response(env); end
+  def warn(*args, &block); end
+  extend Forwardable
+end
+class Faraday::Response::Logger < Faraday::Middleware
+  def call(env); end
+  def initialize(app, logger = nil, options = nil); end
   def on_complete(env); end
 end
-class Faraday::Error < StandardError
-  def backtrace; end
-  def exc_msg_and_response!(exc, response = nil); end
-  def exc_msg_and_response(exc, response = nil); end
-  def initialize(exc, response = nil); end
-  def inspect; end
-  def response; end
-  def response_body; end
-  def response_headers; end
-  def response_status; end
-  def wrapped_exception; end
-end
-class Faraday::ClientError < Faraday::Error
-end
-class Faraday::BadRequestError < Faraday::ClientError
-end
-class Faraday::UnauthorizedError < Faraday::ClientError
-end
-class Faraday::ForbiddenError < Faraday::ClientError
-end
-class Faraday::ResourceNotFound < Faraday::ClientError
-end
-class Faraday::ProxyAuthError < Faraday::ClientError
-end
-class Faraday::ConflictError < Faraday::ClientError
-end
-class Faraday::UnprocessableEntityError < Faraday::ClientError
-end
-class Faraday::ServerError < Faraday::Error
-end
-class Faraday::TimeoutError < Faraday::ServerError
-  def initialize(exc = nil, response = nil); end
-end
-class Faraday::NilStatusError < Faraday::ServerError
-  def initialize(exc, response = nil); end
-end
-class Faraday::ConnectionFailed < Faraday::Error
-end
-class Faraday::SSLError < Faraday::Error
-end
-class Faraday::ParsingError < Faraday::Error
-end
-class Faraday::RetriableResponse < Faraday::Error
-end
-class Faraday::CompositeReadIO
-  def advance_io; end
-  def close; end
-  def current_io; end
-  def ensure_open_and_readable; end
-  def initialize(*parts); end
-  def length; end
-  def read(length = nil, outbuf = nil); end
-  def rewind; end
-end
-class Faraday::ParamPart
-  def content_id; end
-  def content_type; end
-  def headers; end
-  def initialize(value, content_type, content_id = nil); end
-  def to_part(boundary, key); end
-  def value; end
-end
-module Faraday::AutoloadHelper
-  def all_loaded_constants; end
-  def autoload_all(prefix, options); end
-  def load_autoloaded_constants; end
-end
-class Faraday::Request::UrlEncoded < Faraday::Middleware
-  def call(env); end
-  def match_content_type(env); end
-  def process_request?(env); end
-  def request_type(env); end
-  def self.mime_type; end
-  def self.mime_type=(arg0); end
-end
-class Faraday::Request::Multipart < Faraday::Request::UrlEncoded
-  def call(env); end
-  def create_multipart(env, params); end
-  def has_multipart?(obj); end
-  def initialize(app = nil, options = nil); end
-  def part(boundary, key, value); end
-  def process_params(params, prefix = nil, pieces = nil, &block); end
-  def process_request?(env); end
-  def unique_boundary; end
-end
-class Faraday::Response::RaiseError < Faraday::Response::Middleware
+class Faraday::Response::RaiseError < Faraday::Middleware
   def on_complete(env); end
+  def query_params(env); end
   def response_values(env); end
 end

@@ -7,18 +7,29 @@
 #
 #   https://github.com/sorbet/sorbet-typed/new/master?filename=lib/faraday-net_http_persistent/all/faraday-net_http_persistent.rbi
 #
-# faraday-net_http_persistent-1.2.0
+# faraday-net_http_persistent-2.1.0
 
 module Faraday
 end
 class Faraday::Adapter
 end
-class Faraday::Adapter::NetHttpPersistent < Faraday::Adapter::NetHttp
+class Faraday::Adapter::NetHttpPersistent < Faraday::Adapter
+  def build_connection(env); end
+  def call(env); end
+  def configure_request(http, req); end
   def configure_ssl(http, ssl); end
+  def create_request(env); end
+  def encoded_body(http_response); end
   def http_set(http, attr, value); end
+  def init_options; end
+  def initialize(app = nil, opts = nil, &block); end
   def net_http_connection(env); end
   def perform_request(http, env); end
   def proxy_uri(env); end
+  def request_with_wrapped_block(http, env); end
+  def save_http_response(env, http_response); end
+  def ssl_cert_store(ssl); end
+  def ssl_verify_mode(ssl); end
 end
 module Faraday::NetHttpPersistent
 end

@@ -7,11 +7,12 @@
 #
 #   https://github.com/sorbet/sorbet-typed/new/master?filename=lib/faraday-multipart/all/faraday-multipart.rbi
 #
-# faraday-multipart-1.0.3
+# faraday-multipart-1.0.4
 
 module Faraday
 end
 module Faraday::Multipart
+  def self.multipart_post_version; end
 end
 class Faraday::Multipart::CompositeReadIO
   def advance_io; end
