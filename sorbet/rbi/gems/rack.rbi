@@ -7,7 +7,7 @@
 #
 #   https://github.com/sorbet/sorbet-typed/new/master?filename=lib/rack/all/rack.rbi
 #
-# rack-2.2.4
+# rack-2.2.3
 
 module Rack
   def self.release; end
@@ -52,8 +52,6 @@ end
 class Rack::QueryParser::ParameterTypeError < TypeError
 end
 class Rack::QueryParser::InvalidParameterError < ArgumentError
-end
-class Rack::QueryParser::ParamsTooDeepError < RangeError
 end
 class Rack::QueryParser::Params
   def [](key); end
@@ -365,7 +363,7 @@ class Rack::Directory
   def root; end
   def stat(path); end
 end
-class Anonymous_Struct_10 < Struct
+class Anonymous_Struct_8 < Struct
   def files; end
   def files=(_); end
   def path; end
@@ -377,7 +375,7 @@ class Anonymous_Struct_10 < Struct
   def self.members; end
   def self.new(*arg0); end
 end
-class Rack::Directory::DirectoryBody < Anonymous_Struct_10
+class Rack::Directory::DirectoryBody < Anonymous_Struct_8
   def DIR_FILE_escape(htmls); end
   def each; end
 end
@@ -656,7 +654,7 @@ class Rack::Multipart::Parser::Collector
   def on_mime_head(mime_index, head, filename, content_type, name); end
   include Enumerable
 end
-class Anonymous_Struct_11 < Struct
+class Anonymous_Struct_9 < Struct
   def body; end
   def body=(_); end
   def content_type; end
@@ -672,7 +670,7 @@ class Anonymous_Struct_11 < Struct
   def self.members; end
   def self.new(*arg0); end
 end
-class Rack::Multipart::Parser::Collector::MimePart < Anonymous_Struct_11
+class Rack::Multipart::Parser::Collector::MimePart < Anonymous_Struct_9
   def get_data; end
 end
 class Rack::Multipart::Parser::Collector::BufferPart < Rack::Multipart::Parser::Collector::MimePart
@@ -923,7 +921,7 @@ class Rack::Session::Cookie::Identity
   def decode(str); end
   def encode(str); end
 end
-class Rack::Session::Cookie::SessionId < Anonymous_Delegator_12
+class Rack::Session::Cookie::SessionId < Anonymous_Delegator_10
   def cookie_value; end
   def initialize(session_id, cookie_value); end
 end

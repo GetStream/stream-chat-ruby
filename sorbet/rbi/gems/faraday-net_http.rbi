@@ -7,7 +7,7 @@
 #
 #   https://github.com/sorbet/sorbet-typed/new/master?filename=lib/faraday-net_http/all/faraday-net_http.rbi
 #
-# faraday-net_http-3.0.0
+# faraday-net_http-1.0.1
 
 module Faraday
 end
@@ -19,15 +19,14 @@ class Faraday::Adapter::NetHttp < Faraday::Adapter
   def configure_request(http, req); end
   def configure_ssl(http, ssl); end
   def create_request(env); end
-  def encoded_body(http_response); end
   def initialize(app = nil, opts = nil, &block); end
   def net_http_connection(env); end
   def perform_request(http, env); end
-  def request_with_wrapped_block(http, env); end
-  def save_http_response(env, http_response); end
+  def request_via_get_method(http, env, &block); end
+  def request_via_request_method(http, env, &block); end
+  def request_with_wrapped_block(http, env, &block); end
   def ssl_cert_store(ssl); end
   def ssl_verify_mode(ssl); end
-  def verify_hostname_enabled?(http, ssl); end
 end
 module Faraday::NetHttp
 end

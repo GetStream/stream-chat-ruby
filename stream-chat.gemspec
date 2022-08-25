@@ -31,7 +31,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'faraday-net_http_persistent', '= 1.2.0'
   gem.add_dependency 'jwt', '= 2.3.0'
   gem.add_dependency 'net-http-persistent', '= 4.0.1'
-  gem.add_dependency 'sorbet-runtime', '= 0.5.10028'
+  gem.add_dependency 'sorbet-runtime', '= 0.5.10354'
   gem.add_development_dependency 'rake', '= 13.0.6'
   gem.add_development_dependency 'rspec', '= 3.11.0'
   gem.add_development_dependency 'simplecov', '= 0.21.2'

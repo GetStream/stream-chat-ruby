@@ -10,7 +10,7 @@ group :dev do
   gem 'pry-doc', '= 1.3.0'
   gem 'rubocop', '= 1.28.2', require: false
   gem 'rubocop-ast', '= 1.17.0', require: false
-  gem 'sorbet', '= 0.5.10028'
+  gem 'sorbet', '= 0.5.10346'
 end
 
 group :test do

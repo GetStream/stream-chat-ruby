@@ -7,7 +7,7 @@
 #
 #   https://github.com/sorbet/sorbet-typed/new/master?filename=lib/jwt/all/jwt.rbi
 #
-# jwt-2.4.1
+# jwt-2.3.0
 
 module JWT
   def decode(jwt, key = nil, verify = nil, options = nil, &keyfinder); end
@@ -15,6 +15,10 @@ module JWT
   def self.decode(jwt, key = nil, verify = nil, options = nil, &keyfinder); end
   def self.encode(payload, key, algorithm = nil, header_fields = nil); end
   include JWT::DefaultOptions
+end
+class JWT::Base64
+  def self.url_decode(str); end
+  def self.url_encode(str); end
 end
 class JWT::JSON
   def self.generate(data); end
@@ -52,8 +56,6 @@ module JWT::Algos::Eddsa
   def verify(to_verify); end
 end
 module JWT::Algos::Ecdsa
-  def curve_by_name(name); end
-  def self.curve_by_name(name); end
   def self.sign(to_sign); end
   def self.verify(to_verify); end
   def sign(to_sign); end
@@ -86,10 +88,9 @@ module JWT::Algos::Unsupported
   def verify(*arg0); end
 end
 module JWT::Signature
-  def self.sign(algorithm, msg, key); end
-  def self.verify(algorithm, key, signing_input, signature); end
   def sign(algorithm, msg, key); end
   def verify(algorithm, key, signing_input, signature); end
+  extend JWT::Signature
 end
 class JWT::Signature::ToSign < Struct
   def algorithm; end
@@ -133,8 +134,6 @@ class JWT::ImmatureSignature < JWT::DecodeError
 end
 class JWT::InvalidIssuerError < JWT::DecodeError
 end
-class JWT::UnsupportedEcdsaCurve < JWT::IncorrectAlgorithm
-end
 class JWT::InvalidIatError < JWT::DecodeError
 end
 class JWT::InvalidAudError < JWT::DecodeError
@@ -172,32 +171,21 @@ class JWT::Verify
   def verify_required_claims; end
   def verify_sub; end
 end
-class JWT::X5cKeyFinder
-  def build_store(root_certificates, crls); end
-  def from(x5c_header_or_certificates); end
-  def initialize(root_certificates, crls = nil); end
-  def parse_certificates(x5c_header_or_certificates); end
-end
 class JWT::Decode
-  def algorithm; end
   def allowed_algorithms; end
   def decode_crypto; end
   def decode_segments; end
   def find_key(&keyfinder); end
   def header; end
   def initialize(jwt, key, verify, options, &keyfinder); end
-  def none_algorithm?; end
   def options_includes_algo_in_header?; end
   def parse_and_decode(segment); end
   def payload; end
   def segment_length; end
-  def set_key; end
   def signing_input; end
   def validate_segment_count!; end
-  def verify_algo; end
   def verify_claims; end
   def verify_signature; end
-  def verify_signature_for?(key); end
 end
 module JWT::DefaultOptions
 end
