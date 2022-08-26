@@ -14,7 +14,7 @@ group :dev do
 end
 
 group :test do
-  gem 'rack', '= 2.2.3'
+  gem 'rack', '2.2.4'
   gem 'simplecov', '= 0.21.2'
   gem 'simplecov-console', '= 0.9.1'
 end
