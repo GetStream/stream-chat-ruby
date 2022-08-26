@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.0.0...v3.1.0) (2022-08-26)
+
+
+### Chore
+
+* chore: pin dependencies versions ([#109](https://github.com/GetStream/stream-chat-ruby/pull/109)) ([66dc80b](https://github.com/GetStream/stream-chat-ruby/commit/66dc80bb3f5e3698450517e94238e28fa7bd9d9c))
+
 ## [3.0.0](https://github.com/GetStream/stream-chat-ruby/compare/v2.23.0...v3.0.0) (2022-05-24)
 
 
