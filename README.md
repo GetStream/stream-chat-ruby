@@ -127,7 +127,7 @@ chan.unban_user('bob-1')
 ```ruby
 m1 = chan.send_message({:text => 'Hi Jane!'}, 'bob-1')
 
-deleted_message = client.delete_message(r1['id'])
+deleted_message = client.delete_message(m1['message']['id'])
 
 ```
 

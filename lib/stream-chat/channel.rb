@@ -46,9 +46,9 @@ module StreamChat
     end
 
     # Sends a message to this channel.
-    sig { params(message: StringKeyHash, user_id: String).returns(StreamChat::StreamResponse) }
-    def send_message(message, user_id)
-      payload = { message: add_user_id(message, user_id) }
+    sig { params(message: StringKeyHash, user_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    def send_message(message, user_id, **options)
+      payload = options.merge({ message: add_user_id(message, user_id) })
       @client.post("#{url}/message", data: payload)
     end
 
