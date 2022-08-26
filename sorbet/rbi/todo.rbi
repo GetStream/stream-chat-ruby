@@ -4,7 +4,6 @@
 # typed: strong
 module Rack::QueryParser::InvalidParameterError; end
 module Rack::QueryParser::ParameterTypeError; end
-module Rack::QueryParser::Params; end
 module T::CompatibilityPatches::RSpecCompatibility::MethodDoubleExtensions; end
 module T::CompatibilityPatches::RSpecCompatibility::RecorderExtensions; end
 module T::Private::Methods::MethodHooks; end

@@ -20,27 +20,39 @@ describe StreamChat::Channel do
 
   before(:all) do
     @client = StreamChat::Client.from_env
+    @created_users = []
   end
 
   before(:each) do
     @random_users = [{ id: SecureRandom.uuid, name: 'b' }, { id: SecureRandom.uuid, name: 'a' }]
-    @client.upsert_users(@random_users)
-
     @random_user = { id: SecureRandom.uuid }
-    response = @client.upsert_user(@random_user)
-    expect(response).to include 'users'
-    expect(response['users']).to include @random_user[:id]
+
+    users_to_insert = [@random_users[0], @random_users[1], @random_user]
+
+    @created_users.push(*users_to_insert.map { |u| u[:id] })
+    @client.upsert_users(users_to_insert)
 
     @channel = @client.channel('messaging', channel_id: SecureRandom.uuid, data: { test: true, language: 'ruby' })
     @channel.create(@random_user[:id])
   end
 
   after(:each) do
-    @client.delete_users(@random_users.map { |u| u[:id] } + [@random_user[:id]], user: StreamChat::HARD_DELETE, messages: StreamChat::HARD_DELETE)
-    begin
-      @channel.delete
-    rescue StreamChat::StreamAPIException
-      # if the channel is already deleted by the test, we can ignore the error
+    @channel.delete
+  rescue StreamChat::StreamAPIException
+    # if the channel is already deleted by the test, we can ignore the error
+  end
+
+  after(:all) do
+    curr_idx = 0
+    batch_size = 25
+
+    slice = @created_users.slice(0, batch_size)
+
+    while !slice.nil? && !slice.empty?
+      @client.delete_users(slice, user: StreamChat::HARD_DELETE, messages: StreamChat::HARD_DELETE)
+
+      curr_idx += batch_size
+      slice = @created_users.slice(curr_idx, batch_size)
     end
   end
 
