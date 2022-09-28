@@ -41,7 +41,7 @@ $ gem install stream-chat-ruby
 ```ruby
 require 'stream-chat'
 
-client = StreamChat::Client.new(api_key='STREAM_KEY', api_secret='STREAM_SECRET')
+client = StreamChat::Client.new('STREAM_KEY', 'STREAM_SECRET')
 ```
 
 > 💡 Note: since v2.21.0 we implemented [Sorbet](https://sorbet.org/) type checker. As of v2.x.x we only use it for static type checks and you won't notice any difference, but from v3.0.0 **we will enable runtime checks** 🚨 🚨 🚨.
