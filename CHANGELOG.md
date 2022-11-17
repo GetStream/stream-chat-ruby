@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.1.1](https://github.com/GetStream/stream-chat-ruby/compare/v3.1.0...v3.1.1) (2022-11-17)
+
+
+### Features
+
+* **send_message:** add options argument ([#107](https://github.com/GetStream/stream-chat-ruby/issues/107)) ([8e5bf89](https://github.com/GetStream/stream-chat-ruby/commit/8e5bf8977f899d3e5a259efd38d7bcf3962cd999))
+
+
+### Bug Fixes
+
+* relax dependency versions ([#116](https://github.com/GetStream/stream-chat-ruby/issues/116)) ([2b87af6](https://github.com/GetStream/stream-chat-ruby/commit/2b87af624856c403ffaf8c9b69982832f169df70))
+
 ## [3.1.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.0.0...v3.1.0) (2022-08-26)
 
 
