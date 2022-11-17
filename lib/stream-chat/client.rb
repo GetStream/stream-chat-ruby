@@ -869,16 +869,10 @@ module StreamChat
       post('campaigns', data: { campaign: campaign })
     end
 
-    # Gets a campaign.
-    sig { params(campaign_id: String).returns(StreamChat::StreamResponse) }
-    def get_campaign(campaign_id)
-      get("campaigns/#{campaign_id}")
-    end
-
-    # Lists all campaigns. Options dictionary can contain 'offset' and 'limit' keys for pagination.
-    sig { params(options: StringKeyHash).returns(StreamChat::StreamResponse) }
-    def list_campaigns(options)
-      get('campaigns', params: options)
+    # Queries campaigns similar to query_channels or query_users.
+    sig { params(params: T.untyped).returns(StreamChat::StreamResponse) }
+    def query_campaigns(**params)
+      get('campaigns', params: { payload: params.to_json })
     end
 
     # Updates a campaign.
@@ -894,9 +888,9 @@ module StreamChat
     end
 
     # Schedules a campaign.
-    sig { params(campaign_id: String, send_at: Integer).returns(StreamChat::StreamResponse) }
-    def schedule_campaign(campaign_id, send_at)
-      patch("campaigns/#{campaign_id}/schedule", data: { send_at: send_at })
+    sig { params(campaign_id: String, scheduled_for: Integer).returns(StreamChat::StreamResponse) }
+    def schedule_campaign(campaign_id, scheduled_for)
+      patch("campaigns/#{campaign_id}/schedule", data: { scheduled_for: scheduled_for })
     end
 
     # Stops a campaign.
@@ -923,16 +917,10 @@ module StreamChat
       post('segments', data: { segment: segment })
     end
 
-    # Gets a campaign segment.
-    sig { params(segment_id: String).returns(StreamChat::StreamResponse) }
-    def get_segment(segment_id)
-      get("segments/#{segment_id}")
-    end
-
-    # Lists all campaign segments. Options dictionary can contain 'offset' and 'limit' keys for pagination.
-    sig { params(options: StringKeyHash).returns(StreamChat::StreamResponse) }
-    def list_segments(options)
-      get('segments', params: options)
+    # Queries campaign segments.
+    sig { params(params: T.untyped).returns(StreamChat::StreamResponse) }
+    def query_segments(**params)
+      get('segments', params: { payload: params.to_json })
     end
 
     # Updates a campaign segment.
@@ -945,6 +933,12 @@ module StreamChat
     sig { params(segment_id: String).returns(StreamChat::StreamResponse) }
     def delete_segment(segment_id)
       delete("segments/#{segment_id}")
+    end
+
+    # Queries campaign recipients.
+    sig { params(params: T.untyped).returns(StreamChat::StreamResponse) }
+    def query_recipients(**params)
+      get('recipients', params: { payload: params.to_json })
     end
 
     private
