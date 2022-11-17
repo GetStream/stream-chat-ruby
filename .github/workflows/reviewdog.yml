@@ -2,7 +2,7 @@ name: reviewdog
 
 on: [pull_request]
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref }}
   cancel-in-progress: true
 
