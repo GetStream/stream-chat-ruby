@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.3.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.2.0...v3.3.0) (2022-11-17)
+
+
+### Features
+
+* add campaign support ([#124](https://github.com/GetStream/stream-chat-ruby/issues/124)) ([d7a935f](https://github.com/GetStream/stream-chat-ruby/commit/d7a935f7b4459399b82db1d51a541388caeb5e68))
+
 ## [3.2.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.1.0...v3.2.0) (2022-11-17)
 
 
