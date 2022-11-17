@@ -5154,11 +5154,11 @@ class OpenSSL::KDF::KDFError
 end
 
 module OpenSSL::KDF
-  def self.hkdf(*arg); end
+  def self.hkdf(ikm, salt:, info:, length:, hash:); end
 
-  def self.pbkdf2_hmac(*arg); end
+  def self.pbkdf2_hmac(pass, salt:, iterations:, length:, hash:); end
 
-  def self.scrypt(*arg); end
+  def self.scrypt(pass, **kwargs); end
 end
 
 class OpenSSL::OCSP::Request

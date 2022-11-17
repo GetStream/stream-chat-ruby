@@ -30,7 +30,7 @@ For the client-side integrations (web and mobile) have a look at the JavaScript,
 
 [`stream-chat-ruby`](https://rubygems.org/gems/stream-chat-ruby) supports:
 
-- Ruby (2.5, 2.6, 2.7, 3.0, 3.1)
+- Ruby (2.7, 3.0, 3.1)
 
 ```bash
 $ gem install stream-chat-ruby
@@ -49,7 +49,7 @@ client = StreamChat::Client.new('STREAM_KEY', 'STREAM_SECRET')
 > What this means, is that you'll receive an error during runtime if you pass an invalid type to our methods. To prepare for that, just make sure whatever you pass in, matches the method signature (`sig { ... }`).
 
 > **Update (2022-May-24)**: we have relased [v3.0.0](https://github.com/GetStream/stream-chat-ruby/releases/tag/v3.0.0) with enabled runtime checks.
- 
+
 ---
 
 > Additionally, in a future major version, we would like to enforce symbol hash keys during runtime to conform to Ruby best practises. It's a good idea to prepare your application for that.

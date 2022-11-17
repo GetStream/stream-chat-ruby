@@ -45,7 +45,8 @@ build-iPhoneSimulator/
 
 # for a library or gem, you might want to ignore these files since the code is
 # intended to run in multiple environments; otherwise, check them in:
-Gemfile.lock # See https://github.com/rubygems/rubygems/issues/3372 for more info
+# See https://github.com/rubygems/rubygems/issues/3372 for more info
+Gemfile.lock
 .ruby-version
 # .ruby-gemset
 
