@@ -57,7 +57,7 @@ client = StreamChat::Client.new('STREAM_KEY', 'STREAM_SECRET')
 > # Wrong:
 > user = { "user" => { "id" => "bob-1"}}
 > # Correct:
-> user = { :user => { :id => "bob-1" }}
+> user = { user: { id: "bob-1" }}
 > ```
 
 ### Generate a token for client-side usage:
@@ -70,14 +70,14 @@ client.create_token('bob-1')
 
 ```ruby
 client.upsert_user({
-    :id => 'bob-1',
-    :role => 'admin',
-    :name => 'Robert Tables'
+    id: 'bob-1',
+    role: 'admin',
+    name: 'Robert Tables'
 })
 
 # Batch update is also supported
-jane = {:id => 'jane-1'}
-june = {:id => 'june-1'}
+jane = {id: 'jane-1'}
+june = {id: 'june-1'}
 client.upsert_users([jane, june])
 ```
 
@@ -85,10 +85,10 @@ client.upsert_users([jane, june])
 
 ```ruby
 client.create_channel_type({
-    :name => 'livechat',
-    :automod => 'disabled',
-    :commands => ['ban'],
-    :mutes => true
+    name: 'livechat',
+    automod: 'disabled',
+    commands: ['ban'],
+    mutes: true
 })
 
 channel_types = client.list_channel_types()
@@ -109,7 +109,7 @@ chan.add_members(['bob-1', 'jane-77'])
 
 ### Reactions
 ```ruby
-chan.send_reaction(m1['id'], {:type => 'like'}, 'bob-1')
+chan.send_reaction(m1['id'], {type: 'like'}, 'bob-1')
 ```
 
 ### Moderation
@@ -125,7 +125,7 @@ chan.unban_user('bob-1')
 ### Messages
 
 ```ruby
-m1 = chan.send_message({:text => 'Hi Jane!'}, 'bob-1')
+m1 = chan.send_message({text: 'Hi Jane!'}, 'bob-1')
 
 deleted_message = client.delete_message(m1['message']['id'])
 
@@ -158,11 +158,37 @@ client.delete_blocklist('my_blocker')
 
 ```ruby
 # Register an export
-response = client.export_channels({:type => 'messaging', :id => 'jane'})
+response = client.export_channels({type: 'messaging', id: 'jane'})
 
 # Check completion
 status_response = client.get_export_channel_status(response['task_id'])
 # status_response['status'] == 'pending', 'completed'
+```
+
+### Campaigns
+
+```ruby
+# Create a user or channel segment
+client.create_segment({ name: 'test', type: 'user', filter: { uniq: 'a flag on users' } })
+
+# Create a campaign that uses the segment
+client.create_campaign({
+    name: 'test',
+    text: 'Hi',
+    sender_id: campaign_sender,
+    segment_id: segment_id,
+    channel_type: 'messaging'
+})
+
+# Schedule the campaign
+client.schedule_campaign(campaign_id, Time.now.to_i)
+
+# Query the campaign to check the status
+response = client.query_campaigns(filter_conditions: { id: campaign_id })
+response['campaigns'][0]['status'] == 'completed'
+
+# Read sent information
+client.query_recipients(filter_conditions: { campaign_id: campaign_id })
 ```
 
 ### Rate limits
