@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.1.1](https://github.com/GetStream/stream-chat-ruby/compare/v3.1.0...v3.1.1) (2022-11-17)
+
+
+### Features
+
+* **send_message:** add options argument ([#107](https://github.com/GetStream/stream-chat-ruby/issues/107)) ([8e5bf89](https://github.com/GetStream/stream-chat-ruby/commit/8e5bf8977f899d3e5a259efd38d7bcf3962cd999))
+
+
+### Bug Fixes
+
+* do not ship lock ([#118](https://github.com/GetStream/stream-chat-ruby/issues/118)) ([4cd4f25](https://github.com/GetStream/stream-chat-ruby/commit/4cd4f251a575ec8b010543d0277914463028cf2b))
+* relax dependency versions ([#116](https://github.com/GetStream/stream-chat-ruby/issues/116)) ([2b87af6](https://github.com/GetStream/stream-chat-ruby/commit/2b87af624856c403ffaf8c9b69982832f169df70))
+
+
+### Other
+
+* add ignored sections into changelog ([#120](https://github.com/GetStream/stream-chat-ruby/issues/120)) ([191ea82](https://github.com/GetStream/stream-chat-ruby/commit/191ea825c4ad68473568da6c801819d6a8fec827))
+* **deps-dev:** bump rack from 2.2.3 to 2.2.4 ([#110](https://github.com/GetStream/stream-chat-ruby/issues/110)) ([2ab646b](https://github.com/GetStream/stream-chat-ruby/commit/2ab646b4f6cdcb016203075a94a77437739b69d0))
+* move pr template into github ([#119](https://github.com/GetStream/stream-chat-ruby/issues/119)) ([99cd178](https://github.com/GetStream/stream-chat-ruby/commit/99cd178571cfdf6b6828ef60f4eca57890f14e18))
+
 ## [3.1.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.0.0...v3.1.0) (2022-08-26)
 
 
