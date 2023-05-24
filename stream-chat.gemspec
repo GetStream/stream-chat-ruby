@@ -26,9 +26,9 @@ Gem::Specification.new do |gem|
     'source_code_uri' => 'https://github.com/GetStream/stream-chat-ruby'
   }
 
-  gem.add_dependency 'faraday', '~> 1.10.0'
-  gem.add_dependency 'faraday-multipart', '~> 1.0.3'
-  gem.add_dependency 'faraday-net_http_persistent', '~> 1.2'
+  gem.add_dependency 'faraday', '~> 2.0.1'
+  gem.add_dependency 'faraday-multipart', '~> 1.0.4'
+  gem.add_dependency 'faraday-net_http_persistent', '~> 2.0.1'
   gem.add_dependency 'jwt', '~> 2.3'
   gem.add_dependency 'net-http-persistent', '~> 4.0'
   gem.add_dependency 'sorbet-runtime', '~> 0.5.10539'
