@@ -32,8 +32,4 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'jwt', '~> 2.3'
   gem.add_dependency 'net-http-persistent', '~> 4.0'
   gem.add_dependency 'sorbet-runtime', '~> 0.5.10539'
-  gem.add_development_dependency 'rake', '~> 13.0'
-  gem.add_development_dependency 'rspec', '~> 3.12'
-  gem.add_development_dependency 'simplecov', '~> 0.21.2'
-  gem.add_development_dependency 'simplecov-console', '~> 0.9.1'
 end
