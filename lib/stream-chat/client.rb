@@ -364,7 +364,7 @@ module StreamChat
     #  commits a message.
     sig { params(message_id: String).returns(StreamChat::StreamResponse) }
     def commit_message(message_id)
-        post("messages/#{message_id}/commit")
+      post("messages/#{message_id}/commit")
     end
 
     # Updates a message. Fully overwrites a message.
