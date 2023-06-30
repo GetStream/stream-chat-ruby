@@ -361,6 +361,12 @@ module StreamChat
       update_message_partial(message_id, updates, user_id: user_id)
     end
 
+    #  commits a message.
+    sig { params(message_id: String).returns(StreamChat::StreamResponse) }
+    def commit_message(message_id)
+        post("messages/#{message_id}/commit")
+    end
+
     # Updates a message. Fully overwrites a message.
     # For partial update, use `update_message_partial` method.
     sig { params(message: StringKeyHash).returns(StreamChat::StreamResponse) }
