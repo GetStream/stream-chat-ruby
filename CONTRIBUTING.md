@@ -14,7 +14,23 @@ $ bundle install --path vendor/bundle
 ### Run tests
 
 ```shell
-$ STREAM_KEY=my_api_key STREAM_SECRET=my_api_secret bundle exec rake spec
+$ STREAM_KEY=my_api_key STREAM_SECRET=my_api_secret bundle exec rspec spec
+```
+
+### Run specific test
+
+Add :focus tag on target test:
+
+```rb
+it 'can mark messages as read', :focus do
+    # test something
+end
+```
+
+And then run as following:
+
+```shell
+$ STREAM_KEY=myapi_key STREAM_SECRET=my_secret STREAM_CHAT_URL=http://127.0.0.1:3030 bundle exec rspec spec --tag focus
 ```
 
 ### Linters and type check
