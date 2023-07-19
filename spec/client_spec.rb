@@ -435,7 +435,7 @@ describe StreamChat::Client do
 
     it 'offset with next should fail' do
       expect do
-        @client.search({ members: { '$in' => ['legolas'] } }, SecureRandom.uuid,  offset: 2, next: SecureRandom.uuid)
+        @client.search({ members: { '$in' => ['legolas'] } }, SecureRandom.uuid, offset: 2, next: SecureRandom.uuid)
       end.to raise_error(/cannot use offset with next or sort parameters/)
     end
 

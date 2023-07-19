@@ -219,7 +219,7 @@ module StreamChat
     end
 
     # Sends the mark read event for this user, only works if the `read_events` setting is enabled.
-    sig { params(user_id: String, options: StringKeyHash).returns(StreamChat::StreamResponse) }
+    sig { params(user_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def mark_read(user_id, **options)
       payload = add_user_id(options, user_id)
       @client.post("#{url}/read", data: payload)
