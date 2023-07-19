@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.4.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.3.0...v3.4.0) (2023-07-19)
+
+
+### Features
+
+* commit message endpoint ([#129](https://github.com/GetStream/stream-chat-ruby/issues/129)) ([09eabb3](https://github.com/GetStream/stream-chat-ruby/commit/09eabb33f4bcfa6f8881dc545060bc5bdd51374e))
+
+
+### Bug Fixes
+
+* sorbet type for mark_read function signature ([#130](https://github.com/GetStream/stream-chat-ruby/issues/130)) ([7ea0f51](https://github.com/GetStream/stream-chat-ruby/commit/7ea0f517592c1819e223a65eedb53caa85a92817))
+
 ## [3.3.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.2.0...v3.3.0) (2022-11-17)
 
 
