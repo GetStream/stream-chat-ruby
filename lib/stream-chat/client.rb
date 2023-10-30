@@ -75,7 +75,8 @@ module StreamChat
       Client.new(ENV.fetch('STREAM_KEY'),
                  ENV.fetch('STREAM_SECRET'),
                  ENV.fetch('STREAM_CHAT_TIMEOUT', DEFAULT_TIMEOUT),
-                 **{ base_url: ENV.fetch('STREAM_CHAT_URL', DEFAULT_BASE_URL) }.merge(options))
+                 base_url: ENV.fetch('STREAM_CHAT_URL', DEFAULT_BASE_URL),
+                 **options)
     end
 
     # Sets the underlying Faraday http client.
@@ -739,6 +740,14 @@ module StreamChat
     sig { params(sqs_key: T.nilable(String), sqs_secret: T.nilable(String), sqs_url: T.nilable(String)).returns(StreamChat::StreamResponse) }
     def check_sqs(sqs_key = nil, sqs_secret = nil, sqs_url = nil)
       post('check_sqs', data: { sqs_key: sqs_key, sqs_secret: sqs_secret, sqs_url: sqs_url })
+    end
+
+    # Check SNS Push settings
+    #
+    # When no parameters are given, the current SNS app settings are used.
+    sig { params(sns_key: T.nilable(String), sns_secret: T.nilable(String), sns_topic_arn: T.nilable(String)).returns(StreamChat::StreamResponse) }
+    def check_sns(sns_key = nil, sns_secret = nil, sns_topic_arn = nil)
+      post('check_sns', data: { sns_key: sns_key, sns_secret: sns_secret, sns_topic_arn: sns_topic_arn })
     end
 
     # Creates a new command.

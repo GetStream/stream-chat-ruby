@@ -659,6 +659,12 @@ describe StreamChat::Client do
     expect(resp['error']).to include 'invalid SQS url'
   end
 
+  it 'check_sns with an invalid topic arn should fail' do
+    resp = @client.check_sns('key', 'secret', 'arn:aws:sns:us-east-1:123456789012:sns-topic')
+    expect(resp['status']).to eq 'error'
+    expect(resp['error']).to include 'publishing the message failed.'
+  end
+
   it 'can create a guest if it"s allowed' do
     guest_user = @client.create_guest({ user: { id: SecureRandom.uuid } })
     expect(guest_user['access_token']).not_to be_empty
