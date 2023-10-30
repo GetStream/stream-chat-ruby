@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.5.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.4.0...v3.5.0) (2023-10-30)
+
+
+### Features
+
+* add check sns point ([#134](https://github.com/GetStream/stream-chat-ruby/issues/134)) ([532ae7e](https://github.com/GetStream/stream-chat-ruby/commit/532ae7e9f2e0879f679dc3cd2c5afb27987d4e88))
+
 ## [3.4.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.3.0...v3.4.0) (2023-07-19)
 
 
