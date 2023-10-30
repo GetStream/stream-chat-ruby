@@ -745,7 +745,7 @@ module StreamChat
     #
     # When no parameters are given, the current SNS app settings are used.
     sig { params(sns_key: T.nilable(String), sns_secret: T.nilable(String), sns_topic_arn: T.nilable(String)).returns(StreamChat::StreamResponse) }
-    def check_sqs(sns_key = nil, sns_secret = nil, sns_topic_arn = nil)
+    def check_sns(sns_key = nil, sns_secret = nil, sns_topic_arn = nil)
       post('check_sns', data: { sns_key: sns_key, sns_secret: sns_secret, sns_topic_arn: sns_topic_arn })
     end
 
