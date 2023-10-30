@@ -659,7 +659,7 @@ describe StreamChat::Client do
     expect(resp['error']).to include 'invalid SQS url'
   end
 
-  it 'check_sns with an invalid queue url should fail' do
+  it 'check_sns with an invalid topic arn should fail' do
     resp = @client.check_sns('key', 'secret', 'arn:aws:sns:us-east-1:123456789012:sns-topic')
     expect(resp['status']).to eq 'error'
     expect(resp['error']).to include 'publishing the message failed.'
