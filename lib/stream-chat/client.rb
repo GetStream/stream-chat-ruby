@@ -75,7 +75,8 @@ module StreamChat
       Client.new(ENV.fetch('STREAM_KEY'),
                  ENV.fetch('STREAM_SECRET'),
                  ENV.fetch('STREAM_CHAT_TIMEOUT', DEFAULT_TIMEOUT),
-                 **{ base_url: ENV.fetch('STREAM_CHAT_URL', DEFAULT_BASE_URL) }.merge(options))
+                 base_url: ENV.fetch('STREAM_CHAT_URL', DEFAULT_BASE_URL),
+                 **options)
     end
 
     # Sets the underlying Faraday http client.
