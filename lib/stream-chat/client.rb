@@ -741,6 +741,14 @@ module StreamChat
       post('check_sqs', data: { sqs_key: sqs_key, sqs_secret: sqs_secret, sqs_url: sqs_url })
     end
 
+    # Check SNS Push settings
+    #
+    # When no parameters are given, the current SNS app settings are used.
+    sig { params(sns_key: T.nilable(String), sns_secret: T.nilable(String), sns_topic_arn: T.nilable(String)).returns(StreamChat::StreamResponse) }
+    def check_sqs(sns_key = nil, sns_secret = nil, sns_topic_arn = nil)
+      post('check_sns', data: { sns_key: sns_key, sns_secret: sns_secret, sns_topic_arn: sns_topic_arn })
+    end
+
     # Creates a new command.
     sig { params(command: StringKeyHash).returns(StreamChat::StreamResponse) }
     def create_command(command)
