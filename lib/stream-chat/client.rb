@@ -255,6 +255,18 @@ module StreamChat
       delete("users/#{user_id}", params: options)
     end
 
+    # Restores a user synchronously.
+    sig { params(user_id: String).returns(StreamChat::StreamResponse) }
+    def restore_user(user_id)
+      post("users/restore", data: { user_ids: [user_id] })
+    end
+
+    # Restores users synchronously.
+    sig { params(user_ids: T::Array[String]).returns(StreamChat::StreamResponse) }
+    def restore_users(user_ids)
+      post("users/restore", data: { user_ids: user_ids })
+    end
+
     # Deactivates a user.
     # Deactivated users cannot connect to Stream Chat, and can't send or receive messages.
     # To reactivate a user, use `reactivate_user` method.
