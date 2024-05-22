@@ -258,13 +258,13 @@ module StreamChat
     # Restores a user synchronously.
     sig { params(user_id: String).returns(StreamChat::StreamResponse) }
     def restore_user(user_id)
-      post("users/restore", data: { user_ids: [user_id] })
+      post('users/restore', data: { user_ids: [user_id] })
     end
 
     # Restores users synchronously.
     sig { params(user_ids: T::Array[String]).returns(StreamChat::StreamResponse) }
     def restore_users(user_ids)
-      post("users/restore", data: { user_ids: user_ids })
+      post('users/restore', data: { user_ids: user_ids })
     end
 
     # Deactivates a user.
@@ -681,13 +681,13 @@ module StreamChat
       before = T.cast(before, DateTime).rfc3339 if before.instance_of?(DateTime)
 
       updates = []
-      user_ids.each do |user_id|
-        updates.push({
-                       'id' => user_id,
-                       'set' => {
-                         'revoke_tokens_issued_before' => before
-                       }
-                     })
+      user_ids.map do |user_id|
+        {
+          'id' => user_id,
+          'set' => {
+            'revoke_tokens_issued_before' => before
+          }
+        }
       end
       update_users_partial(updates)
     end
