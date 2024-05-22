@@ -258,13 +258,13 @@ module StreamChat
     # Restores a user synchronously.
     sig { params(user_id: String).returns(StreamChat::StreamResponse) }
     def restore_user(user_id)
-      post("users/restore", data: { user_ids: [user_id] })
+      post('users/restore', data: { user_ids: [user_id] })
     end
 
     # Restores users synchronously.
     sig { params(user_ids: T::Array[String]).returns(StreamChat::StreamResponse) }
     def restore_users(user_ids)
-      post("users/restore", data: { user_ids: user_ids })
+      post('users/restore', data: { user_ids: user_ids })
     end
 
     # Deactivates a user.
@@ -681,13 +681,13 @@ module StreamChat
       before = T.cast(before, DateTime).rfc3339 if before.instance_of?(DateTime)
 
       updates = []
-      user_ids.each do |user_id|
-        updates.push({
-                       'id' => user_id,
-                       'set' => {
-                         'revoke_tokens_issued_before' => before
-                       }
-                     })
+      user_ids.map do |user_id|
+        {
+          'id' => user_id,
+          'set' => {
+            'revoke_tokens_issued_before' => before
+          }
+        }
       end
       update_users_partial(updates)
     end
@@ -888,84 +888,6 @@ module StreamChat
     sig { params(options: T.untyped).returns(StreamChat::StreamResponse) }
     def list_imports(options)
       get('imports', params: options)
-    end
-
-    # Creates a campaign.
-    sig { params(campaign: StringKeyHash).returns(StreamChat::StreamResponse) }
-    def create_campaign(campaign)
-      post('campaigns', data: { campaign: campaign })
-    end
-
-    # Queries campaigns similar to query_channels or query_users.
-    sig { params(params: T.untyped).returns(StreamChat::StreamResponse) }
-    def query_campaigns(**params)
-      get('campaigns', params: { payload: params.to_json })
-    end
-
-    # Updates a campaign.
-    sig { params(campaign_id: String, campaign: StringKeyHash).returns(StreamChat::StreamResponse) }
-    def update_campaign(campaign_id, campaign)
-      put("campaigns/#{campaign_id}", data: { campaign: campaign })
-    end
-
-    # Deletes a campaign.
-    sig { params(campaign_id: String).returns(StreamChat::StreamResponse) }
-    def delete_campaign(campaign_id)
-      delete("campaigns/#{campaign_id}")
-    end
-
-    # Schedules a campaign.
-    sig { params(campaign_id: String, scheduled_for: Integer).returns(StreamChat::StreamResponse) }
-    def schedule_campaign(campaign_id, scheduled_for)
-      patch("campaigns/#{campaign_id}/schedule", data: { scheduled_for: scheduled_for })
-    end
-
-    # Stops a campaign.
-    sig { params(campaign_id: String).returns(StreamChat::StreamResponse) }
-    def stop_campaign(campaign_id)
-      patch("campaigns/#{campaign_id}/stop")
-    end
-
-    # Resumes a campaign.
-    sig { params(campaign_id: String).returns(StreamChat::StreamResponse) }
-    def resume_campaign(campaign_id)
-      patch("campaigns/#{campaign_id}/resume")
-    end
-
-    # Tests a campaign.
-    sig { params(campaign_id: String, users: T::Array[StringKeyHash]).returns(StreamChat::StreamResponse) }
-    def test_campaign(campaign_id, users)
-      post("campaigns/#{campaign_id}/test", data: { users: users })
-    end
-
-    # Creates a campaign segment.
-    sig { params(segment: StringKeyHash).returns(StreamChat::StreamResponse) }
-    def create_segment(segment)
-      post('segments', data: { segment: segment })
-    end
-
-    # Queries campaign segments.
-    sig { params(params: T.untyped).returns(StreamChat::StreamResponse) }
-    def query_segments(**params)
-      get('segments', params: { payload: params.to_json })
-    end
-
-    # Updates a campaign segment.
-    sig { params(segment_id: String, segment: StringKeyHash).returns(StreamChat::StreamResponse) }
-    def update_segment(segment_id, segment)
-      put("segments/#{segment_id}", data: { segment: segment })
-    end
-
-    # Deletes a campaign segment.
-    sig { params(segment_id: String).returns(StreamChat::StreamResponse) }
-    def delete_segment(segment_id)
-      delete("segments/#{segment_id}")
-    end
-
-    # Queries campaign recipients.
-    sig { params(params: T.untyped).returns(StreamChat::StreamResponse) }
-    def query_recipients(**params)
-      get('recipients', params: { payload: params.to_json })
     end
 
     private

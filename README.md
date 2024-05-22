@@ -165,32 +165,6 @@ status_response = client.get_export_channel_status(response['task_id'])
 # status_response['status'] == 'pending', 'completed'
 ```
 
-### Campaigns
-
-```ruby
-# Create a user or channel segment
-client.create_segment({ name: 'test', type: 'user', filter: { uniq: 'a flag on users' } })
-
-# Create a campaign that uses the segment
-client.create_campaign({
-    name: 'test',
-    text: 'Hi',
-    sender_id: campaign_sender,
-    segment_id: segment_id,
-    channel_type: 'messaging'
-})
-
-# Schedule the campaign
-client.schedule_campaign(campaign_id, Time.now.to_i)
-
-# Query the campaign to check the status
-response = client.query_campaigns(filter_conditions: { id: campaign_id })
-response['campaigns'][0]['status'] == 'completed'
-
-# Read sent information
-client.query_recipients(filter_conditions: { campaign_id: campaign_id })
-```
-
 ### Rate limits
 
 ```ruby

@@ -774,12 +774,6 @@ class BigDecimal
   def self.ver(); end
 end
 
-class Binding
-  def clone(); end
-
-  def irb(); end
-end
-
 class Bundler::APIResponseInvalidDependenciesError
   def status_code(); end
 end

@@ -735,39 +735,6 @@ describe StreamChat::Client do
     end
   end
 
-  describe 'campaigns', campaigns: true do
-    before(:all) do
-      @campaign_selector = SecureRandom.uuid
-      @campaign_receiver = SecureRandom.uuid
-      @campaign_sender = SecureRandom.uuid
-      @client.upsert_user({ id: @campaign_receiver, uniq: @campaign_selector, receiver: true })
-      @client.upsert_user({ id: @campaign_sender, sender: true })
-    end
-
-    it 'full flow' do
-      response = @client.create_segment({ name: 'test', type: 'user', filter: { uniq: @campaign_selector } })
-      segment = response['segment']
-      response = @client.create_campaign({ name: 'test', text: 'Hi', sender_id: @campaign_sender, segment_id: segment['id'], channel_type: 'messaging' })
-      campaign = response['campaign']
-      @client.schedule_campaign(campaign['id'], Time.now.to_i)
-
-      response = @client.query_segments(filter_conditions: { id: segment['id'] })
-      expect(response['segments'].length).to eq 1
-
-      loop do
-        response = @client.query_campaigns(filter_conditions: { id: campaign['id'] })
-        if response['campaigns'].length == 1 && response['campaigns'][0]['status'] == 'completed'
-          response = @client.query_recipients(filter_conditions: { campaign_id: campaign['id'] })
-          puts response.to_json
-          expect(response['recipients'].length).to eq 1
-          expect(response['recipients'][0]['receiver_id']).to eq @campaign_receiver
-          break
-        end
-        sleep(0.5)
-      end
-    end
-  end
-
   describe 'permissions' do
     before(:all) do
       @permission_id = SecureRandom.uuid

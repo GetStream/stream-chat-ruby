@@ -284,5 +284,8 @@ describe StreamChat::Channel do
 
     response = @channel.query_members(limit: 1)
     expect(response['members'].length).to eq 1
+
+    response = @channel.query_members(filter_conditions: { notifications_muted: true })
+    expect(response['members'].length).to eq 2
   end
 end
