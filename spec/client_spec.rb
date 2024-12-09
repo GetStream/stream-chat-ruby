@@ -718,7 +718,7 @@ describe StreamChat::Client do
     end
 
     it 'import end2end' do
-      url_resp = @client.create_import_url("#{SecureRandom.uuid}.json'")
+      url_resp = @client.create_import_url("#{SecureRandom.uuid}.json")
       expect(url_resp['upload_url']).not_to be_empty
       expect(url_resp['path']).not_to be_empty
 
