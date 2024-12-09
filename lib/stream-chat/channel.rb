@@ -16,6 +16,9 @@ module StreamChat
     sig { returns(String) }
     attr_reader :channel_type
 
+    sig { returns(String) }
+    attr_reader :cid
+
     sig { returns(StringKeyHash) }
     attr_reader :custom_data
 
@@ -164,6 +167,68 @@ module StreamChat
     sig { params(user_id: String).returns(StreamChat::StreamResponse) }
     def unmute(user_id)
       @client.post('moderation/unmute/channel', data: { 'user_id' => user_id, 'channel_cid' => @cid })
+    end
+
+    # Pins a channel for a user.
+    sig { params(user_id: String).returns(StreamChat::StreamResponse) }
+    def pin(user_id)
+      raise StreamChannelException, 'user ID must not be empty' if user_id.empty?
+
+      payload = {
+        set: {
+          pinned: true
+        }
+      }
+      @client.patch("#{url}/member/#{CGI.escape(user_id)}", data: payload)
+    end
+
+    # Unins a channel for a user.
+    sig { params(user_id: String).returns(StreamChat::StreamResponse) }
+    def unpin(user_id)
+      raise StreamChannelException, 'user ID must not be empty' if user_id.empty?
+
+      payload = {
+        set: {
+          pinned: false
+        }
+      }
+      @client.patch("#{url}/member/#{CGI.escape(user_id)}", data: payload)
+    end
+
+    # Archives a channel for a user.
+    sig { params(user_id: String).returns(StreamChat::StreamResponse) }
+    def archive(user_id)
+      raise StreamChannelException, 'user ID must not be empty' if user_id.empty?
+
+      payload = {
+        set: {
+          archived: true
+        }
+      }
+      @client.patch("#{url}/member/#{CGI.escape(user_id)}", data: payload)
+    end
+
+    # Archives a channel for a user.
+    sig { params(user_id: String).returns(StreamChat::StreamResponse) }
+    def unarchive(user_id)
+      raise StreamChannelException, 'user ID must not be empty' if user_id.empty?
+
+      payload = {
+        set: {
+          archived: false
+        }
+      }
+      @client.patch("#{url}/member/#{CGI.escape(user_id)}", data: payload)
+    end
+
+    # Updates a member partially in the channel.
+    sig { params(user_id: String, set: T.nilable(StringKeyHash), unset: T.nilable(T::Array[String])).returns(StreamChat::StreamResponse) }
+    def update_member_partial(user_id, set: nil, unset: nil)
+      raise StreamChannelException, 'user ID must not be empty' if user_id.empty?
+      raise StreamChannelException, 'set or unset is required' if set.nil? && unset.nil?
+
+      payload = { set: set, unset: unset }
+      @client.patch("#{url}/member/#{CGI.escape(user_id)}", data: payload)
     end
 
     # Adds members to the channel.
