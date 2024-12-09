@@ -16,6 +16,9 @@ module StreamChat
     sig { returns(String) }
     attr_reader :channel_type
 
+    sig { returns(String) }
+    attr_reader :cid
+
     sig { returns(StringKeyHash) }
     attr_reader :custom_data
 
