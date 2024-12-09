@@ -338,4 +338,17 @@ describe StreamChat::Channel do
     expect(response['channels'].length).to eq 1
     expect(response['channels'][0]['channel']['cid']).to eq @channel.cid
   end
+
+  it 'can update channel member partially' do
+    @channel.add_members([@random_users[0][:id]])
+
+    # Test setting a field
+    response = @channel.update_member_partial(@random_users[0][:id], set: { 'hat' => 'blue' })
+    expect(response['channel_member']['hat']).to eq 'blue'
+
+    # Test setting and unsetting fields
+    response = @channel.update_member_partial(@random_users[0][:id], set: { 'color' => 'red' }, unset: ['hat'])
+    expect(response['channel_member']['color']).to eq 'red'
+    expect(response['channel_member']).not_to have_key('hat')
+  end
 end
