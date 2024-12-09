@@ -288,4 +288,37 @@ describe StreamChat::Channel do
     response = @channel.query_members(filter_conditions: { notifications_muted: true })
     expect(response['members'].length).to eq 2
   end
+
+  it 'can pin and unpin channel' do
+    @channel.add_members([@random_users[0][:id]])
+    @channel.add_members([@random_users[1][:id]])
+
+    # Pin the channel
+    now = Time.now
+    response = @channel.pin(@random_users[0][:id])
+    expect(response['channel_member']['pinned_at']).not_to be_nil
+    expect(Time.parse(response['channel_member']['pinned_at']).to_i).to be >= now.to_i
+
+    # Query for pinned channel
+    response = @client.query_channels(
+      { 'pinned' => true, 'cid' => @channel.cid },
+      nil,
+      { 'user_id' => @random_users[0][:id] }
+    )
+    expect(response['channels'].length).to eq 1
+    expect(response['channels'][0]['channel']['cid']).to eq @channel.cid
+
+    # Unpin the channel
+    response = @channel.unpin(@random_users[0][:id])
+    expect(response['channel_member']).not_to have_key('pinned_at')
+
+    # Query for unpinned channel
+    response = @client.query_channels(
+      { 'pinned' => false, 'cid' => @channel.cid },
+      nil,
+      { 'user_id' => @random_users[0][:id] }
+    )
+    expect(response['channels'].length).to eq 1
+    expect(response['channels'][0]['channel']['cid']).to eq @channel.cid
+  end
 end
