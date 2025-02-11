@@ -28,9 +28,7 @@ For the client-side integrations (web and mobile) have a look at the JavaScript,
 
 ## ⚙️ Installation
 
-[`stream-chat-ruby`](https://rubygems.org/gems/stream-chat-ruby) supports:
-
-- Ruby (2.7, 3.0, 3.1)
+[`stream-chat-ruby`](https://rubygems.org/gems/stream-chat-ruby) supports Ruby version `3.0` and greater. We test against Ruby versions `3.0`, `3.1` and `3.4`.
 
 ```bash
 $ gem install stream-chat-ruby
@@ -53,6 +51,7 @@ client = StreamChat::Client.new('STREAM_KEY', 'STREAM_SECRET')
 ---
 
 > Additionally, in a future major version, we would like to enforce symbol hash keys during runtime to conform to Ruby best practises. It's a good idea to prepare your application for that.
+>
 > ```ruby
 > # Wrong:
 > user = { "user" => { "id" => "bob-1"}}
@@ -108,11 +107,13 @@ chan.add_members(['bob-1', 'jane-77'])
 ```
 
 ### Reactions
+
 ```ruby
 chan.send_reaction(m1['id'], {type: 'like'}, 'bob-1')
 ```
 
 ### Moderation
+
 ```ruby
 chan.add_moderators(['jane-77'])
 chan.demote_moderators(['bob-1'])

@@ -16,7 +16,7 @@ Gem::Specification.new do |gem|
   gem.files = Dir.chdir(File.expand_path(__dir__)) do
     `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|sorbet|spec|\.github|scripts|assets)/}) }
   end
-  gem.required_ruby_version = '>=2.7.0'
+  gem.required_ruby_version = '>=3.0.0'
   gem.metadata = {
     'rubygems_mfa_required' => 'false',
     'homepage_uri' => 'https://getstream.io/chat/docs/',
