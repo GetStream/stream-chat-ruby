@@ -1,7 +1,7 @@
 AllCops:
   DisabledByDefault: false
   NewCops: enable
-  TargetRubyVersion: 2.7
+  TargetRubyVersion: 3.0
   Exclude:
     - sorbet/**/*.rbi
     - vendor/bundle/**/*

@@ -20,3 +20,5 @@ end
 group :test do
   gem 'rack', '~> 2.2.4'
 end
+
+ruby '>= 3.0.0'
