@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.8.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.7.0...v3.8.0) (2025-02-11)
+
+
+### Other
+
+* added tests using the restricted visibility feature ([#144](https://github.com/GetStream/stream-chat-ruby/issues/144)) ([b13cc92](https://github.com/GetStream/stream-chat-ruby/commit/b13cc92cd91aeb1f6e1a25f5c6d22efb41339f49))
+
 ## [3.7.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.6.0...v3.7.0) (2024-12-09)
 
 ## [3.6.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.5.1...v3.6.0) (2024-05-22)
