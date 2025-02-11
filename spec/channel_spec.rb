@@ -351,4 +351,83 @@ describe StreamChat::Channel do
     expect(response['channel_member']['color']).to eq 'red'
     expect(response['channel_member']).not_to have_key('hat')
   end
+
+  it 'can send message with restricted visibility' do
+    # Send a message that's only visible to specific users
+    msg = @channel.send_message(
+      {
+        'text' => 'secret message',
+        'restricted_visibility' => [@random_users[0][:id], @random_users[1][:id]]
+      },
+      @random_user[:id]
+    )
+
+    # Verify the message was sent successfully
+    expect(msg).to include 'message'
+    expect(msg['message']['text']).to eq 'secret message'
+
+    # Verify the restricted visibility
+    expect(msg['message']['restricted_visibility']).to match_array([@random_users[0][:id], @random_users[1][:id]])
+  end
+
+  it 'can update message with restricted visibility' do
+    # First send a regular message
+    msg = @channel.send_message(
+      {
+        'text' => 'original message'
+      },
+      @random_user[:id]
+    )
+
+    # Update the message with restricted visibility
+    updated_msg = @client.update_message(
+      {
+        'id' => msg['message']['id'],
+        'text' => 'updated secret message',
+        'restricted_visibility' => [@random_users[0][:id], @random_users[1][:id]],
+        'user' => { 'id' => @random_user[:id] }
+      }
+    )
+
+    # Verify the message was updated successfully
+    expect(updated_msg).to include 'message'
+    expect(updated_msg['message']['text']).to eq 'updated secret message'
+
+    # Verify the restricted visibility
+    expect(updated_msg['message']['restricted_visibility']).to match_array([@random_users[0][:id], @random_users[1][:id]])
+  end
+
+  it 'can update message partially with restricted visibility' do
+    # First send a regular message
+    msg = @channel.send_message(
+      {
+        'text' => 'original message',
+        'custom_field' => 'original value'
+      },
+      @random_user[:id]
+    )
+
+    # Partially update the message with restricted visibility
+    updated_msg = @client.update_message_partial(
+      msg['message']['id'],
+      {
+        set: {
+          text: 'partially updated secret message',
+          restricted_visibility: [@random_users[0][:id], @random_users[1][:id]]
+        },
+        unset: ['custom_field']
+      },
+      user_id: @random_user[:id]
+    )
+
+    # Verify the message was updated successfully
+    expect(updated_msg).to include 'message'
+    expect(updated_msg['message']['text']).to eq 'partially updated secret message'
+
+    # Verify the restricted visibility was set
+    expect(updated_msg['message']['restricted_visibility']).to match_array([@random_users[0][:id], @random_users[1][:id]])
+
+    # Verify the custom field was unset
+    expect(updated_msg['message']).not_to include 'custom_field'
+  end
 end
