@@ -594,7 +594,7 @@ describe StreamChat::Client do
 
   it 'request users export' do
     user_id1 = SecureRandom.uuid
-    @client.update_users([{ id: user_id1 } ])
+    @client.update_users([{ id: user_id1 }])
 
     resp = @client.export_users([user_id1])
     expect(resp['task_id']).not_to be_empty
