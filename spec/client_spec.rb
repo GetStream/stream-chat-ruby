@@ -592,6 +592,29 @@ describe StreamChat::Client do
     end
   end
 
+  it 'request users export' do
+    user_id1 = SecureRandom.uuid
+    @client.update_users([{ id: user_id1 }])
+
+    resp = @client.export_users([user_id1])
+    expect(resp['task_id']).not_to be_empty
+
+    task_id = resp['task_id']
+    loop do
+      resp = @client.get_task(task_id)
+      expect(resp['status']).not_to be_empty
+      expect(resp['created_at']).not_to be_empty
+      expect(resp['updated_at']).not_to be_empty
+      if resp['status'] == 'completed'
+        expect(resp['result']).not_to be_empty
+        expect(resp['result']['url']).not_to be_empty
+        expect(resp).not_to include 'error'
+        break
+      end
+      sleep(0.5)
+    end
+  end
+
   it 'request delete channels' do
     ch1 = @client.channel('messaging', channel_id: SecureRandom.uuid)
     ch1.create(@random_user[:id])
