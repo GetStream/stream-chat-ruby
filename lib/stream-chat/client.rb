@@ -643,6 +643,16 @@ module StreamChat
       get("export_channels/#{task_id}")
     end
 
+    # Requests a users export.
+    #
+    # User exports are created asynchronously, you can use the Task ID returned by
+    # the APIs to keep track of the status and to download the final result when it is ready.
+    # Use `get_task` to check the status of the export.
+    sig { params(user_ids: T::Array[String]).returns(StreamChat::StreamResponse) }
+    def export_users(user_ids)
+      post('export/users', data: { user_ids: user_ids })
+    end
+
     # Returns the status of a task.
     sig { params(task_id: String).returns(StreamChat::StreamResponse) }
     def get_task(task_id)
