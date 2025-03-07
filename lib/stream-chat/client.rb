@@ -7,6 +7,7 @@ require 'faraday/multipart'
 require 'faraday/net_http_persistent'
 require 'jwt'
 require 'time'
+require 'date'
 require 'sorbet-runtime'
 require 'stream-chat/channel'
 require 'stream-chat/errors'
@@ -898,6 +899,55 @@ module StreamChat
     sig { params(options: T.untyped).returns(StreamChat::StreamResponse) }
     def list_imports(options)
       get('imports', params: options)
+    end
+
+    # Creates a reminder for a message.
+    # @param message_id [String] The ID of the message to create a reminder for
+    # @param user_id [String] The ID of the user creating the reminder
+    # @param remind_at [DateTime, nil] When to remind the user (optional)
+    # @return [StreamChat::StreamResponse] API response
+    sig { params(message_id: String, user_id: String, remind_at: T.nilable(DateTime)).returns(StreamChat::StreamResponse) }
+    def create_reminder(message_id, user_id, remind_at = nil)
+      data = { user_id: user_id }
+      data[:remind_at] = T.cast(remind_at, DateTime).rfc3339 if remind_at.instance_of?(DateTime)
+      post("messages/#{message_id}/reminders", data: data)
+    end
+
+    # Updates a reminder for a message.
+    # @param message_id [String] The ID of the message with the reminder
+    # @param user_id [String] The ID of the user who owns the reminder
+    # @param remind_at [DateTime, nil] When to remind the user (optional)
+    # @return [StreamChat::StreamResponse] API response
+    sig { params(message_id: String, user_id: String, remind_at: T.nilable(DateTime)).returns(StreamChat::StreamResponse) }
+    def update_reminder(message_id, user_id, remind_at = nil)
+      data = { user_id: user_id }
+      data[:remind_at] = remind_at.rfc3339 if remind_at
+      patch("messages/#{message_id}/reminders", data: data)
+    end
+
+    # Deletes a reminder for a message.
+    # @param message_id [String] The ID of the message with the reminder
+    # @param user_id [String] The ID of the user who owns the reminder
+    # @return [StreamChat::StreamResponse] API response
+    sig { params(message_id: String, user_id: String).returns(StreamChat::StreamResponse) }
+    def delete_reminder(message_id, user_id)
+      delete("messages/#{message_id}/reminders", params: { user_id: user_id })
+    end
+
+    # Queries reminders based on filter conditions.
+    # @param user_id [String] The ID of the user whose reminders to query
+    # @param filter_conditions [Hash] Conditions to filter reminders
+    # @param sort [Array<Hash>, nil] Sort parameters (default: [{ field: 'remind_at', direction: 1 }])
+    # @param options [Hash] Additional query options like limit, offset
+    # @return [StreamChat::StreamResponse] API response with reminders
+    sig { params(user_id: String, filter_conditions: T::Hash[T.untyped, T.untyped], sort: T.nilable(T::Array[T::Hash[T.untyped, T.untyped]]), options: T.untyped).returns(StreamChat::StreamResponse) }
+    def query_reminders(user_id, filter_conditions = {}, sort: nil, **options)
+      params = options.merge({
+                               filter_conditions: filter_conditions,
+                               sort: sort || [{ field: 'remind_at', direction: 1 }],
+                               user_id: user_id
+                             })
+      post('reminders/query', data: params)
     end
 
     private
