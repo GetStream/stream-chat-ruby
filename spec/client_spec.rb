@@ -862,7 +862,7 @@ describe StreamChat::Client do
       it 'create reminder' do
         remind_at = DateTime.now + 1
         response = @client.create_reminder(@message_id, @user_id, remind_at)
-        
+
         expect(response).to include('reminder')
         expect(response['reminder']).to include('message_id', 'user_id', 'remind_at')
         expect(response['reminder']['message_id']).to eq(@message_id)
@@ -871,7 +871,7 @@ describe StreamChat::Client do
 
       it 'create reminder without remind_at' do
         response = @client.create_reminder(@message_id, @user_id)
-        
+
         expect(response).to include('reminder')
         expect(response['reminder']).to include('message_id', 'user_id')
         expect(response['reminder']['message_id']).to eq(@message_id)
@@ -884,12 +884,11 @@ describe StreamChat::Client do
       before do
         @client.create_reminder(@message_id, @user_id)
       end
-      
+
       it 'update reminder' do
-        
         new_remind_at = DateTime.now + 2
         response = @client.update_reminder(@message_id, @user_id, new_remind_at)
-        
+
         expect(response).to include('reminder')
         expect(response['reminder']).to include('message_id', 'user_id', 'remind_at')
         expect(response['reminder']['message_id']).to eq(@message_id)
@@ -911,33 +910,33 @@ describe StreamChat::Client do
 
     describe 'query_reminders' do
       before do
-         remind_at = DateTime.now + 1
-         @client.create_reminder(@message_id, @user_id, remind_at)
+        remind_at = DateTime.now + 1
+        @client.create_reminder(@message_id, @user_id, remind_at)
       end
 
       it 'query reminders' do
         # Query reminders for the user
         response = @client.query_reminders(@user_id)
-        
+
         expect(response).to include('reminders')
         expect(response['reminders']).to be_an(Array)
         expect(response['reminders'].length).to be >= 1
-        
+
         # Find our reminder
         reminder = response['reminders'].find { |r| r['message_id'] == @message_id }
         expect(reminder).not_to be_nil
         expect(reminder['user_id']).to eq(@user_id)
       end
-  
+
       it 'query reminders with channel filter' do
         # Query reminders for the user in a specific channel
         filter = { 'channel_cid' => @channel.cid }
         response = @client.query_reminders(@user_id, filter)
-        
+
         expect(response).to include('reminders')
         expect(response['reminders']).to be_an(Array)
         expect(response['reminders'].length).to be >= 1
-        
+
         # All reminders should have a channel_cid
         response['reminders'].each do |reminder|
           expect(reminder).to include('channel_cid')
