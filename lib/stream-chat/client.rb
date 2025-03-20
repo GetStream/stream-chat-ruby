@@ -201,7 +201,14 @@ module StreamChat
     # @param [Hash] options Additional options
     # @option options [Boolean] :force_sync Force synchronous check
     sig { params(entity_type: String, entity_id: String, entity_creator_id: String, moderation_payload: T.untyped, config_key: String, options: T.untyped).returns(StreamChat::StreamResponse) }
-    def check(entity_type, entity_id, entity_creator_id, moderation_payload, config_key, **options)
+    def check(params = {})
+      entity_type = params[:entity_type]
+      entity_id = params[:entity_id]
+      entity_creator_id = params[:entity_creator_id]
+      moderation_payload = params[:moderation_payload]
+      config_key = params[:config_key]
+      options = params[:options] || {}
+
       @client.post('api/v2/moderation/check', data: {
                      entity_type: entity_type,
                      entity_id: entity_id,
