@@ -270,40 +270,35 @@ describe StreamChat::Client do
     # runs before all tests in this describe block once
     before(:all) do
       @user_id = SecureRandom.uuid
-      puts @user_id, "user_id"
-
       @msg_id = SecureRandom.uuid
-
-      puts @msg_id, "msg_id"
       @channel.send_message({
                               'id' => @msg_id,
                               'text' => 'This is not deleted'
                             }, @user_id)
       @deleted_msg_id = SecureRandom.uuid
-      puts @deleted_msg_id, "deleted_msg_id"
       @channel.send_message({
-                            'id' => @deleted_msg_id,
-                            'text' => 'This is deleted'
-                          }, @user_id)
+                              'id' => @deleted_msg_id,
+                              'text' => 'This is deleted'
+                            }, @user_id)
       @client.delete_message(@deleted_msg_id)
     end
 
     it 'gets message by id' do
       response = @client.get_message(@msg_id)
-      message = response["message"]
-      expect(message["id"]).to eq(@msg_id)
+      message = response['message']
+      expect(message['id']).to eq(@msg_id)
     end
 
     it 'gets deleted message when show_deleted_message is true' do
       response = @client.get_message(@deleted_msg_id, show_deleted_message: true)
-      message = response["message"]
-      expect(message["id"]).to eq(@deleted_msg_id)
+      message = response['message']
+      expect(message['id']).to eq(@deleted_msg_id)
     end
 
     it 'also it gets non-deleted message when show_deleted_message is true' do
       response = @client.get_message(@msg_id, show_deleted_message: true)
-      message = response["message"]
-      expect(message["id"]).to eq(@msg_id)
+      message = response['message']
+      expect(message['id']).to eq(@msg_id)
     end
   end
 
