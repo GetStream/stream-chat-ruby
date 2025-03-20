@@ -266,14 +266,36 @@ describe StreamChat::Client do
     @client.mark_all_read(@random_user[:id])
   end
 
-  it 'gets message by id' do
-    msg_id = SecureRandom.uuid
-    message = @channel.send_message({
-                                      'id' => msg_id,
-                                      'text' => 'Hello world'
-                                    }, @random_user[:id])[:message]
+  describe '#get_message' do
+    # runs before all tests in this describe block once
+    before(:all) do
+      @msg_id = SecureRandom.uuid
+      @channel.send_message({
+                              'id' => @msg_id,
+                              'text' => 'This is not deleted'
+                            }, @random_user[:id])
+      @deleted_msg_id = SecureRandom.uuid
+      @channel.send_message({
+                            'id' => @deleted_msg_id,
+                            'text' => 'This is deleted'
+                          }, @random_user[:id])
+      @client.delete_message(@deleted_msg_id)
+    end
 
-    expect(@client.get_message(msg_id)[:message]).to eq(message)
+    it 'gets message by id' do
+      message = @client.get_message(@msg_id)[:message]
+      expect(message.id).to eq(@msg_id)
+    end
+
+    it 'gets deleted message when show_deleted_message is true' do
+      message = @client.get_message(@deleted_msg_id, show_deleted_message: true)[:message]
+      expect(message.id).to eq(@deleted_msg_id)
+    end
+
+    it 'also it gets non-deleted message when show_deleted_message is true' do
+      message = @client.get_message(@msg_id, show_deleted_message: true)[:message]
+      expect(message.id).to eq(@msg_id)
+    end
   end
 
   it 'pins and unpins a message' do
