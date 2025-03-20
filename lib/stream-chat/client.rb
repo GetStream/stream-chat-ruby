@@ -71,12 +71,12 @@ module StreamChat
     sig { params(entity_type: String, entity_id: String, entity_creator_id: String, reason: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def flag(entity_type, entity_id, entity_creator_id, reason, **options)
       @client.post('api/v2/moderation/flag', data: {
-        entity_type: entity_type,
-        entity_id: entity_id,
-        entity_creator_id: entity_creator_id,
-        reason: reason,
-        **options
-      })
+                     entity_type: entity_type,
+                     entity_id: entity_id,
+                     entity_creator_id: entity_creator_id,
+                     reason: reason,
+                     **options
+                   })
     end
 
     # Mutes a user
@@ -88,9 +88,9 @@ module StreamChat
     sig { params(target_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def mute_user(target_id, **options)
       @client.post('api/v2/moderation/mute', data: {
-        target_ids: [target_id],
-        **options
-      })
+                     target_ids: [target_id],
+                     **options
+                   })
     end
 
     # Unmutes a user
@@ -101,9 +101,9 @@ module StreamChat
     sig { params(target_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def unmute_user(target_id, **options)
       @client.post('api/v2/moderation/unmute', data: {
-        target_ids: [target_id],
-        **options
-      })
+                     target_ids: [target_id],
+                     **options
+                   })
     end
 
     # Gets moderation report for a user
@@ -116,9 +116,9 @@ module StreamChat
     sig { params(user_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def get_user_moderation_report(user_id, **options)
       @client.get('api/v2/moderation/user_report', params: {
-        user_id: user_id,
-        **options
-      })
+                    user_id: user_id,
+                    **options
+                  })
     end
 
     # Queries review queue
@@ -129,10 +129,10 @@ module StreamChat
     sig { params(filter_conditions: T.untyped, sort: T.untyped, options: T.untyped).returns(StreamChat::StreamResponse) }
     def query_review_queue(filter_conditions = {}, sort = [], **options)
       @client.post('api/v2/moderation/review_queue', data: {
-        filter: filter_conditions,
-        sort: StreamChat.get_sort_fields(sort),
-        **options
-      })
+                     filter: filter_conditions,
+                     sort: StreamChat.get_sort_fields(sort),
+                     **options
+                   })
     end
 
     # Upserts moderation config
@@ -171,10 +171,10 @@ module StreamChat
     sig { params(filter_conditions: T.untyped, sort: T.untyped, options: T.untyped).returns(StreamChat::StreamResponse) }
     def query_configs(filter_conditions, sort, **options)
       @client.post('api/v2/moderation/configs', data: {
-        filter: filter_conditions,
-        sort: sort,
-        **options
-      })
+                     filter: filter_conditions,
+                     sort: sort,
+                     **options
+                   })
     end
 
     # Submits a moderation action
@@ -185,10 +185,10 @@ module StreamChat
     sig { params(action_type: String, item_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def submit_action(action_type, item_id, **options)
       @client.post('api/v2/moderation/submit_action', data: {
-        action_type: action_type,
-        item_id: item_id,
-        **options
-      })
+                     action_type: action_type,
+                     item_id: item_id,
+                     **options
+                   })
     end
 
     # Checks content for moderation
@@ -203,13 +203,13 @@ module StreamChat
     sig { params(entity_type: String, entity_id: String, entity_creator_id: String, moderation_payload: T.untyped, config_key: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def check(entity_type, entity_id, entity_creator_id, moderation_payload, config_key, **options)
       @client.post('api/v2/moderation/check', data: {
-        entity_type: entity_type,
-        entity_id: entity_id,
-        entity_creator_id: entity_creator_id,
-        moderation_payload: moderation_payload,
-        config_key: config_key,
-        options: options
-      })
+                     entity_type: entity_type,
+                     entity_id: entity_id,
+                     entity_creator_id: entity_creator_id,
+                     moderation_payload: moderation_payload,
+                     config_key: config_key,
+                     options: options
+                   })
     end
 
     # Adds custom flags to an entity
@@ -222,12 +222,12 @@ module StreamChat
     sig { params(entity_type: String, entity_id: String, entity_creator_id: String, moderation_payload: T.untyped, flags: T::Array[T.untyped]).returns(StreamChat::StreamResponse) }
     def add_custom_flags(entity_type, entity_id, entity_creator_id, moderation_payload, flags)
       @client.post('api/v2/moderation/custom_check', data: {
-        entity_type: entity_type,
-        entity_id: entity_id,
-        entity_creator_id: entity_creator_id,
-        moderation_payload: moderation_payload,
-        flags: flags
-      })
+                     entity_type: entity_type,
+                     entity_id: entity_id,
+                     entity_creator_id: entity_creator_id,
+                     moderation_payload: moderation_payload,
+                     flags: flags
+                   })
     end
 
     # Adds custom flags to a message
