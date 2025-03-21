@@ -178,24 +178,31 @@ module StreamChat
                    })
     end
 
+    # rubocop:disable Metrics/ParameterLists
     # Checks content for moderation
     #
-    # @param [string] entity_type Type of entity to be checked
-    # @param [string] entity_id ID of the entity to be checked
+    # @param [string] entity_type Type of entity to be checked E.g., stream:user, stream:chat:v1:message, or any custom string
+    # @param [string] entity_id ID of the entity to be checked. This is mainly for tracking purposes
     # @param [string] entity_creator_id ID of the entity creator
     # @param [Hash] moderation_payload Content to be checked for moderation
+    # @option moderation_payload [Array<String>] :texts Array of texts to be checked for moderation
+    # @option moderation_payload [Array<String>] :images Array of images to be checked for moderation
+    # @option moderation_payload [Array<String>] :videos Array of videos to be checked for moderation
+    # @option moderation_payload [Hash] :custom Additional custom data
     # @param [string] config_key Key of the moderation config to use
     # @param [Hash] options Additional options
     # @option options [Boolean] :force_sync Force synchronous check
-    sig { params(entity_type: String, entity_id: String, entity_creator_id: String, moderation_payload: T.untyped, config_key: String, options: T.untyped).returns(StreamChat::StreamResponse) }
-    def check(params = {})
-      entity_type = params[:entity_type]
-      entity_id = params[:entity_id]
-      entity_creator_id = params[:entity_creator_id]
-      moderation_payload = params[:moderation_payload]
-      config_key = params[:config_key]
-      options = params[:options] || {}
-
+    sig do
+      params(
+        entity_type: String,
+        entity_id: String,
+        entity_creator_id: String,
+        moderation_payload: T::Hash[Symbol, T.any(T::Array[String], T::Hash[String, T.untyped])],
+        config_key: String,
+        options: T::Hash[Symbol, T::Boolean]
+      ).returns(StreamChat::StreamResponse)
+    end
+    def check(entity_type, entity_id, entity_creator_id, moderation_payload, config_key, options = {})
       @client.post('api/v2/moderation/check', data: {
                      entity_type: entity_type,
                      entity_id: entity_id,
@@ -205,7 +212,7 @@ module StreamChat
                      options: options
                    })
     end
-
+    # rubocop:enable Metrics/ParameterLists
     # Adds custom flags to an entity
     #
     # @param [string] entity_type Type of entity to be checked
