@@ -182,9 +182,9 @@ module StreamChat
     end
 
     # Returns a message.
-    sig { params(id: String).returns(StreamChat::StreamResponse) }
-    def get_message(id)
-      get("messages/#{id}")
+    sig { params(id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    def get_message(id, **options)
+      get("messages/#{id}", params: options)
     end
 
     # Searches for messages.
