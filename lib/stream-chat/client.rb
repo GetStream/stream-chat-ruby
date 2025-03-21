@@ -14,6 +14,7 @@ require 'stream-chat/stream_response'
 require 'stream-chat/version'
 require 'stream-chat/util'
 require 'stream-chat/types'
+require 'stream-chat/moderation'
 
 module StreamChat
   DEFAULT_BLOCKLIST = 'profanity_en_2020_v1'
@@ -34,6 +35,9 @@ module StreamChat
 
     sig { returns(Faraday::Connection) }
     attr_reader :conn
+
+    sig { returns(Moderation) }
+    attr_reader :moderation
 
     # initializes a Stream Chat API Client
     #
@@ -64,6 +68,7 @@ module StreamChat
         end
       end
       @conn = T.let(conn, Faraday::Connection)
+      @moderation = T.let(Moderation.new(self), Moderation)
     end
 
     # initializes a Stream Chat API Client from STREAM_KEY and STREAM_SECRET

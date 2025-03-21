@@ -872,4 +872,129 @@ describe StreamChat::Client do
       end
     end
   end
+
+  describe 'moderation' do
+    before(:each) do
+      @moderation = @client.moderation
+      @test_user_id = SecureRandom.uuid
+      @test_message_id = SecureRandom.uuid
+      @test_config_key = SecureRandom.uuid
+    end
+
+    it 'flagging a user and message' do
+      msg_response = @channel.send_message({ id: @test_message_id, text: 'Test message' }, @test_user_id)
+      expect(msg_response['message']['id']).to eq(@test_message_id)
+      expect(msg_response['message']['user']['id']).to eq(@test_user_id)
+      response = @moderation.flag_user(
+        @test_user_id,
+        'inappropriate_behavior',
+        user_id: @random_user[:id],
+        custom: { severity: 'high' }
+      )
+      expect(response['duration']).not_to be_nil
+      response = @moderation.flag_message(
+        @test_message_id,
+        'inappropriate_content',
+        user_id: @random_user[:id],
+        custom: { category: 'spam' }
+      )
+      expect(response['duration']).not_to be_nil
+    end
+
+    it 'mute a user and unmute a user' do
+      @channel.send_message({ id: @test_message_id, text: 'Test message' }, @test_user_id)
+      testuserid1 = @random_user[:id]
+      response = @moderation.mute_user(
+        @test_user_id,
+        user_id: testuserid1,
+        timeout: 60
+      )
+      expect(response['duration']).not_to be_nil
+      expect(response['mutes'][0]['user']['id']).to eq(testuserid1)
+      response = @moderation.unmute_user(
+        @test_user_id,
+        user_id: @random_user[:id]
+      )
+      expect(response['duration']).not_to be_nil
+
+      response = @moderation.get_user_moderation_report(
+        @test_user_id,
+        include_user_blocks: true,
+        include_user_mutes: true
+      )
+      expect(response['duration']).not_to be_nil
+    end
+
+    it 'adds custom flags to an entity' do
+      testuserid1 = @random_user[:id]
+      testmsgid1 = SecureRandom.uuid
+      @channel.send_message({ id: testmsgid1, text: 'Test message' }, testuserid1)
+      entity_type = 'stream:chat:v1:message'
+      entity_id = testmsgid1
+      entity_creator_id = testuserid1
+      moderation_payload = {
+        'texts' => ['Test message'],
+        'custom' => { 'original_message_type' => 'regular' }
+      }
+      flags = [{ type: 'custom_check_text', value: 'test_flag' }]
+
+      response = @moderation.add_custom_flags(entity_type, entity_id, entity_creator_id, moderation_payload, flags)
+      expect(response['duration']).not_to be_nil
+      response = @moderation.add_custom_message_flags(
+        testmsgid1,
+        [{ type: 'custom_check_text', value: 'test_flag' }]
+      )
+      expect(response['duration']).not_to be_nil
+    end
+
+    it 'config test' do
+      blocklist_name = "blocklist-#{SecureRandom.uuid}"
+      words = %w[pretty crazy]
+
+      # Create blocklist
+      response = @client.create_blocklist(blocklist_name, words)
+      expect(response['duration']).not_to be_nil
+
+      # Create moderation config
+      moderation_config = {
+        key: "chat:team:#{@channel.id}",
+        block_list_config: {
+          enabled: true,
+          rules: [
+            {
+              name: response['blocklist']['name'],
+              action: 'flag'
+            }
+          ]
+        }
+      }
+      @moderation.upsert_config(moderation_config)
+      response = @moderation.get_config("chat:team:#{@channel.id}")
+      expect(response['config']['key']).to eq("chat:team:#{@channel.id}")
+
+      response = @moderation.query_configs(
+        { key: "chat:team:#{@channel.id}" },
+        []
+      )
+      expect(response).not_to be_nil
+
+      # Send message that should be blocked
+
+      response = @channel.send_message(
+        { text: 'crazy game ever' },
+        @random_user[:id],
+        force_moderation: true
+      )
+
+      # # Verify message appears in review queue
+      queue_response = @moderation.query_review_queue(
+        { entity_type: 'stream:chat:v1:message' },
+        { created_at: -1 },
+        limit: 1
+      )
+      expect(queue_response['items'][0]['entity_id']).to eq(response['message']['id'])
+
+      @moderation.delete_config("chat:team:#{@channel.id}")
+    end
+  end
 end
