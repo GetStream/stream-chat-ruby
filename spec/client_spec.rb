@@ -948,12 +948,9 @@ describe StreamChat::Client do
     end
 
     it 'config test' do
-      newchannel = @client.channel('messaging', channel_id: 'fellowship-of-the-throne',
-                                                data: { members: @fellowship_of_the_ring.map { |fellow| fellow[:id] } })
-      newchannel.create('tav')
       # Create moderation config
       moderation_config = {
-        key: "chat:messaging:#{newchannel.id}",
+        key: "chat:team:#{@channel.id}",
         block_list_config: {
           enabled: true,
           rules: [
@@ -965,17 +962,17 @@ describe StreamChat::Client do
         }
       }
       @moderation.upsert_config(moderation_config)
-      response = @moderation.get_config("chat:messaging:#{newchannel.id}")
-      expect(response['config']['key']).to eq("chat:messaging:#{newchannel.id}")
+      response = @moderation.get_config("chat:team:#{@channel.id}")
+      expect(response['config']['key']).to eq("chat:team:#{@channel.id}")
 
       response = @moderation.query_configs(
-        { key: "chat:messaging:#{newchannel.id}" },
+        { key: "chat:messaging:#{@channel.id}" },
         []
       )
       expect(response).not_to be_nil
 
       # Send message that should be blocked
-      response = newchannel.send_message(
+      response = @channel.send_message(
         { text: 'damn' },
         @random_user[:id],
         force_moderation: true
@@ -989,7 +986,8 @@ describe StreamChat::Client do
       )
       expect(queue_response['items'][0]['entity_id']).to eq(response['message']['id'])
 
-      @moderation.delete_config("chat:messaging:#{newchannel.id}")
+      response = @moderation.delete_config("chat:team:#{@channel.id}")
+      expect(response['duration']).not_to be_nil
     end
   end
 end
