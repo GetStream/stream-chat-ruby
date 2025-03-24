@@ -16,7 +16,7 @@ module StreamChat
         user: 'stream:user',
         message: 'stream:chat:v1:message'
       }.freeze,
-      T::Hash[T.Symbol, T.String]
+      T::Hash[Symbol, String]
     )
 
     sig { params(client: Client).void }
