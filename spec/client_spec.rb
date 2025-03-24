@@ -937,7 +937,7 @@ describe StreamChat::Client do
       }
       flags = [{ type: 'custom_check_text', value: 'test_flag' }]
 
-      response = @moderation.add_custom_flags(entity_type, entity_id,moderation_payload, flags, entity_creator_id: testuserid1)
+      response = @moderation.add_custom_flags(entity_type, entity_id, moderation_payload, flags, entity_creator_id: testuserid1)
       expect(response['duration']).not_to be_nil
       response = @moderation.add_custom_message_flags(
         testmsgid1,
