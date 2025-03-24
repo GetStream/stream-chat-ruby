@@ -35,7 +35,7 @@ describe StreamChat::Client do
     @channel = @client.channel('team', channel_id: 'fellowship-of-the-ring',
                                        data: { members: @fellowship_of_the_ring.map { |fellow| fellow[:id] } })
     @channel.create('gandalf')
-    response = @client.delete_channels(['fellowship-of-the-throne'], hard_delete: true)
+    response = @client.delete_channels(['messaging:fellowship-of-the-throne'], hard_delete: true)
     puts response
   end
 
