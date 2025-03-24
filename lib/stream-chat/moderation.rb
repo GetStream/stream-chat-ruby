@@ -52,14 +52,14 @@ module StreamChat
     #
     # @param [string] entity_type Entity type to be flagged
     # @param [string] entity_id Entity ID to be flagged
-    # @param [string] entity_creator_id User ID of the entity creator
     # @param [string] reason Reason for flagging the entity
+    # @param [string] entity_creator_id User ID of the entity creator (optional)
     # @param [Hash] options Additional options for flagging the entity
     # @option options [String] :user_id User ID of the user who is flagging the target entity
     # @option options [Hash] :moderation_payload Content to be flagged
     # @option options [Hash] :custom Additional data to be stored with the flag
-    sig { params(entity_type: String, entity_id: String, entity_creator_id: String, reason: String, options: T.untyped).returns(StreamChat::StreamResponse) }
-    def flag(entity_type, entity_id, entity_creator_id, reason, **options)
+    sig { params(entity_type: String, entity_id: String, reason: String, entity_creator_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    def flag(entity_type, entity_id, reason, entity_creator_id: '', **options)
       @client.post('api/v2/moderation/flag', data: {
                      entity_type: entity_type,
                      entity_id: entity_id,
@@ -199,13 +199,13 @@ module StreamChat
       params(
         entity_type: String,
         entity_id: String,
-        entity_creator_id: String,
         moderation_payload: T::Hash[Symbol, T.any(T::Array[String], T::Hash[String, T.untyped])],
         config_key: String,
+        entity_creator_id: String,
         options: T::Hash[Symbol, T::Boolean]
       ).returns(StreamChat::StreamResponse)
     end
-    def check(entity_type, entity_id, entity_creator_id, moderation_payload, config_key, options = {})
+    def check(entity_type, entity_id, moderation_payload, config_key, entity_creator_id: '', options: {})
       @client.post('api/v2/moderation/check', data: {
                      entity_type: entity_type,
                      entity_id: entity_id,
@@ -223,8 +223,8 @@ module StreamChat
     # @param [string] entity_creator_id ID of the entity creator
     # @param [Hash] moderation_payload Content to be checked for moderation
     # @param [Array] flags Array of custom flags to add
-    sig { params(entity_type: String, entity_id: String, entity_creator_id: String, moderation_payload: T.untyped, flags: T::Array[T.untyped]).returns(StreamChat::StreamResponse) }
-    def add_custom_flags(entity_type, entity_id, entity_creator_id, moderation_payload, flags)
+    sig { params(entity_type: String, entity_id: String, moderation_payload: T.untyped, flags: T::Array[T.untyped], entity_creator_id: String).returns(StreamChat::StreamResponse) }
+    def add_custom_flags(entity_type, entity_id, moderation_payload, flags, entity_creator_id: '')
       @client.post('api/v2/moderation/custom_check', data: {
                      entity_type: entity_type,
                      entity_id: entity_id,
@@ -240,7 +240,7 @@ module StreamChat
     # @param [Array] flags Array of custom flags to add
     sig { params(message_id: String, flags: T::Array[T.untyped]).returns(StreamChat::StreamResponse) }
     def add_custom_message_flags(message_id, flags)
-      add_custom_flags(T.must(MODERATION_ENTITY_TYPES[:message]), message_id, '', {}, flags)
+      add_custom_flags(T.must(MODERATION_ENTITY_TYPES[:message]), message_id, {}, flags)
     end
   end
 end
