@@ -11,10 +11,13 @@ module StreamChat
   class Moderation
     extend T::Sig
 
-    MODERATION_ENTITY_TYPES = {
-      user: 'stream:user',
-      message: 'stream:chat:v1:message'
-    }.freeze
+    MODERATION_ENTITY_TYPES = T.let(
+      {
+        user: 'stream:user',
+        message: 'stream:chat:v1:message'
+      }.freeze,
+      T::Hash[T.untyped, T.untyped]
+    )
 
     sig { params(client: Client).void }
     def initialize(client)
