@@ -931,14 +931,13 @@ describe StreamChat::Client do
       @channel.send_message({ id: testmsgid1, text: 'Test message' }, testuserid1)
       entity_type = 'stream:chat:v1:message'
       entity_id = testmsgid1
-      entity_creator_id = testuserid1
       moderation_payload = {
         'texts' => ['Test message'],
         'custom' => { 'original_message_type' => 'regular' }
       }
       flags = [{ type: 'custom_check_text', value: 'test_flag' }]
 
-      response = @moderation.add_custom_flags(entity_type, entity_id, entity_creator_id, moderation_payload, flags)
+      response = @moderation.add_custom_flags(entity_type, entity_id,moderation_payload, flags, entity_creator_id: testuserid1)
       expect(response['duration']).not_to be_nil
       response = @moderation.add_custom_message_flags(
         testmsgid1,
