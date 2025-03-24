@@ -382,6 +382,7 @@ describe StreamChat::Client do
 
   it 'queries channels' do
     response = @client.query_channels({ 'members' => { '$in' => ['legolas'] } }, sort: { 'id' => 1 })
+    puts response
     expect(response['channels'].length).to eq 1
     expect(response['channels'][0]['channel']['id']).to eq 'fellowship-of-the-ring'
     expect(response['channels'][0]['members'].length).to eq 4
