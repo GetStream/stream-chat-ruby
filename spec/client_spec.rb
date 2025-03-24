@@ -950,7 +950,7 @@ describe StreamChat::Client do
     it 'config test' do
       newchannel = @client.channel('messaging', channel_id: 'fellowship-of-the-throne',
                                                 data: { members: @fellowship_of_the_ring.map { |fellow| fellow[:id] } })
-      newchannel.create('legolas')
+      newchannel.create('tav')
       # Create moderation config
       moderation_config = {
         key: "chat:messaging:#{newchannel.id}",
