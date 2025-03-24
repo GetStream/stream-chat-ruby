@@ -33,7 +33,7 @@ module StreamChat
     # @option options [Hash] :custom Additional data to be stored with the flag
     sig { params(flagged_user_id: String, reason: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def flag_user(flagged_user_id, reason, **options)
-      flag(MODERATION_ENTITY_TYPES[:user], flagged_user_id, '', reason, **options)
+      flag(T.must(MODERATION_ENTITY_TYPES[:user]), flagged_user_id, '', reason, **options)
     end
 
     # Flags a message with a reason
@@ -45,7 +45,7 @@ module StreamChat
     # @option options [Hash] :custom Additional data to be stored with the flag
     sig { params(message_id: String, reason: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def flag_message(message_id, reason, **options)
-      flag(MODERATION_ENTITY_TYPES[:message], message_id, '', reason, **options)
+      flag(T.must(MODERATION_ENTITY_TYPES[:message]), message_id, '', reason, **options)
     end
 
     # Flags an entity with a reason
