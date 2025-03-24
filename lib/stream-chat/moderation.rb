@@ -240,7 +240,7 @@ module StreamChat
     # @param [Array] flags Array of custom flags to add
     sig { params(message_id: String, flags: T::Array[T.untyped]).returns(StreamChat::StreamResponse) }
     def add_custom_message_flags(message_id, flags)
-      add_custom_flags(MODERATION_ENTITY_TYPES[:message], message_id, '', {}, flags)
+      add_custom_flags(T.must(MODERATION_ENTITY_TYPES[:message]), message_id, '', {}, flags)
     end
   end
 end
