@@ -948,45 +948,39 @@ describe StreamChat::Client do
     end
 
     it 'config test' do
-      blocklist_name = "blocklist-#{SecureRandom.uuid}"
-      words = %w[pretty crazy]
-
-      # Create blocklist
-      response = @client.create_blocklist(blocklist_name, words)
-      expect(response['duration']).not_to be_nil
-
+      newchannel = @client.channel('messaging', channel_id: 'fellowship-of-the-throne',
+                                                data: { members: @fellowship_of_the_ring.map { |fellow| fellow[:id] } })
       # Create moderation config
       moderation_config = {
-        key: "chat:team:#{@channel.id}",
+        key: "chat:messaging:#{newchannel.id}",
         block_list_config: {
           enabled: true,
           rules: [
             {
-              name: response['blocklist']['name'],
+              name: 'profanity_en_2020_v1',
               action: 'flag'
             }
           ]
         }
       }
       @moderation.upsert_config(moderation_config)
-      response = @moderation.get_config("chat:team:#{@channel.id}")
-      expect(response['config']['key']).to eq("chat:team:#{@channel.id}")
+      response = @moderation.get_config("chat:messaging:#{newchannel.id}")
+      expect(response['config']['key']).to eq("chat:messaging:#{newchannel.id}")
 
       response = @moderation.query_configs(
-        { key: "chat:team:#{@channel.id}" },
+        { key: "chat:messaging:#{newchannel.id}" },
         []
       )
       expect(response).not_to be_nil
 
       # Send message that should be blocked
-
-      response = @channel.send_message(
-        { text: 'crazy game ever' },
+      response = newchannel.send_message(
+        { text: 'damn' },
         @random_user[:id],
         force_moderation: true
       )
 
-      # # Verify message appears in review queue
+      # Verify message appears in review queue
       queue_response = @moderation.query_review_queue(
         { entity_type: 'stream:chat:v1:message' },
         { created_at: -1 },
@@ -994,7 +988,7 @@ describe StreamChat::Client do
       )
       expect(queue_response['items'][0]['entity_id']).to eq(response['message']['id'])
 
-      @moderation.delete_config("chat:team:#{@channel.id}")
+      @moderation.delete_config("chat:messaging:#{newchannel.id}")
     end
   end
 end
