@@ -127,6 +127,19 @@ describe StreamChat::Client do
     expect(response['users']).to include user[:id]
   end
 
+  it 'creates a user with team and teams_role' do
+    user = {
+      id: SecureRandom.uuid,
+      team: 'blue',
+      teams_role: { 'blue' => 'admin' }
+    }
+    response = @client.update_user(user)
+    expect(response).to include 'users'
+    expect(response['users']).to include user[:id]
+    expect(response['users'][user[:id]]['team']).to eq 'blue'
+    expect(response['users'][user[:id]]['teams_role']['blue']).to eq 'admin'
+  end
+
   it 'updates multiple users' do
     users = [{ id: SecureRandom.uuid }, { id: SecureRandom.uuid }]
     response = @client.update_users(users)
@@ -149,6 +162,22 @@ describe StreamChat::Client do
                                            })
 
     expect(response['users'][user_id]['field']).to eq('updated')
+  end
+
+  it 'makes partial user update with team and teams_role' do
+    user_id = SecureRandom.uuid
+    @client.update_user({ id: user_id, name: 'Test User' })
+
+    response = @client.update_user_partial({
+      id: user_id,
+      set: {
+        team: 'blue',
+        teams_role: { 'blue' => 'admin' }
+      }
+    })
+
+    expect(response['users'][user_id]['team']).to eq('blue')
+    expect(response['users'][user_id]['teams_role']['blue']).to eq('admin')
   end
 
   it 'deletes a user' do
