@@ -172,7 +172,7 @@ describe StreamChat::Client do
                                              id: user_id,
                                              set: {
                                                team: 'blue',
-        teams_role: { 'blue' => 'admin' }
+                                               teams_role: { 'blue' => 'admin' }
                                              }
                                            })
 
