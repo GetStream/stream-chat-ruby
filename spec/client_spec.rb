@@ -170,7 +170,7 @@ describe StreamChat::Client do
 
     response = @client.update_user_partial({
                                              id: user_id,
-      set: {
+                                             set: {
         team: 'blue',
         teams_role: { 'blue' => 'admin' }
       }
