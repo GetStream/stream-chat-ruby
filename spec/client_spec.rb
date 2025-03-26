@@ -173,7 +173,7 @@ describe StreamChat::Client do
                                              set: {
                                                team: 'blue',
         teams_role: { 'blue' => 'admin' }
-      }
+                                             }
                                            })
 
     expect(response['users'][user_id]['team']).to eq('blue')
