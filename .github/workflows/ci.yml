@@ -21,10 +21,8 @@ jobs:
           bundler-cache: true
 
       - run: bundle exec rake rubocop
-        if: ${{ matrix.ruby == '3.4' }}
 
       - run: bundle exec srb tc
-        if: ${{ matrix.ruby == '3.4' }}
 
       - run: bundle exec rspec ./spec --require spec_helper
         env:
