@@ -795,7 +795,7 @@ describe StreamChat::Client do
       @channel.create_draft(draft1, @random_user[:id])
 
       # Create another channel with a draft
-      channel2 = @client.channel('messaging',  data: {'members' => @random_users.map { |u| u[:id] } })
+      channel2 = @client.channel('messaging', data: { 'members' => @random_users.map { |u| u[:id] } })
       channel2.create(@random_user[:id])
 
       draft2 = { 'text' => 'Draft in channel 2' }
