@@ -364,7 +364,6 @@ module StreamChat
     #
     # @param [StringKeyHash] message The draft message content
     # @param [String] user_id The ID of the user creating/updating the draft
-    # @param [String] parent_id Optional parent message ID for thread drafts
     # @return [StreamChat::StreamResponse]
     sig { params(message: StringKeyHash, user_id: String).returns(StreamChat::StreamResponse) }
     def create_draft(message, user_id)
