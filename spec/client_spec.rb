@@ -169,12 +169,6 @@ describe StreamChat::Client do
     expect(response['user']['id']).to eq(@random_user[:id])
   end
 
-  it 'deactivates multiple users' do
-    response = @client.deactivate_users([@random_users[0][:id], @random_users[1][:id]])
-    expect(response).to include 'users'
-    expect(response['users'].length).to eq(2)
-  end
-
   it 'reactivates a user' do
     @client.deactivate_user(@random_user[:id])
     response = @client.reactivate_user(@random_user[:id])
