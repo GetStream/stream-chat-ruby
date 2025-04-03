@@ -171,8 +171,16 @@ describe StreamChat::Client do
 
   it 'deactivates multiple users' do
     response = @client.deactivate_users([@random_users[0][:id], @random_users[1][:id]])
-    expect(response).to include 'users'
-    expect(response['users'].length).to eq(2)
+    expect(response).to include 'task_id'
+    expect(response['task_id']).not_to be_empty
+  end
+
+  it 'raises an error if user_ids is not an array' do
+    expect { @client.deactivate_users('not an array') }.to raise_error(TypeError)
+  end
+
+  it 'raises an error if user_ids is empty' do
+    expect { @client.deactivate_users([]) }.to raise_error(ArgumentError)
   end
 
   it 'reactivates a user' do
