@@ -360,6 +360,41 @@ module StreamChat
       @client.delete("#{self.url}/image", params: { url: url })
     end
 
+    # Creates or updates a draft message for this channel.
+    #
+    # @param [StringKeyHash] message The draft message content
+    # @param [String] user_id The ID of the user creating/updating the draft
+    # @return [StreamChat::StreamResponse]
+    sig { params(message: StringKeyHash, user_id: String).returns(StreamChat::StreamResponse) }
+    def create_draft(message, user_id)
+      payload = { message: add_user_id(message, user_id) }
+      @client.post("#{url}/draft", data: payload)
+    end
+
+    # Deletes a draft message for this channel.
+    #
+    # @param [String] user_id The ID of the user deleting the draft
+    # @param [String] parent_id Optional parent message ID for thread drafts
+    # @return [StreamChat::StreamResponse]
+    sig { params(user_id: String, parent_id: T.nilable(String)).returns(StreamChat::StreamResponse) }
+    def delete_draft(user_id, parent_id: nil)
+      params = { user_id: user_id }
+      params[:parent_id] = parent_id if parent_id
+      @client.delete("#{url}/draft", params: params)
+    end
+
+    # Gets a draft message for this channel.
+    #
+    # @param [String] user_id The ID of the user getting the draft
+    # @param [String] parent_id Optional parent message ID for thread drafts
+    # @return [StreamChat::StreamResponse]
+    sig { params(user_id: String, parent_id: T.nilable(String)).returns(StreamChat::StreamResponse) }
+    def get_draft(user_id, parent_id: nil)
+      params = { user_id: user_id }
+      params[:parent_id] = parent_id if parent_id
+      @client.get("#{url}/draft", params: params)
+    end
+
     private
 
     sig { params(payload: StringKeyHash, user_id: String).returns(StringKeyHash) }
