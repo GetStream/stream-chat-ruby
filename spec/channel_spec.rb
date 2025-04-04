@@ -430,4 +430,65 @@ describe StreamChat::Channel do
     # Verify the custom field was unset
     expect(updated_msg['message']).not_to include 'custom_field'
   end
+
+  it 'can create draft message' do
+    draft_message = { 'text' => 'This is a draft message' }
+    response = @channel.create_draft(draft_message, @random_user[:id])
+
+    expect(response).to include 'draft'
+    expect(response['draft']['message']['text']).to eq 'This is a draft message'
+    expect(response['draft']['channel_cid']).to eq @channel.cid
+  end
+
+  it 'can get draft message' do
+    # First create a draft
+    draft_message = { 'text' => 'This is a draft to retrieve' }
+    @channel.create_draft(draft_message, @random_user[:id])
+
+    # Then get the draft
+    response = @channel.get_draft(@random_user[:id])
+
+    expect(response).to include 'draft'
+    expect(response['draft']['message']['text']).to eq 'This is a draft to retrieve'
+    expect(response['draft']['channel_cid']).to eq @channel.cid
+  end
+
+  it 'can delete draft message' do
+    # First create a draft
+    draft_message = { 'text' => 'This is a draft to delete' }
+    @channel.create_draft(draft_message, @random_user[:id])
+
+    # Then delete the draft
+    @channel.delete_draft(@random_user[:id])
+
+    # Verify it's deleted by trying to get it
+    expect { @channel.get_draft(@random_user[:id]) }.to raise_error(StreamChat::StreamAPIException)
+  end
+
+  it 'can create and manage thread draft' do
+    # First create a parent message
+    msg = @channel.send_message({ 'text' => 'Parent message' }, @random_user[:id])
+    parent_id = msg['message']['id']
+
+    # Create a draft reply
+    draft_reply = { 'text' => 'This is a draft reply', 'parent_id' => parent_id }
+    response = @channel.create_draft(draft_reply, @random_user[:id])
+
+    expect(response).to include 'draft'
+    expect(response['draft']['message']['text']).to eq 'This is a draft reply'
+    expect(response['draft']['parent_id']).to eq parent_id
+
+    # Get the draft reply
+    response = @channel.get_draft(@random_user[:id], parent_id: parent_id)
+
+    expect(response).to include 'draft'
+    expect(response['draft']['message']['text']).to eq 'This is a draft reply'
+    expect(response['draft']['parent_id']).to eq parent_id
+
+    # Delete the draft reply
+    @channel.delete_draft(@random_user[:id], parent_id: parent_id)
+
+    # Verify it's deleted
+    expect { @channel.get_draft(@random_user[:id], parent_id: parent_id) }.to raise_error(StreamChat::StreamAPIException)
+  end
 end

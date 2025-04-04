@@ -783,6 +783,22 @@ module StreamChat
       post('commands', data: command)
     end
 
+    # Queries draft messages for the current user.
+    #
+    # @param [String] user_id The ID of the user to query drafts for
+    # @param [StringKeyHash] filter Optional filter conditions for the query
+    # @param [Array] sort Optional sort parameters
+    # @param [Hash] options Additional query options
+    # @return [StreamChat::StreamResponse]
+    sig { params(user_id: String, filter: T.nilable(StringKeyHash), sort: T.nilable(T::Array[StringKeyHash]), options: T.untyped).returns(StreamChat::StreamResponse) }
+    def query_drafts(user_id, filter: nil, sort: nil, **options)
+      data = { user_id: user_id }
+      data['filter'] = filter if filter
+      data['sort'] = sort if sort
+      data.merge!(options) if options
+      post('drafts/query', data: data)
+    end
+
     # Gets a comamnd.
     sig { params(name: String).returns(StreamChat::StreamResponse) }
     def get_command(name)
