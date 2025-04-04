@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file. See [standa
 ### Features
 
 *  deactivate users ([#162](https://github.com/GetStream/stream-chat-ruby/issues/162)) ([12bf4d1](https://github.com/GetStream/stream-chat-ruby/commit/12bf4d19846b5100f1886929b74c7ad05d753be4))
-
+*  draft messages ([#161](https://github.com/GetStream/stream-chat-ruby/pull/161)) ([1719104](https://github.com/GetStream/stream-chat-ruby/commit/c7bccb3ad30721a20f32fd60eb13ab6d97a08208))
 
 ### Other
 
