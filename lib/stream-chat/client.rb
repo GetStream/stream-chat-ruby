@@ -285,7 +285,7 @@ module StreamChat
     def deactivate_users(user_ids, **options)
       raise ArgumentError, 'user_ids should not be empty' if user_ids.empty?
 
-      post("users/deactivate", data: { user_ids: user_ids, **options })
+      post('users/deactivate', data: { user_ids: user_ids, **options })
     end
 
     # Reactivates a deactivated user. Use deactivate_user to deactivate a user.
