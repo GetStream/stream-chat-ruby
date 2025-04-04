@@ -280,7 +280,6 @@ module StreamChat
       post("users/#{user_id}/deactivate", params: options)
     end
 
-  
     # Deactivates a users
     sig { params(user_ids: T::Array[String], options: T.untyped).returns(StreamChat::StreamResponse) }
     def deactivate_users(user_ids, **options)
