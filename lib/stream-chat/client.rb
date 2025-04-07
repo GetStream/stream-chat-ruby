@@ -280,6 +280,14 @@ module StreamChat
       post("users/#{user_id}/deactivate", params: options)
     end
 
+    # Deactivates a users
+    sig { params(user_ids: T::Array[String], options: T.untyped).returns(StreamChat::StreamResponse) }
+    def deactivate_users(user_ids, **options)
+      raise ArgumentError, 'user_ids should not be empty' if user_ids.empty?
+
+      post('users/deactivate', data: { user_ids: user_ids, **options })
+    end
+
     # Reactivates a deactivated user. Use deactivate_user to deactivate a user.
     sig { params(user_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def reactivate_user(user_id, **options)
@@ -781,6 +789,22 @@ module StreamChat
     sig { params(command: StringKeyHash).returns(StreamChat::StreamResponse) }
     def create_command(command)
       post('commands', data: command)
+    end
+
+    # Queries draft messages for the current user.
+    #
+    # @param [String] user_id The ID of the user to query drafts for
+    # @param [StringKeyHash] filter Optional filter conditions for the query
+    # @param [Array] sort Optional sort parameters
+    # @param [Hash] options Additional query options
+    # @return [StreamChat::StreamResponse]
+    sig { params(user_id: String, filter: T.nilable(StringKeyHash), sort: T.nilable(T::Array[StringKeyHash]), options: T.untyped).returns(StreamChat::StreamResponse) }
+    def query_drafts(user_id, filter: nil, sort: nil, **options)
+      data = { user_id: user_id }
+      data['filter'] = filter if filter
+      data['sort'] = sort if sort
+      data.merge!(options) if options
+      post('drafts/query', data: data)
     end
 
     # Gets a comamnd.

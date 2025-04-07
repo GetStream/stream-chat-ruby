@@ -198,6 +198,20 @@ describe StreamChat::Client do
     expect(response['user']['id']).to eq(@random_user[:id])
   end
 
+  it 'deactivates multiple users' do
+    response = @client.deactivate_users([@random_users[0][:id], @random_users[1][:id]])
+    expect(response).to include 'task_id'
+    expect(response['task_id']).not_to be_empty
+  end
+
+  it 'raises an error if user_ids is not an array' do
+    expect { @client.deactivate_users('not an array') }.to raise_error(TypeError)
+  end
+
+  it 'raises an error if user_ids is empty' do
+    expect { @client.deactivate_users([]) }.to raise_error(ArgumentError)
+  end
+
   it 'reactivates a user' do
     @client.deactivate_user(@random_user[:id])
     response = @client.reactivate_user(@random_user[:id])
@@ -810,6 +824,51 @@ describe StreamChat::Client do
 
       list_resp = @client.list_imports({ limit: 1 })
       expect(list_resp['import_tasks'].length).to eq 1
+    end
+
+    it 'can query drafts' do
+      # Create multiple drafts in different channels
+      draft1 = { 'text' => 'Draft in channel 1' }
+      @channel.create_draft(draft1, @random_user[:id])
+
+      # Create another channel with a draft
+      channel2 = @client.channel('messaging', data: { 'members' => @random_users.map { |u| u[:id] } })
+      channel2.create(@random_user[:id])
+
+      draft2 = { 'text' => 'Draft in channel 2' }
+      channel2.create_draft(draft2, @random_user[:id])
+
+      # Sort by created_at
+      sort = [{ 'field' => 'created_at', 'direction' => 1 }]
+      response = @client.query_drafts(@random_user[:id], sort: sort)
+      expect(response['drafts']).not_to be_empty
+      expect(response['drafts'].length).to eq(2)
+      expect(response['drafts'][0]['channel']['id']).to eq(@channel.id)
+      expect(response['drafts'][1]['channel']['id']).to eq(channel2.id)
+
+      # Query for a specific channel
+      response = @client.query_drafts(@random_user[:id], filter: { 'channel_cid' => @channel.cid })
+      expect(response['drafts']).not_to be_empty
+      expect(response['drafts'].length).to eq(1)
+      expect(response['drafts'][0]['channel']['id']).to eq(@channel.id)
+
+      # Query all drafts for the user
+      response = @client.query_drafts(@random_user[:id])
+      expect(response['drafts']).not_to be_empty
+      expect(response['drafts'].length).to eq(2)
+
+      # Paginate
+      response = @client.query_drafts(@random_user[:id], sort: sort, limit: 1)
+      expect(response['drafts']).not_to be_empty
+      expect(response['drafts'].length).to eq(1)
+      expect(response['drafts'][0]['channel']['id']).to eq(@channel.id)
+
+      # Cleanup
+      begin
+        channel2.delete
+      rescue StandardError
+        # Ignore errors if channel is already deleted
+      end
     end
   end
 
