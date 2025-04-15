@@ -15,6 +15,7 @@ require 'stream-chat/version'
 require 'stream-chat/util'
 require 'stream-chat/types'
 require 'stream-chat/moderation'
+require 'stream-chat/thread'
 
 module StreamChat
   DEFAULT_BLOCKLIST = 'profanity_en_2020_v1'
@@ -38,6 +39,9 @@ module StreamChat
 
     sig { returns(Moderation) }
     attr_reader :moderation
+
+    sig { returns(Thread) }
+    attr_reader :thread
 
     # initializes a Stream Chat API Client
     #
@@ -69,6 +73,7 @@ module StreamChat
       end
       @conn = T.let(conn, Faraday::Connection)
       @moderation = T.let(Moderation.new(self), Moderation)
+      @thread = T.let(Thread.new(self), Thread)
     end
 
     # initializes a Stream Chat API Client from STREAM_KEY and STREAM_SECRET
@@ -927,6 +932,11 @@ module StreamChat
     sig { params(options: T.untyped).returns(StreamChat::StreamResponse) }
     def list_imports(options)
       get('imports', params: options)
+    end
+
+    sig { params(filter: StringKeyHash, sort: T.nilable(T::Hash[String, Integer]), options: T.untyped).returns(StreamChat::StreamResponse) }
+    def query_threads(filter, sort, **options)
+      @thread.query_threads(filter, sort, **options)
     end
 
     private
