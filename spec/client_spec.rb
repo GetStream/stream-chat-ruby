@@ -170,7 +170,9 @@ describe StreamChat::Client do
 
     @client.update_user_partial({
                                   id: user_id,
-                                  teams: ['blue']
+                                  set: {
+                                    teams: ['blue']
+                                  }
                                 })
 
     response = @client.update_user_partial({
@@ -180,7 +182,7 @@ describe StreamChat::Client do
                                              }
                                            })
 
-    expect(response['users'][user_id]['team']).to eq('blue')
+    expect(response['users'][user_id]['teams']).to eq(['blue'])
     expect(response['users'][user_id]['teams_role']['blue']).to eq('admin')
   end
 
