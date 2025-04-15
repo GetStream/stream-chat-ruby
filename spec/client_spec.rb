@@ -962,70 +962,45 @@ describe StreamChat::Client do
   end
 
   describe '#query_threads' do
-    it 'queries threads with filter' do
+    before(:each) do
       # Create a channel and send a message to create a thread
-      channel = @client.channel('messaging', channel_id: SecureRandom.uuid, data: { test: true })
-      channel.create(@random_user[:id])
+      @thread_channel = @client.channel('messaging', channel_id: SecureRandom.uuid, data: { test: true })
+      @thread_channel.create(@random_user[:id])
 
       # Send a message to create a thread
-      message = channel.send_message({ text: 'Thread parent message' }, @random_user[:id])
+      @thread_message = @thread_channel.send_message({ text: 'Thread parent message' }, @random_user[:id])
 
       # Send a reply to create a thread
-      channel.send_message({ text: 'Thread reply', parent_id: message['message']['id'] }, @random_user[:id])
+      @thread_channel.send_message({ text: 'Thread reply', parent_id: @thread_message['message']['id'] }, @random_user[:id])
+    end
 
-      # Query threads with filter
+    after(:each) do
+      @thread_channel.delete
+    end
+
+    it 'queries threads with filter' do
       filter = {
         'created_by_user_id' => { '$eq' => @random_user[:id] }
       }
 
       response = @client.query_threads(filter, user_id: @random_user[:id])
 
-      # Verify the response
       expect(response).to include 'threads'
       expect(response['threads'].length).to be >= 1
-
-      # Clean up
-      channel.delete
     end
 
     it 'queries threads with sort' do
-      # Create a channel and send a message to create a thread
-      channel = @client.channel('messaging', channel_id: SecureRandom.uuid, data: { test: true })
-      channel.create(@random_user[:id])
-
-      # Send a message to create a thread
-      message = channel.send_message({ text: 'Thread parent message' }, @random_user[:id])
-
-      # Send a reply to create a thread
-      channel.send_message({ text: 'Thread reply', parent_id: message['message']['id'] }, @random_user[:id])
-
-      # Query threads with sort
       sort = {
         'created_at' => -1
       }
 
       response = @client.query_threads({}, sort: sort, user_id: @random_user[:id])
 
-      # Verify the response
       expect(response).to include 'threads'
       expect(response['threads'].length).to be >= 1
-
-      # Clean up
-      channel.delete
     end
 
     it 'queries threads with both filter and sort' do
-      # Create a channel and send a message to create a thread
-      channel = @client.channel('messaging', channel_id: SecureRandom.uuid, data: { test: true })
-      channel.create(@random_user[:id])
-
-      # Send a message to create a thread
-      message = channel.send_message({ text: 'Thread parent message' }, @random_user[:id])
-
-      # Send a reply to create a thread
-      channel.send_message({ text: 'Thread reply', parent_id: message['message']['id'] }, @random_user[:id])
-
-      # Query threads with both filter and sort
       filter = {
         'created_by_user_id' => { '$eq' => @random_user[:id] }
       }
@@ -1036,12 +1011,8 @@ describe StreamChat::Client do
 
       response = @client.query_threads(filter, sort: sort, user_id: @random_user[:id])
 
-      # Verify the response
       expect(response).to include 'threads'
       expect(response['threads'].length).to be >= 1
-
-      # Clean up
-      channel.delete
     end
   end
 end
