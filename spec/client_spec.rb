@@ -1010,7 +1010,7 @@ describe StreamChat::Client do
         'created_at' => -1
       }
 
-      response = @client.query_threads(sort: sort, user_id: @random_user[:id])
+      response = @client.query_threads({}, sort: sort, user_id: @random_user[:id])
 
       # Verify the response
       expect(response).to include 'threads'
