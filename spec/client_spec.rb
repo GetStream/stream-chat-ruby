@@ -168,10 +168,14 @@ describe StreamChat::Client do
     user_id = SecureRandom.uuid
     @client.update_user({ id: user_id, name: 'Test User' })
 
+    @client.update_user_partial({
+                                  id: user_id,
+                                  set: { team: 'blue' }
+                                })
+
     response = @client.update_user_partial({
                                              id: user_id,
                                              set: {
-                                               team: 'blue',
                                                teams_role: { 'blue' => 'admin' }
                                              }
                                            })
