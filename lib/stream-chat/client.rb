@@ -936,7 +936,7 @@ module StreamChat
 
     sig { params(filter: StringKeyHash, sort: T.nilable(T::Hash[String, Integer]), options: T.untyped).returns(StreamChat::StreamResponse) }
     def query_threads(filter, sort, **options)
-      @thread.query_threads(filter, sort, **options)
+      @thread.query_threads(filter, sort: sort, **options)
     end
 
     private
