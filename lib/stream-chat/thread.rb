@@ -31,11 +31,11 @@ module StreamChat
     sig { params(filter: StringKeyHash, sort: T.nilable(T::Hash[String, Integer]), options: T.untyped).returns(StreamChat::StreamResponse) }
     def query_threads(filter = {}, sort: nil, **options)
       params = {}.merge(options).merge({
-        filter: filter,
-        sort: StreamChat.get_sort_fields(sort)
-      })
+                                         filter: filter,
+                                         sort: StreamChat.get_sort_fields(sort)
+                                       })
 
       @client.post('threads', data: params)
     end
   end
-end 
+end
