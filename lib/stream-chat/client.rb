@@ -929,6 +929,16 @@ module StreamChat
       get('imports', params: options)
     end
 
+    sig { params(filter: StringKeyHash, sort: T.nilable(T::Hash[String, Integer]), options: T.untyped).returns(StreamChat::StreamResponse) }
+    def query_threads(filter, sort: nil, **options)
+      params = {}.merge(options).merge({
+                                         filter: filter,
+                                         sort: StreamChat.get_sort_fields(sort)
+                                       })
+
+      post('threads', data: params)
+    end
+
     private
 
     sig { returns(T::Hash[String, String]) }
