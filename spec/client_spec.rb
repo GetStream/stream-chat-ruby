@@ -1064,7 +1064,7 @@ describe StreamChat::Client do
         message_id: response['message']['id'],
         latitude: new_latitude,
         longitude: location[:longitude],
-        end_at: location[:end_at],
+        end_at: location[:end_at]
       )
 
       expect(response['created_by_device_id']).to eq(location[:created_by_device_id])
