@@ -526,7 +526,7 @@ describe StreamChat::Client do
 
   describe 'blocklist' do
     before(:all) do
-      @blocklist = SecureRandom.uuid
+      @blocklist = "test_blocklist_#{SecureRandom.hex(8)}"
     end
 
     it 'list available blocklists' do
