@@ -688,7 +688,7 @@ module StreamChat
     # Revoke tokens for an application issued since the given date.
     sig { params(before: T.any(DateTime, String)).returns(StreamChat::StreamResponse) }
     def revoke_tokens(before)
-      before = T.cast(before, DateTime).rfc3339 if before.instance_of?(DateTime)
+      before = before.rfc3339 if before.instance_of?(DateTime)
       update_app_settings({ 'revoke_tokens_issued_before' => before })
     end
 
@@ -701,7 +701,7 @@ module StreamChat
     # Revoke tokens for users issued since.
     sig { params(user_ids: T::Array[String], before: T.any(DateTime, String)).returns(StreamChat::StreamResponse) }
     def revoke_users_token(user_ids, before)
-      before = T.cast(before, DateTime).rfc3339 if before.instance_of?(DateTime)
+      before = before.rfc3339 if before.instance_of?(DateTime)
 
       updates = []
       user_ids.map do |user_id|
