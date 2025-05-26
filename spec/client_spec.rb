@@ -1038,17 +1038,19 @@ describe StreamChat::Client do
     end
 
     it 'can create and update a location' do
-      location = { 
+      location = {
         created_by_device_id: SecureRandom.uuid,
         latitude: 40.7128,
         longitude: -74.0060,
         end_at: (Time.now + 3600).iso8601
       }
 
-      response = @channel.send_message({ 
-        text: 'Location sharing message',
-        shared_location: location,
-      }, @location_test_user[:id])
+      response = @channel.send_message(
+        { 
+          text: 'Location sharing message',
+          shared_location: location
+        }, @location_test_user[:id]
+      )
 
       expect(response['message']).to include 'shared_location'
       expect(response['message']['shared_location']['created_by_device_id']).to eq(location[:created_by_device_id])
@@ -1076,21 +1078,22 @@ describe StreamChat::Client do
       longitude = -74.0060
       end_at = (Time.now + 3600).iso8601
 
-      response = @location_channel.send_message({ 
-        text: 'Location sharing message',
-        shared_location: {
-          created_by_device_id: device_id,
-          latitude: latitude,
-          longitude: longitude,
-          end_at: end_at
-        }
-      }, @location_test_user[:id])
+      response = @location_channel.send_message(
+        {
+          text: 'Location sharing message',
+          shared_location: {
+            created_by_device_id: device_id,
+            latitude: latitude,
+            longitude: longitude,
+            end_at: end_at
+          }
+        }, @location_test_user[:id]
+      )
 
       response = @client.get_active_live_locations(@location_test_user[:id])
       expect(response).to include 'active_live_locations'
       expect(response['active_live_locations']).to be_an(Array)
       expect(response['active_live_locations'].length).to be >= 1
-      
       location = response['active_live_locations'].find { |loc| loc['created_by_device_id'] == device_id }
       expect(location).not_to be_nil
       expect(location['latitude']).to eq(latitude)
@@ -1099,7 +1102,7 @@ describe StreamChat::Client do
     end
 
     it 'should have active live locations on the channel' do
-      response = @channel.query()
+      response = @channel.query
       expect(response).to include 'active_live_locations'
       expect(response['active_live_locations'].length).to be >= 1
     end

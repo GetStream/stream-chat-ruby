@@ -824,16 +824,13 @@ module StreamChat
     # @param [Float] longitude Optional longitude coordinate
     # @param [String] end_at Optional end time for the location sharing
     # @return [StreamChat::StreamResponse]
-    sig { params(user_id: String, created_by_device_id: String, message_id: String, latitude: T.nilable(Float), longitude: T.nilable(Float), end_at: T.nilable(String)).returns(StreamChat::StreamResponse) }
-    def update_location(user_id, created_by_device_id:, message_id:, latitude: nil, longitude: nil, end_at: nil)
+    sig { params(user_id: String, created_by_device_id: String, message_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    def update_location(user_id, created_by_device_id:, message_id:, **options)
       data = {
         created_by_device_id: created_by_device_id,
         message_id: message_id
       }
-      data[:latitude] = latitude if latitude
-      data[:longitude] = longitude if longitude
-      data[:end_at] = end_at if end_at
-
+      data.merge!(options) if options
       put('users/location', data: data, params: { user_id: user_id })
     end
 
