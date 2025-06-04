@@ -14,7 +14,8 @@ module StreamChat
     MODERATION_ENTITY_TYPES = T.let(
       {
         user: 'stream:user',
-        message: 'stream:chat:v1:message'
+        message: 'stream:chat:v1:message',
+        userprofile: 'stream:v1:user_profile',
       }.freeze,
       T::Hash[Symbol, String]
     )
