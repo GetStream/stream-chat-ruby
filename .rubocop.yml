@@ -35,3 +35,5 @@ Style/FrozenStringLiteralComment:
 
 Gemspec/RequireMFA:
   Enabled: false
+Naming/PredicateMethod:
+  Enabled: false
