@@ -25,6 +25,45 @@ module StreamChat
       @client = client
     end
 
+    # Experimental: Check user profile
+    #
+    # Warning: This is an experimental feature and the API is subject to change.
+    #
+    # This function is used to check a user profile for moderation.
+    # This will not create any review queue items for the user profile.
+    # You can just use this to check whether to allow a certain user profile to be created or not.
+    #
+    # @param [string] user_id User ID to be checked
+    # @param [Hash] profile Profile data to be checked
+    # @option profile [String] :username Username to be checked
+    # @option profile [String] :image Image URL to be checked
+    # @return [StreamChat::StreamResponse]
+    sig do
+      params(
+        user_id: String,
+        profile: T::Hash[Symbol, T.nilable(String)]
+      ).returns(StreamChat::StreamResponse)
+    end
+    def check_user_profile(user_id, profile)
+      raise ArgumentError, 'Either username or image must be provided' if profile[:username].nil? && profile[:image].nil?
+
+      moderation_payload = {}
+      moderation_payload[:texts] = [profile[:username]] if profile[:username]
+      moderation_payload[:images] = [profile[:image]] if profile[:image]
+
+      check(
+        T.must(MODERATION_ENTITY_TYPES[:userprofile]),
+        user_id,
+        moderation_payload,
+        'user_profile:default',
+        entity_creator_id: user_id,
+        options: {
+          force_sync: true,
+          test_mode: true
+        }
+      )
+    end
+
     # Flags a user with a reason
     #
     # @param [string] flagged_user_id User ID to be flagged
