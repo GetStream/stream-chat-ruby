@@ -15,7 +15,7 @@ module StreamChat
       {
         user: 'stream:user',
         message: 'stream:chat:v1:message',
-        userprofile: 'stream:v1:user_profile',
+        userprofile: 'stream:v1:user_profile'
       }.freeze,
       T::Hash[Symbol, String]
     )
@@ -38,6 +38,9 @@ module StreamChat
     # @option profile [String] :username Username to be checked
     # @option profile [String] :image Image URL to be checked
     # @return [StreamChat::StreamResponse]
+    #
+    # example:
+    # client.moderation.check_user_profile('user-id', {username: 'bad_username', image: 'https://example.com/profile.jpg'})
     sig do
       params(
         user_id: String,
