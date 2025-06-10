@@ -159,6 +159,24 @@ describe StreamChat::Moderation do
       expect(response['duration']).not_to be_nil
     end
 
+    it 'check user profile' do
+      response = @moderation.check_user_profile(
+        @test_user_id,
+        { username: 'fuck_you_123' }
+      )
+      expect(response['duration']).not_to be_nil
+      expect(response['status']).to eq('complete')
+      expect(response['recommended_action']).to eq('remove')
+
+      response = @moderation.check_user_profile(
+        @test_user_id,
+        { username: 'hi' }
+      )
+      expect(response['duration']).not_to be_nil
+      expect(response['status']).to eq('complete')
+      expect(response['recommended_action']).to eq('keep')
+    end
+
     it 'config test' do
       # Create moderation config
       moderation_config = {
