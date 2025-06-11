@@ -26,16 +26,6 @@ All notable changes to this project will be documented in this file. See [standa
 
 * **release:** 3.10.0 ([#151](https://github.com/GetStream/stream-chat-ruby/issues/151)) ([ac11fc1](https://github.com/GetStream/stream-chat-ruby/commit/ac11fc122ec97ffd1b2bce820efe55925e96277f))
 
-## [Unreleased]
-
-### Features
-
-* Added support for message reminders:
-  * `create_reminder`: Create a reminder for a message
-  * `update_reminder`: Update an existing reminder
-  * `delete_reminder`: Delete a reminder
-  * `query_reminders`: Query reminders with filtering options
-
 ## [3.10.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.9.0...v3.10.0) (2025-02-24)
 
 ## [3.9.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.7.0...v3.9.0) (2025-02-11)
