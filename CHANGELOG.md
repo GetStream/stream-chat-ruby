@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.15.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.14.0...v3.15.0) (2025-06-06)
+
+## [3.14.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.13.0...v3.14.0) (2025-04-07)
+
+## [3.13.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.12.0...v3.13.0) (2025-04-04)
+
+
+### Features
+
+*  deactivate users ([#162](https://github.com/GetStream/stream-chat-ruby/issues/162)) ([12bf4d1](https://github.com/GetStream/stream-chat-ruby/commit/12bf4d19846b5100f1886929b74c7ad05d753be4))
+*  draft messages ([#161](https://github.com/GetStream/stream-chat-ruby/pull/161)) ([1719104](https://github.com/GetStream/stream-chat-ruby/commit/c7bccb3ad30721a20f32fd60eb13ab6d97a08208))
+
+### Other
+
+* added nijeesh to code owners ([#156](https://github.com/GetStream/stream-chat-ruby/issues/156)) ([7cd4e54](https://github.com/GetStream/stream-chat-ruby/commit/7cd4e5443a8f283596b8eadc873030d737cd621c))
+* **release:** v3.12.0 ([#157](https://github.com/GetStream/stream-chat-ruby/issues/157)) ([993b7a3](https://github.com/GetStream/stream-chat-ruby/commit/993b7a30bd2222ee328ca7a862384c7baf7d53e1))
+
+## [3.11.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.9.0...v3.11.0) (2025-03-21)
+
+
+### Other
+
+* **release:** 3.10.0 ([#151](https://github.com/GetStream/stream-chat-ruby/issues/151)) ([ac11fc1](https://github.com/GetStream/stream-chat-ruby/commit/ac11fc122ec97ffd1b2bce820efe55925e96277f))
+
 ## [Unreleased]
 
 ### Features

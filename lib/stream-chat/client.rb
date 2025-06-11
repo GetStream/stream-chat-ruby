@@ -15,6 +15,7 @@ require 'stream-chat/stream_response'
 require 'stream-chat/version'
 require 'stream-chat/util'
 require 'stream-chat/types'
+require 'stream-chat/moderation'
 
 module StreamChat
   DEFAULT_BLOCKLIST = 'profanity_en_2020_v1'
@@ -35,6 +36,9 @@ module StreamChat
 
     sig { returns(Faraday::Connection) }
     attr_reader :conn
+
+    sig { returns(Moderation) }
+    attr_reader :moderation
 
     # initializes a Stream Chat API Client
     #
@@ -65,6 +69,7 @@ module StreamChat
         end
       end
       @conn = T.let(conn, Faraday::Connection)
+      @moderation = T.let(Moderation.new(self), Moderation)
     end
 
     # initializes a Stream Chat API Client from STREAM_KEY and STREAM_SECRET
@@ -178,9 +183,9 @@ module StreamChat
     end
 
     # Returns a message.
-    sig { params(id: String).returns(StreamChat::StreamResponse) }
-    def get_message(id)
-      get("messages/#{id}")
+    sig { params(id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    def get_message(id, **options)
+      get("messages/#{id}", params: options)
     end
 
     # Searches for messages.
@@ -274,6 +279,14 @@ module StreamChat
     sig { params(user_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def deactivate_user(user_id, **options)
       post("users/#{user_id}/deactivate", params: options)
+    end
+
+    # Deactivates a users
+    sig { params(user_ids: T::Array[String], options: T.untyped).returns(StreamChat::StreamResponse) }
+    def deactivate_users(user_ids, **options)
+      raise ArgumentError, 'user_ids should not be empty' if user_ids.empty?
+
+      post('users/deactivate', data: { user_ids: user_ids, **options })
     end
 
     # Reactivates a deactivated user. Use deactivate_user to deactivate a user.
@@ -779,6 +792,22 @@ module StreamChat
       post('commands', data: command)
     end
 
+    # Queries draft messages for the current user.
+    #
+    # @param [String] user_id The ID of the user to query drafts for
+    # @param [StringKeyHash] filter Optional filter conditions for the query
+    # @param [Array] sort Optional sort parameters
+    # @param [Hash] options Additional query options
+    # @return [StreamChat::StreamResponse]
+    sig { params(user_id: String, filter: T.nilable(StringKeyHash), sort: T.nilable(T::Array[StringKeyHash]), options: T.untyped).returns(StreamChat::StreamResponse) }
+    def query_drafts(user_id, filter: nil, sort: nil, **options)
+      data = { user_id: user_id }
+      data['filter'] = filter if filter
+      data['sort'] = sort if sort
+      data.merge!(options) if options
+      post('drafts/query', data: data)
+    end
+
     # Gets a comamnd.
     sig { params(name: String).returns(StreamChat::StreamResponse) }
     def get_command(name)
@@ -899,6 +928,16 @@ module StreamChat
     sig { params(options: T.untyped).returns(StreamChat::StreamResponse) }
     def list_imports(options)
       get('imports', params: options)
+    end
+
+    sig { params(filter: StringKeyHash, sort: T.nilable(T::Hash[String, Integer]), options: T.untyped).returns(StreamChat::StreamResponse) }
+    def query_threads(filter, sort: nil, **options)
+      params = {}.merge(options).merge({
+                                         filter: filter,
+                                         sort: StreamChat.get_sort_fields(sort)
+                                       })
+
+      post('threads', data: params)
     end
 
     # Creates a reminder for a message.

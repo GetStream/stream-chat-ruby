@@ -127,6 +127,19 @@ describe StreamChat::Client do
     expect(response['users']).to include user[:id]
   end
 
+  it 'creates a user with team and teams_role' do
+    user = {
+      id: SecureRandom.uuid,
+      team: 'blue',
+      teams_role: { 'blue' => 'admin' }
+    }
+    response = @client.update_user(user)
+    expect(response).to include 'users'
+    expect(response['users']).to include user[:id]
+    expect(response['users'][user[:id]]['team']).to eq 'blue'
+    expect(response['users'][user[:id]]['teams_role']['blue']).to eq 'admin'
+  end
+
   it 'updates multiple users' do
     users = [{ id: SecureRandom.uuid }, { id: SecureRandom.uuid }]
     response = @client.update_users(users)
@@ -151,6 +164,22 @@ describe StreamChat::Client do
     expect(response['users'][user_id]['field']).to eq('updated')
   end
 
+  it 'makes partial user update with team and teams_role' do
+    user_id = SecureRandom.uuid
+    @client.update_user({ id: user_id, name: 'Test User' })
+
+    response = @client.update_user_partial({
+                                             id: user_id,
+                                             set: {
+                                               teams: ['blue'],
+                                               teams_role: { 'blue' => 'admin' }
+                                             }
+                                           })
+
+    expect(response['users'][user_id]['teams']).to eq(['blue'])
+    expect(response['users'][user_id]['teams_role']['blue']).to eq('admin')
+  end
+
   it 'deletes a user' do
     response = @client.delete_user(@random_user[:id])
     expect(response).to include 'user'
@@ -167,6 +196,20 @@ describe StreamChat::Client do
     response = @client.deactivate_user(@random_user[:id])
     expect(response).to include 'user'
     expect(response['user']['id']).to eq(@random_user[:id])
+  end
+
+  it 'deactivates multiple users' do
+    response = @client.deactivate_users([@random_users[0][:id], @random_users[1][:id]])
+    expect(response).to include 'task_id'
+    expect(response['task_id']).not_to be_empty
+  end
+
+  it 'raises an error if user_ids is not an array' do
+    expect { @client.deactivate_users('not an array') }.to raise_error(TypeError)
+  end
+
+  it 'raises an error if user_ids is empty' do
+    expect { @client.deactivate_users([]) }.to raise_error(ArgumentError)
   end
 
   it 'reactivates a user' do
@@ -266,14 +309,40 @@ describe StreamChat::Client do
     @client.mark_all_read(@random_user[:id])
   end
 
-  it 'gets message by id' do
-    msg_id = SecureRandom.uuid
-    message = @channel.send_message({
-                                      'id' => msg_id,
-                                      'text' => 'Hello world'
-                                    }, @random_user[:id])[:message]
+  describe '#get_message' do
+    # runs before all tests in this describe block once
+    before(:all) do
+      @user_id = SecureRandom.uuid
+      @msg_id = SecureRandom.uuid
+      @channel.send_message({
+                              'id' => @msg_id,
+                              'text' => 'This is not deleted'
+                            }, @user_id)
+      @deleted_msg_id = SecureRandom.uuid
+      @channel.send_message({
+                              'id' => @deleted_msg_id,
+                              'text' => 'This is deleted'
+                            }, @user_id)
+      @client.delete_message(@deleted_msg_id)
+    end
 
-    expect(@client.get_message(msg_id)[:message]).to eq(message)
+    it 'gets message by id' do
+      response = @client.get_message(@msg_id)
+      message = response['message']
+      expect(message['id']).to eq(@msg_id)
+    end
+
+    it 'gets deleted message when show_deleted_message is true' do
+      response = @client.get_message(@deleted_msg_id, show_deleted_message: true)
+      message = response['message']
+      expect(message['id']).to eq(@deleted_msg_id)
+    end
+
+    it 'also it gets non-deleted message when show_deleted_message is true' do
+      response = @client.get_message(@msg_id, show_deleted_message: true)
+      message = response['message']
+      expect(message['id']).to eq(@msg_id)
+    end
   end
 
   it 'pins and unpins a message' do
@@ -756,6 +825,51 @@ describe StreamChat::Client do
       list_resp = @client.list_imports({ limit: 1 })
       expect(list_resp['import_tasks'].length).to eq 1
     end
+
+    it 'can query drafts' do
+      # Create multiple drafts in different channels
+      draft1 = { 'text' => 'Draft in channel 1' }
+      @channel.create_draft(draft1, @random_user[:id])
+
+      # Create another channel with a draft
+      channel2 = @client.channel('messaging', data: { 'members' => @random_users.map { |u| u[:id] } })
+      channel2.create(@random_user[:id])
+
+      draft2 = { 'text' => 'Draft in channel 2' }
+      channel2.create_draft(draft2, @random_user[:id])
+
+      # Sort by created_at
+      sort = [{ 'field' => 'created_at', 'direction' => 1 }]
+      response = @client.query_drafts(@random_user[:id], sort: sort)
+      expect(response['drafts']).not_to be_empty
+      expect(response['drafts'].length).to eq(2)
+      expect(response['drafts'][0]['channel']['id']).to eq(@channel.id)
+      expect(response['drafts'][1]['channel']['id']).to eq(channel2.id)
+
+      # Query for a specific channel
+      response = @client.query_drafts(@random_user[:id], filter: { 'channel_cid' => @channel.cid })
+      expect(response['drafts']).not_to be_empty
+      expect(response['drafts'].length).to eq(1)
+      expect(response['drafts'][0]['channel']['id']).to eq(@channel.id)
+
+      # Query all drafts for the user
+      response = @client.query_drafts(@random_user[:id])
+      expect(response['drafts']).not_to be_empty
+      expect(response['drafts'].length).to eq(2)
+
+      # Paginate
+      response = @client.query_drafts(@random_user[:id], sort: sort, limit: 1)
+      expect(response['drafts']).not_to be_empty
+      expect(response['drafts'].length).to eq(1)
+      expect(response['drafts'][0]['channel']['id']).to eq(@channel.id)
+
+      # Cleanup
+      begin
+        channel2.delete
+      rescue StandardError
+        # Ignore errors if channel is already deleted
+      end
+    end
   end
 
   describe 'permissions' do
@@ -844,6 +958,66 @@ describe StreamChat::Client do
       loop_times 10 do
         @client.delete_role @permission_id
       end
+    end
+  end
+
+  describe '#query_threads' do
+    before(:all) do
+      # Create a dedicated random user for this block
+      @thread_test_user = { id: SecureRandom.uuid }
+      @client.upsert_users([@thread_test_user])
+
+      # Create a channel and send a message to create a thread
+      @thread_channel = @client.channel('messaging', channel_id: SecureRandom.uuid, data: { test: true })
+      @thread_channel.create(@thread_test_user[:id])
+
+      # Send a message to create a thread
+      @thread_message = @thread_channel.send_message({ text: 'Thread parent message' }, @thread_test_user[:id])
+
+      # Send a reply to create a thread
+      @thread_channel.send_message({ text: 'Thread reply', parent_id: @thread_message['message']['id'] }, @thread_test_user[:id])
+    end
+
+    after(:all) do
+      @thread_channel.delete
+      @client.delete_user(@thread_test_user[:id])
+    end
+
+    it 'queries threads with filter' do
+      filter = {
+        'created_by_user_id' => { '$eq' => @thread_test_user[:id] }
+      }
+
+      response = @client.query_threads(filter, user_id: @thread_test_user[:id])
+
+      expect(response).to include 'threads'
+      expect(response['threads'].length).to be >= 1
+    end
+
+    it 'queries threads with sort' do
+      sort = {
+        'created_at' => -1
+      }
+
+      response = @client.query_threads({}, sort: sort, user_id: @thread_test_user[:id])
+
+      expect(response).to include 'threads'
+      expect(response['threads'].length).to be >= 1
+    end
+
+    it 'queries threads with both filter and sort' do
+      filter = {
+        'created_by_user_id' => { '$eq' => @thread_test_user[:id] }
+      }
+
+      sort = {
+        'created_at' => -1
+      }
+
+      response = @client.query_threads(filter, sort: sort, user_id: @thread_test_user[:id])
+
+      expect(response).to include 'threads'
+      expect(response['threads'].length).to be >= 1
     end
   end
 
