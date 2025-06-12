@@ -1087,6 +1087,7 @@ describe StreamChat::Client do
       @channel_id = SecureRandom.uuid
       @channel = @client.channel('messaging', channel_id: @channel_id)
       @channel.create('john')
+      @channel.update_partial({config_overrides: {user_message_reminders: true}})
       @message = @channel.send_message({ 'text' => 'Hello world' }, 'john')
       @message_id = @message['message']['id']
       @user_id = 'john'
