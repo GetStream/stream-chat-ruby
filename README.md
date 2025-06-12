@@ -132,6 +132,29 @@ deleted_message = client.delete_message(m1['message']['id'])
 
 ```
 
+### Reminders
+
+```ruby
+# Create a reminder for a message
+reminder = client.create_reminder(m1['message']['id'], 'bob-1', DateTime.now + 1)
+
+# Create a reminder without a notification time (just mark for later)
+reminder = client.create_reminder(m1['message']['id'], 'bob-1')
+
+# Update a reminder
+updated_reminder = client.update_reminder(m1['message']['id'], 'bob-1', DateTime.now + 2)
+
+# Delete a reminder
+client.delete_reminder(m1['message']['id'], 'bob-1')
+
+# Query reminders for a user
+reminders = client.query_reminders('bob-1')
+
+# Query reminders with filters
+filter = { 'channel_cid' => 'messaging:bob-and-jane' }
+reminders = client.query_reminders('bob-1', filter)
+```
+
 ### Devices
 
 ```ruby

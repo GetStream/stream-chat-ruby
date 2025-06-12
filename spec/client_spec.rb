@@ -1020,4 +1020,163 @@ describe StreamChat::Client do
       expect(response['threads'].length).to be >= 1
     end
   end
+
+  describe '#query_threads' do
+    before(:all) do
+      # Create a dedicated random user for this block
+      @thread_test_user = { id: SecureRandom.uuid }
+      @client.upsert_users([@thread_test_user])
+
+      # Create a channel and send a message to create a thread
+      @thread_channel = @client.channel('messaging', channel_id: SecureRandom.uuid, data: { test: true })
+      @thread_channel.create(@thread_test_user[:id])
+
+      # Send a message to create a thread
+      @thread_message = @thread_channel.send_message({ text: 'Thread parent message' }, @thread_test_user[:id])
+
+      # Send a reply to create a thread
+      @thread_channel.send_message({ text: 'Thread reply', parent_id: @thread_message['message']['id'] }, @thread_test_user[:id])
+    end
+
+    after(:all) do
+      @thread_channel.delete
+      @client.delete_user(@thread_test_user[:id])
+    end
+
+    it 'queries threads with filter' do
+      filter = {
+        'created_by_user_id' => { '$eq' => @thread_test_user[:id] }
+      }
+
+      response = @client.query_threads(filter, user_id: @thread_test_user[:id])
+
+      expect(response).to include 'threads'
+      expect(response['threads'].length).to be >= 1
+    end
+
+    it 'queries threads with sort' do
+      sort = {
+        'created_at' => -1
+      }
+
+      response = @client.query_threads({}, sort: sort, user_id: @thread_test_user[:id])
+
+      expect(response).to include 'threads'
+      expect(response['threads'].length).to be >= 1
+    end
+
+    it 'queries threads with both filter and sort' do
+      filter = {
+        'created_by_user_id' => { '$eq' => @thread_test_user[:id] }
+      }
+
+      sort = {
+        'created_at' => -1
+      }
+
+      response = @client.query_threads(filter, sort: sort, user_id: @thread_test_user[:id])
+
+      expect(response).to include 'threads'
+      expect(response['threads'].length).to be >= 1
+    end
+  end
+
+  describe 'reminders' do
+    before do
+      @client = StreamChat::Client.from_env
+      @channel_id = SecureRandom.uuid
+      @channel = @client.channel('messaging', channel_id: @channel_id)
+      @channel.create('john')
+      @channel.update_partial({config_overrides: {user_message_reminders: true}})
+      @message = @channel.send_message({ 'text' => 'Hello world' }, 'john')
+      @message_id = @message['message']['id']
+      @user_id = 'john'
+    end
+
+    describe 'create_reminder' do
+      it 'create reminder' do
+        remind_at = DateTime.now + 1
+        response = @client.create_reminder(@message_id, @user_id, remind_at)
+
+        expect(response).to include('reminder')
+        expect(response['reminder']).to include('message_id', 'user_id', 'remind_at')
+        expect(response['reminder']['message_id']).to eq(@message_id)
+        expect(response['reminder']['user_id']).to eq(@user_id)
+      end
+
+      it 'create reminder without remind_at' do
+        response = @client.create_reminder(@message_id, @user_id)
+
+        expect(response).to include('reminder')
+        expect(response['reminder']).to include('message_id', 'user_id')
+        expect(response['reminder']['message_id']).to eq(@message_id)
+        expect(response['reminder']['user_id']).to eq(@user_id)
+        expect(response['reminder']['remind_at']).to be_nil
+      end
+    end
+
+    describe 'update_reminder' do
+      before do
+        @client.create_reminder(@message_id, @user_id)
+      end
+
+      it 'update reminder' do
+        new_remind_at = DateTime.now + 2
+        response = @client.update_reminder(@message_id, @user_id, new_remind_at)
+
+        expect(response).to include('reminder')
+        expect(response['reminder']).to include('message_id', 'user_id', 'remind_at')
+        expect(response['reminder']['message_id']).to eq(@message_id)
+        expect(response['reminder']['user_id']).to eq(@user_id)
+        expect(DateTime.parse(response['reminder']['remind_at'])).to be_within(1).of(new_remind_at)
+      end
+    end
+
+    describe 'delete_reminder' do
+      before do
+        @client.create_reminder(@message_id, @user_id)
+      end
+
+      it 'delete reminder' do
+        response = @client.delete_reminder(@message_id, @user_id)
+        expect(response).to be_a(Hash)
+      end
+    end
+
+    describe 'query_reminders' do
+      before do
+        remind_at = DateTime.now + 1
+        @client.create_reminder(@message_id, @user_id, remind_at)
+      end
+
+      it 'query reminders' do
+        # Query reminders for the user
+        response = @client.query_reminders(@user_id)
+
+        expect(response).to include('reminders')
+        expect(response['reminders']).to be_an(Array)
+        expect(response['reminders'].length).to be >= 1
+
+        # Find our reminder
+        reminder = response['reminders'].find { |r| r['message_id'] == @message_id }
+        expect(reminder).not_to be_nil
+        expect(reminder['user_id']).to eq(@user_id)
+      end
+
+      it 'query reminders with channel filter' do
+        # Query reminders for the user in a specific channel
+        filter = { 'channel_cid' => @channel.cid }
+        response = @client.query_reminders(@user_id, filter)
+
+        expect(response).to include('reminders')
+        expect(response['reminders']).to be_an(Array)
+        expect(response['reminders'].length).to be >= 1
+
+        # All reminders should have a channel_cid
+        response['reminders'].each do |reminder|
+          expect(reminder).to include('channel_cid')
+        end
+      end
+    end
+  end
 end
