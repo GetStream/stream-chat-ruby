@@ -940,16 +940,6 @@ module StreamChat
       post('threads', data: params)
     end
 
-    sig { params(filter: StringKeyHash, sort: T.nilable(T::Hash[String, Integer]), options: T.untyped).returns(StreamChat::StreamResponse) }
-    def query_threads(filter, sort: nil, **options)
-      params = {}.merge(options).merge({
-                                         filter: filter,
-                                         sort: StreamChat.get_sort_fields(sort)
-                                       })
-
-      post('threads', data: params)
-    end
-
     # Creates a reminder for a message.
     # @param message_id [String] The ID of the message to create a reminder for
     # @param user_id [String] The ID of the user creating the reminder

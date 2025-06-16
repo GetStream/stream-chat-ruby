@@ -1021,66 +1021,6 @@ describe StreamChat::Client do
     end
   end
 
-  describe '#query_threads' do
-    before(:all) do
-      # Create a dedicated random user for this block
-      @thread_test_user = { id: SecureRandom.uuid }
-      @client.upsert_users([@thread_test_user])
-
-      # Create a channel and send a message to create a thread
-      @thread_channel = @client.channel('messaging', channel_id: SecureRandom.uuid, data: { test: true })
-      @thread_channel.create(@thread_test_user[:id])
-
-      # Send a message to create a thread
-      @thread_message = @thread_channel.send_message({ text: 'Thread parent message' }, @thread_test_user[:id])
-
-      # Send a reply to create a thread
-      @thread_channel.send_message({ text: 'Thread reply', parent_id: @thread_message['message']['id'] }, @thread_test_user[:id])
-    end
-
-    after(:all) do
-      @thread_channel.delete
-      @client.delete_user(@thread_test_user[:id])
-    end
-
-    it 'queries threads with filter' do
-      filter = {
-        'created_by_user_id' => { '$eq' => @thread_test_user[:id] }
-      }
-
-      response = @client.query_threads(filter, user_id: @thread_test_user[:id])
-
-      expect(response).to include 'threads'
-      expect(response['threads'].length).to be >= 1
-    end
-
-    it 'queries threads with sort' do
-      sort = {
-        'created_at' => -1
-      }
-
-      response = @client.query_threads({}, sort: sort, user_id: @thread_test_user[:id])
-
-      expect(response).to include 'threads'
-      expect(response['threads'].length).to be >= 1
-    end
-
-    it 'queries threads with both filter and sort' do
-      filter = {
-        'created_by_user_id' => { '$eq' => @thread_test_user[:id] }
-      }
-
-      sort = {
-        'created_at' => -1
-      }
-
-      response = @client.query_threads(filter, sort: sort, user_id: @thread_test_user[:id])
-
-      expect(response).to include 'threads'
-      expect(response['threads'].length).to be >= 1
-    end
-  end
-
   describe 'reminders' do
     before do
       @client = StreamChat::Client.from_env
