@@ -689,7 +689,7 @@ module StreamChat
     # Revoke tokens for an application issued since the given date.
     sig { params(before: T.any(DateTime, String)).returns(StreamChat::StreamResponse) }
     def revoke_tokens(before)
-      before = T.cast(before, DateTime).rfc3339 if before.instance_of?(DateTime)
+      before = before.rfc3339 if before.instance_of?(DateTime)
       update_app_settings({ 'revoke_tokens_issued_before' => before })
     end
 
@@ -702,7 +702,7 @@ module StreamChat
     # Revoke tokens for users issued since.
     sig { params(user_ids: T::Array[String], before: T.any(DateTime, String)).returns(StreamChat::StreamResponse) }
     def revoke_users_token(user_ids, before)
-      before = T.cast(before, DateTime).rfc3339 if before.instance_of?(DateTime)
+      before = before.rfc3339 if before.instance_of?(DateTime)
 
       updates = []
       user_ids.map do |user_id|
@@ -948,7 +948,7 @@ module StreamChat
     sig { params(message_id: String, user_id: String, remind_at: T.nilable(DateTime)).returns(StreamChat::StreamResponse) }
     def create_reminder(message_id, user_id, remind_at = nil)
       data = { user_id: user_id }
-      data[:remind_at] = T.cast(remind_at, DateTime).rfc3339 if remind_at.instance_of?(DateTime)
+      data[:remind_at] = remind_at.rfc3339 if remind_at.instance_of?(DateTime)
       post("messages/#{message_id}/reminders", data: data)
     end
 
