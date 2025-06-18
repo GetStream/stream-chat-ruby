@@ -185,6 +185,7 @@ describe StreamChat::Channel do
   end
 
   it 'can mark messages as read' do
+    @channel.add_members([@random_user[:id]])
     response = @channel.mark_read(@random_user[:id])
     expect(response).to include 'event'
     expect(response['event']['type']).to eq 'message.read'
