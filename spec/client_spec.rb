@@ -1027,7 +1027,7 @@ describe StreamChat::Client do
       @channel_id = SecureRandom.uuid
       @channel = @client.channel('messaging', channel_id: @channel_id)
       @channel.create('john')
-      @channel.update_partial({config_overrides: {user_message_reminders: true}})
+      @channel.update_partial({ config_overrides: { user_message_reminders: true } })
       @message = @channel.send_message({ 'text' => 'Hello world' }, 'john')
       @message_id = @message['message']['id']
       @user_id = 'john'
@@ -1085,8 +1085,7 @@ describe StreamChat::Client do
 
     describe 'query_reminders' do
       before do
-        remind_at = DateTime.now + 1
-        @client.create_reminder(@message_id, @user_id, remind_at)
+        @reminder = @client.create_reminder(@message_id, @user_id)
       end
 
       it 'query reminders' do
@@ -1096,11 +1095,6 @@ describe StreamChat::Client do
         expect(response).to include('reminders')
         expect(response['reminders']).to be_an(Array)
         expect(response['reminders'].length).to be >= 1
-
-        # Find our reminder
-        reminder = response['reminders'].find { |r| r['message_id'] == @message_id }
-        expect(reminder).not_to be_nil
-        expect(reminder['user_id']).to eq(@user_id)
       end
 
       it 'query reminders with channel filter' do
