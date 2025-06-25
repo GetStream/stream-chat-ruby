@@ -411,6 +411,28 @@ describe StreamChat::Client do
     @client.delete_message(msg_id, hard: true)
   end
 
+  it 'undeletes a message' do
+    msg_id = SecureRandom.uuid
+    user_id = @random_user[:id]
+    @channel.send_message({
+                            'id' => msg_id,
+                            'text' => 'to be deleted and restored'
+                          }, user_id)
+    # soft delete
+    @client.delete_message(msg_id)
+
+    # check it is deleted
+    response = @client.get_message(msg_id, show_deleted_message: true)
+    expect(response['message']['deleted_at']).not_to be_nil
+
+    # now undelete
+    @client.undelete_message(msg_id, user_id)
+
+    # now we should be able to get it without an error and without the flag
+    response = @client.get_message(msg_id)
+    expect(response['message']['deleted_at']).to be_nil
+  end
+
   it 'query banned users' do
     @client.ban_user(@random_user[:id], user_id: @random_users[0][:id], reason: 'rubytest')
     response = @client.query_banned_users({ 'reason' => 'rubytest' }, limit: 1)
