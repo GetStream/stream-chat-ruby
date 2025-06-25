@@ -419,6 +419,13 @@ module StreamChat
       delete("messages/#{message_id}", params: options)
     end
 
+    # Un-deletes a message.
+    sig { params(message_id: String, undeleted_by: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    def undelete_message(message_id, undeleted_by, **options)
+      payload = { undeleted_by: undeleted_by }.merge(options)
+      post("messages/#{message_id}/undelete", data: payload)
+    end
+
     # Queries banned users.
     #
     # Banned users can be retrieved in different ways:
