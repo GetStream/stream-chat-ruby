@@ -546,6 +546,39 @@ describe StreamChat::Client do
     end
   end
 
+  describe 'unread count' do
+    before(:all) do
+      @user_id = SecureRandom.uuid
+      @client.update_users([{ id: @user_id }])
+      @channel.add_members([@user_id])
+    end
+
+    before(:each) do
+      @client.mark_all_read(@user_id)
+    end
+
+    it 'gets unread count' do
+      resp = @client.get_unread_count(@user_id)
+      expect(resp['total_unread_count']).to eq 0
+    end
+
+    it "gets unread count if there are unread messages" do
+      @channel.send_message({ text: 'Hello world' }, @random_user[:id])
+      resp = @client.get_unread_count(@user_id)
+      expect(resp['total_unread_count']).to eq 1
+    end
+
+    it "gets unread count for a channel" do
+      @message = @channel.send_message({ text: 'Hello world' }, @random_user[:id])
+      resp = @client.get_unread_count(@user_id)
+      expect(resp['total_unread_count']).to eq 1
+      expect(resp['channels'].length).to eq 1
+      expect(resp['channels'][0]['channel_id']).to eq @channel.cid
+      expect(resp['channels'][0]['unread_count']).to eq 1
+      expect(resp['channels'][0]['last_read']).not_to be_nil
+    end
+  end
+
   describe 'blocklist' do
     before(:all) do
       @blocklist = SecureRandom.uuid
