@@ -562,13 +562,13 @@ describe StreamChat::Client do
       expect(resp['total_unread_count']).to eq 0
     end
 
-    it "gets unread count if there are unread messages" do
+    it 'gets unread count if there are unread messages' do
       @channel.send_message({ text: 'Hello world' }, @random_user[:id])
       resp = @client.get_unread_count(@user_id)
       expect(resp['total_unread_count']).to eq 1
     end
 
-    it "gets unread count for a channel" do
+    it 'gets unread count for a channel' do
       @message = @channel.send_message({ text: 'Hello world' }, @random_user[:id])
       resp = @client.get_unread_count(@user_id)
       expect(resp['total_unread_count']).to eq 1
