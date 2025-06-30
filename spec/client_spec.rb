@@ -558,24 +558,57 @@ describe StreamChat::Client do
     end
 
     it 'gets unread count' do
-      resp = @client.get_unread_count(@user_id)
+      resp = @client.unread_counts(@user_id)
       expect(resp['total_unread_count']).to eq 0
     end
 
     it 'gets unread count if there are unread messages' do
       @channel.send_message({ text: 'Hello world' }, @random_user[:id])
-      resp = @client.get_unread_count(@user_id)
+      resp = @client.unread_counts(@user_id)
       expect(resp['total_unread_count']).to eq 1
     end
 
     it 'gets unread count for a channel' do
       @message = @channel.send_message({ text: 'Hello world' }, @random_user[:id])
-      resp = @client.get_unread_count(@user_id)
+      resp = @client.unread_counts(@user_id)
       expect(resp['total_unread_count']).to eq 1
       expect(resp['channels'].length).to eq 1
       expect(resp['channels'][0]['channel_id']).to eq @channel.cid
       expect(resp['channels'][0]['unread_count']).to eq 1
       expect(resp['channels'][0]['last_read']).not_to be_nil
+    end
+  end
+
+  describe 'unread counts batch' do
+    before(:all) do
+      @user_id1 = SecureRandom.uuid
+      @user_id2 = SecureRandom.uuid
+      @client.update_users([{ id: @user_id1 }, { id: @user_id2 }])
+      @channel.add_members([@user_id1, @user_id2])
+    end
+
+    before(:each) do
+      @client.mark_all_read(@user_id1)
+      @client.mark_all_read(@user_id2)
+    end
+
+
+    it 'gets unread counts for a batch of users' do
+      resp = @client.unread_counts_batch([@user_id1, @user_id2])
+      expect(resp['counts_by_user'].length).to eq 0
+    end
+    
+    it 'gets unread counts for a batch of users with unread messages' do
+      @channel.send_message({ text: 'Hello world' }, @user_id1)
+      @channel.send_message({ text: 'Hello world' }, @user_id2)
+
+      resp = @client.unread_counts_batch([@user_id1, @user_id2])
+      expect(resp['counts_by_user'].length).to eq 2
+      expect(resp['counts_by_user'][@user_id1]['total_unread_count']).to eq 1
+      expect(resp['counts_by_user'][@user_id2]['total_unread_count']).to eq 1
+      expect(resp['counts_by_user'][@user_id1]['channels'].length).to eq 1
+      expect(resp['counts_by_user'][@user_id2]['channels'].length).to eq 1
+      expect(resp['counts_by_user'][@user_id1]['channels'][0]['channel_id']).to eq @channel.cid
     end
   end
 

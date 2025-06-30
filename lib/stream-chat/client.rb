@@ -362,8 +362,12 @@ module StreamChat
 
     # Get unread count for a user.
     sig { params(user_id: String).returns(StreamChat::StreamResponse) }
-    def get_unread_count(user_id)
+    def unread_counts(user_id)
       get('/unread', params: { user_id: user_id })
+    end
+
+    def unread_counts_batch(user_ids)
+      post('/unread_batch', data: { user_ids: user_ids })
     end
 
     # Pins a message.
