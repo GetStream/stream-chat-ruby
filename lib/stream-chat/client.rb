@@ -366,6 +366,8 @@ module StreamChat
       get('/unread', params: { user_id: user_id })
     end
 
+    # Get unread counts for a batch of users.
+    sig { params(user_ids: T::Array[String]).returns(StreamChat::StreamResponse) }
     def unread_counts_batch(user_ids)
       post('/unread_batch', data: { user_ids: user_ids })
     end
