@@ -360,6 +360,18 @@ module StreamChat
       post('channels/read', data: payload)
     end
 
+    # Get unread count for a user.
+    sig { params(user_id: String).returns(StreamChat::StreamResponse) }
+    def unread_counts(user_id)
+      get('/unread', params: { user_id: user_id })
+    end
+
+    # Get unread counts for a batch of users.
+    sig { params(user_ids: T::Array[String]).returns(StreamChat::StreamResponse) }
+    def unread_counts_batch(user_ids)
+      post('/unread_batch', data: { user_ids: user_ids })
+    end
+
     # Pins a message.
     #
     # Pinned messages allow users to highlight important messages, make announcements, or temporarily
