@@ -592,12 +592,11 @@ describe StreamChat::Client do
       @client.mark_all_read(@user_id2)
     end
 
-
     it 'gets unread counts for a batch of users' do
       resp = @client.unread_counts_batch([@user_id1, @user_id2])
       expect(resp['counts_by_user'].length).to eq 0
     end
-    
+
     it 'gets unread counts for a batch of users with unread messages' do
       @channel.send_message({ text: 'Hello world' }, @user_id1)
       @channel.send_message({ text: 'Hello world' }, @user_id2)
