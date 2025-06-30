@@ -550,6 +550,8 @@ describe StreamChat::Client do
     before(:all) do
       @user_id = SecureRandom.uuid
       @client.update_users([{ id: @user_id }])
+      @channel = @client.channel('team', channel_id: SecureRandom.uuid)
+      @channel.create(@user_id)
       @channel.add_members([@user_id])
     end
 
@@ -584,6 +586,8 @@ describe StreamChat::Client do
       @user_id1 = SecureRandom.uuid
       @user_id2 = SecureRandom.uuid
       @client.update_users([{ id: @user_id1 }, { id: @user_id2 }])
+      @channel = @client.channel('team', channel_id: SecureRandom.uuid)
+      @channel.create(@user_id1)
       @channel.add_members([@user_id1, @user_id2])
     end
 
