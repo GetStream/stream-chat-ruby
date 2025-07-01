@@ -62,6 +62,8 @@ describe StreamChat::Moderation do
       curr_idx += batch_size
       slice = @created_users.slice(curr_idx, batch_size)
     end
+
+    @channel.delete
   end
 
   it 'properly sets up a new client' do

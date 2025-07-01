@@ -62,6 +62,8 @@ describe StreamChat::Client do
       curr_idx += batch_size
       slice = @created_users.slice(curr_idx, batch_size)
     end
+
+    @channel.delete
   end
 
   it 'properly sets up a new client' do
@@ -450,7 +452,7 @@ describe StreamChat::Client do
 
   it 'queries channels' do
     response = @client.query_channels({ 'members' => { '$in' => ['legolas'] } }, sort: { 'id' => 1 })
-    expect(response['channels'].length).to eq 1
+    expect(response['channels'].length).to eq 2
     expect(response['channels'][0]['channel']['id']).to eq @channel.id
     expect(response['channels'][0]['members'].length).to eq 4
   end
@@ -1116,16 +1118,18 @@ describe StreamChat::Client do
   end
 
   describe 'reminders' do
-    before do
-      @client = StreamChat::Client.from_env
-      @channel_id = SecureRandom.uuid
-      @user_id = SecureRandom.uuid
-
-      @channel = @client.channel('messaging', channel_id: @channel_id)
-      @channel.create(@user_id)
+    before(:all) do
       @channel.update_partial({ config_overrides: { user_message_reminders: true } })
+    end
+
+    before(:each) do
+      @user_id = @random_user[:id]
       @message = @channel.send_message({ 'text' => 'Hello world' }, @user_id)
       @message_id = @message['message']['id']
+    end
+
+    after(:all) do
+      @channel.update_partial({ config_overrides: { user_message_reminders: false } })
     end
 
     describe 'create_reminder' do
