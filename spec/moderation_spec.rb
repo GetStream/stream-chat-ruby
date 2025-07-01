@@ -26,10 +26,10 @@ describe StreamChat::Moderation do
     @created_users = []
 
     @fellowship_of_the_ring = [
-      { id: 'frodo-baggins', name: 'Frodo Baggins', race: 'Hobbit', age: 50 },
-      { id: 'sam-gamgee', name: 'Samwise Gamgee', race: 'Hobbit', age: 38 },
-      { id: 'gandalf', name: 'Gandalf the Grey', race: 'Istari' },
-      { id: 'legolas', name: 'Legolas', race: 'Elf', age: 500 }
+      { id: SecureRandom.uuid, name: 'Frodo Baggins', race: 'Hobbit', age: 50 },
+      { id: SecureRandom.uuid, name: 'Samwise Gamgee', race: 'Hobbit', age: 38 },
+      { id: SecureRandom.uuid, name: 'Gandalf the Grey', race: 'Istari' },
+      { id: SecureRandom.uuid, name: 'Legolas', race: 'Elf', age: 500 }
     ]
     @client.upsert_users(@fellowship_of_the_ring)
 
@@ -38,7 +38,7 @@ describe StreamChat::Moderation do
 
     @channel = @client.channel('team', channel_id: channel_id,
                                        data: { members: @fellowship_of_the_ring.map { |fellow| fellow[:id] } })
-    @channel.create('gandalf')
+    @channel.create(@fellowship_of_the_ring[2][:id])
   end
 
   before(:each) do
