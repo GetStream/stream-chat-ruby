@@ -51,6 +51,8 @@ describe StreamChat::Client do
   end
 
   after(:all) do
+    @channel.delete
+
     @users_to_delete = @created_users.dup + @fellowship_of_the_ring.map { |fellow| fellow[:id] }
     curr_idx = 0
     batch_size = 25
@@ -63,11 +65,6 @@ describe StreamChat::Client do
       curr_idx += batch_size
       slice = @users_to_delete.slice(curr_idx, batch_size)
     end
-
-    @channel.delete
-  rescue StreamChat::StreamAPIException
-    # if the channel is already deleted by the test, we can ignore the error
-    logger.info "Error cleaning up testcase: #{e.message}"
   end
 
   it 'properly sets up a new client' do
