@@ -32,10 +32,10 @@ describe StreamChat::Client do
       { id: 'legolas', name: 'Legolas', race: 'Elf', age: 500 }
     ]
     @client.upsert_users(@fellowship_of_the_ring)
-    
+
     # Create a new channel for chat max length for channel_id is 64 characters
     channel_id = 'fellowship-of-the-ring-chat-' + SecureRandom.alphanumeric(20)
-    
+
     @channel = @client.channel('team', channel_id: channel_id,
                                        data: { members: @fellowship_of_the_ring.map { |fellow| fellow[:id] } })
     @channel.create('gandalf')
@@ -1120,7 +1120,7 @@ describe StreamChat::Client do
       @client = StreamChat::Client.from_env
       @channel_id = SecureRandom.uuid
       @user_id = SecureRandom.uuid
-      
+
       @channel = @client.channel('messaging', channel_id: @channel_id)
       @channel.create(@user_id)
       @channel.update_partial({ config_overrides: { user_message_reminders: true } })

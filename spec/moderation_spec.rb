@@ -32,7 +32,7 @@ describe StreamChat::Moderation do
       { id: 'legolas', name: 'Legolas', race: 'Elf', age: 500 }
     ]
     @client.upsert_users(@fellowship_of_the_ring)
-    
+
     # Create a new channel for moderation
     channel_id = 'fellowship-of-the-ring-moderation-' + SecureRandom.alphanumeric(20)
 
