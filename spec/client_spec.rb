@@ -34,7 +34,7 @@ describe StreamChat::Client do
     @client.upsert_users(@fellowship_of_the_ring)
 
     # Create a new channel for chat max length for channel_id is 64 characters
-    channel_id = 'fellowship-of-the-ring-chat-' + SecureRandom.alphanumeric(20)
+    channel_id = "fellowship-of-the-ring-chat-#{SecureRandom.alphanumeric(20)}"
 
     @channel = @client.channel('team', channel_id: channel_id,
                                        data: { members: @fellowship_of_the_ring.map { |fellow| fellow[:id] } })

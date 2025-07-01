@@ -34,7 +34,7 @@ describe StreamChat::Moderation do
     @client.upsert_users(@fellowship_of_the_ring)
 
     # Create a new channel for moderation
-    channel_id = 'fellowship-of-the-ring-moderation-' + SecureRandom.alphanumeric(20)
+    channel_id = "fellowship-of-the-ring-moderation-#{SecureRandom.alphanumeric(20)}"
 
     @channel = @client.channel('team', channel_id: channel_id,
                                        data: { members: @fellowship_of_the_ring.map { |fellow| fellow[:id] } })
