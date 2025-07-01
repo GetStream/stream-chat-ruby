@@ -51,19 +51,23 @@ describe StreamChat::Client do
   end
 
   after(:all) do
+    @users_to_delete = @created_users.dup + @fellowship_of_the_ring.map { |fellow| fellow[:id] }
     curr_idx = 0
     batch_size = 25
 
-    slice = @created_users.slice(0, batch_size)
+    slice = @users_to_delete.slice(0, batch_size)
 
     while !slice.nil? && !slice.empty?
       @client.delete_users(slice, user: StreamChat::HARD_DELETE, messages: StreamChat::HARD_DELETE)
 
       curr_idx += batch_size
-      slice = @created_users.slice(curr_idx, batch_size)
+      slice = @users_to_delete.slice(curr_idx, batch_size)
     end
 
     @channel.delete
+  rescue StreamChat::StreamAPIException
+    # if the channel is already deleted by the test, we can ignore the error
+    logger.info "Error cleaning up testcase: #{e.message}"
   end
 
   it 'properly sets up a new client' do

@@ -54,13 +54,15 @@ describe StreamChat::Moderation do
     curr_idx = 0
     batch_size = 25
 
-    slice = @created_users.slice(0, batch_size)
+    @users_to_delete = @created_users.dup + @fellowship_of_the_ring.map { |fellow| fellow[:id] }
+
+    slice = @users_to_delete.slice(0, batch_size)
 
     while !slice.nil? && !slice.empty?
       @client.delete_users(slice, user: StreamChat::HARD_DELETE, messages: StreamChat::HARD_DELETE)
 
       curr_idx += batch_size
-      slice = @created_users.slice(curr_idx, batch_size)
+      slice = @users_to_delete.slice(curr_idx, batch_size)
     end
 
     @channel.delete
