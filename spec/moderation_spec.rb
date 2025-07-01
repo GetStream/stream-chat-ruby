@@ -32,19 +32,22 @@ describe StreamChat::Moderation do
       { id: 'legolas', name: 'Legolas', race: 'Elf', age: 500 }
     ]
     @client.upsert_users(@fellowship_of_the_ring)
-    @channel = @client.channel('team', channel_id: 'fellowship-of-the-ring',
+    
+    # Create a new channel for moderation
+    channel_id = 'fellowship-of-the-ring-moderation-' + SecureRandom.alphanumeric(20)
+
+    @channel = @client.channel('team', channel_id: channel_id,
                                        data: { members: @fellowship_of_the_ring.map { |fellow| fellow[:id] } })
     @channel.create('gandalf')
   end
 
   before(:each) do
-    @random_users = [{ id: SecureRandom.uuid }, { id: SecureRandom.uuid }]
-    @random_user = { id: SecureRandom.uuid }
-    users_to_insert = [@random_users[0], @random_users[1], @random_user]
+    @random_users = [{ id: SecureRandom.uuid }, { id: SecureRandom.uuid }, { id: SecureRandom.uuid }]
+    @random_user = @random_users[0]
 
-    @created_users.push(*users_to_insert.map { |u| u[:id] })
+    @created_users.push(*@random_users.map { |u| u[:id] })
 
-    @client.upsert_users(users_to_insert)
+    @client.upsert_users(@random_users)
   end
 
   after(:all) do
