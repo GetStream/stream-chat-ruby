@@ -1119,12 +1119,13 @@ describe StreamChat::Client do
     before do
       @client = StreamChat::Client.from_env
       @channel_id = SecureRandom.uuid
+      @user_id = SecureRandom.uuid
+      
       @channel = @client.channel('messaging', channel_id: @channel_id)
-      @channel.create('john')
+      @channel.create(@user_id)
       @channel.update_partial({ config_overrides: { user_message_reminders: true } })
-      @message = @channel.send_message({ 'text' => 'Hello world' }, 'john')
+      @message = @channel.send_message({ 'text' => 'Hello world' }, @user_id)
       @message_id = @message['message']['id']
-      @user_id = 'john'
     end
 
     describe 'create_reminder' do
