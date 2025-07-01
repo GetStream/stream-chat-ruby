@@ -31,6 +31,11 @@ describe StreamChat::Moderation do
       { id: SecureRandom.uuid, name: 'Gandalf the Grey', race: 'Istari' },
       { id: SecureRandom.uuid, name: 'Legolas', race: 'Elf', age: 500 }
     ]
+    @gandalf = @fellowship_of_the_ring[2]
+    @frodo = @fellowship_of_the_ring[0]
+    @sam = @fellowship_of_the_ring[1]
+    @legolas = @fellowship_of_the_ring[3]
+
     @client.upsert_users(@fellowship_of_the_ring)
 
     # Create a new channel for moderation
