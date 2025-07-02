@@ -26,38 +26,50 @@ describe StreamChat::Client do
     @created_users = []
 
     @fellowship_of_the_ring = [
-      { id: 'frodo-baggins', name: 'Frodo Baggins', race: 'Hobbit', age: 50 },
-      { id: 'sam-gamgee', name: 'Samwise Gamgee', race: 'Hobbit', age: 38 },
-      { id: 'gandalf', name: 'Gandalf the Grey', race: 'Istari' },
-      { id: 'legolas', name: 'Legolas', race: 'Elf', age: 500 }
+      { id: SecureRandom.uuid, name: 'Frodo Baggins', race: 'Hobbit', age: 50 },
+      { id: SecureRandom.uuid, name: 'Samwise Gamgee', race: 'Hobbit', age: 38 },
+      { id: SecureRandom.uuid, name: 'Gandalf the Grey', race: 'Istari' },
+      { id: SecureRandom.uuid, name: 'Legolas', race: 'Elf', age: 500 }
     ]
+
+    @legolas = @fellowship_of_the_ring[3][:id]
+    @gandalf = @fellowship_of_the_ring[2][:id]
+    @frodo = @fellowship_of_the_ring[0][:id]
+    @sam = @fellowship_of_the_ring[1][:id]
+
     @client.upsert_users(@fellowship_of_the_ring)
-    @channel = @client.channel('team', channel_id: 'fellowship-of-the-ring',
+
+    # Create a new channel for chat max length for channel_id is 64 characters
+    channel_id = "fellowship-of-the-ring-chat-#{SecureRandom.alphanumeric(20)}"
+
+    @channel = @client.channel('team', channel_id: channel_id,
                                        data: { members: @fellowship_of_the_ring.map { |fellow| fellow[:id] } })
-    @channel.create('gandalf')
+    @channel.create(@gandalf)
   end
 
   before(:each) do
-    @random_users = [{ id: SecureRandom.uuid }, { id: SecureRandom.uuid }]
-    @random_user = { id: SecureRandom.uuid }
-    users_to_insert = [@random_users[0], @random_users[1], @random_user]
+    @random_users = [{ id: SecureRandom.uuid }, { id: SecureRandom.uuid }, { id: SecureRandom.uuid }]
+    @random_user = @random_users[0]
 
-    @created_users.push(*users_to_insert.map { |u| u[:id] })
+    @created_users.push(*@random_users.map { |u| u[:id] })
 
-    @client.upsert_users(users_to_insert)
+    @client.upsert_users(@random_users)
   end
 
   after(:all) do
+    @channel.delete
+
+    @users_to_delete = @created_users.dup + @fellowship_of_the_ring.map { |fellow| fellow[:id] }
     curr_idx = 0
     batch_size = 25
 
-    slice = @created_users.slice(0, batch_size)
+    slice = @users_to_delete.slice(0, batch_size)
 
     while !slice.nil? && !slice.empty?
       @client.delete_users(slice, user: StreamChat::HARD_DELETE, messages: StreamChat::HARD_DELETE)
 
       curr_idx += batch_size
-      slice = @created_users.slice(curr_idx, batch_size)
+      slice = @users_to_delete.slice(curr_idx, batch_size)
     end
   end
 
@@ -220,7 +232,7 @@ describe StreamChat::Client do
   end
 
   it 'exports a user' do
-    response = @client.export_user('gandalf')
+    response = @client.export_user(@gandalf)
     expect(response).to include 'user'
     expect(response['user']['name']).to eq('Gandalf the Grey')
   end
@@ -446,9 +458,9 @@ describe StreamChat::Client do
   end
 
   it 'queries channels' do
-    response = @client.query_channels({ 'members' => { '$in' => ['legolas'] } }, sort: { 'id' => 1 })
+    response = @client.query_channels({ 'members' => { '$in' => [@legolas] } }, sort: { 'id' => 1 })
     expect(response['channels'].length).to eq 1
-    expect(response['channels'][0]['channel']['id']).to eq 'fellowship-of-the-ring'
+    expect(response['channels'][0]['channel']['id']).to eq @channel.id
     expect(response['channels'][0]['members'].length).to eq 4
   end
 
@@ -505,41 +517,41 @@ describe StreamChat::Client do
   describe 'search' do
     it 'search for messages' do
       text = SecureRandom.uuid
-      @channel.send_message({ text: text }, 'legolas')
-      resp = @client.search({ members: { '$in' => ['legolas'] } }, text)
+      @channel.send_message({ text: text }, @fellowship_of_the_ring[2][:id])
+      resp = @client.search({ members: { '$in' => [@fellowship_of_the_ring[2][:id]] } }, text)
       p resp
       expect(resp['results'].length).to eq(1)
     end
 
     it 'search for messages with filter conditions' do
       text = SecureRandom.uuid
-      @channel.send_message({ text: text }, 'legolas')
-      resp = @client.search({ members: { '$in' => ['legolas'] } }, { text: { '$q': text } })
+      @channel.send_message({ text: text }, @legolas)
+      resp = @client.search({ members: { '$in' => [@legolas] } }, { text: { '$q': text } })
       expect(resp['results'].length).to eq(1)
     end
 
     it 'offset with sort should fail' do
       expect do
-        @client.search({ members: { '$in' => ['legolas'] } }, SecureRandom.uuid, sort: { created_at: -1 }, offset: 2)
+        @client.search({ members: { '$in' => [@legolas] } }, SecureRandom.uuid, sort: { created_at: -1 }, offset: 2)
       end.to raise_error(/cannot use offset with next or sort parameters/)
     end
 
     it 'offset with next should fail' do
       expect do
-        @client.search({ members: { '$in' => ['legolas'] } }, SecureRandom.uuid, offset: 2, next: SecureRandom.uuid)
+        @client.search({ members: { '$in' => [@legolas] } }, SecureRandom.uuid, offset: 2, next: SecureRandom.uuid)
       end.to raise_error(/cannot use offset with next or sort parameters/)
     end
 
     xit 'search for messages with sorting' do
       text = SecureRandom.uuid
       message_ids = ["0-#{text}", "1-#{text}"]
-      @channel.send_message({ id: message_ids[0], text: text }, 'legolas')
-      @channel.send_message({ id: message_ids[1], text: text }, 'legolas')
-      page1 = @client.search({ members: { '$in' => ['legolas'] } }, text, sort: [{ created_at: -1 }], limit: 1)
+      @channel.send_message({ id: message_ids[0], text: text }, @legolas)
+      @channel.send_message({ id: message_ids[1], text: text }, @legolas)
+      page1 = @client.search({ members: { '$in' => [@legolas] } }, text, sort: [{ created_at: -1 }], limit: 1)
       expect(page1['results'].length).to eq
       expect(page1['results'][0]['message']['id']).to eq(message_ids[1])
       expect(page1['next']).not_to be_empty
-      page2 = @client.search({ members: { '$in' => ['legolas'] } }, text, limit: 1, next: page1['next'])
+      page2 = @client.search({ members: { '$in' => [@legolas] } }, text, limit: 1, next: page1['next'])
       expect(page2['results'].length).to eq(1)
       expect(page2['results'][0]['message']['id']).to eq(message_ids[0])
       expect(page2['previous']).not_to be_empty
@@ -831,7 +843,7 @@ describe StreamChat::Client do
 
   it 'check push notification test are working' do
     message_id = SecureRandom.uuid
-    @channel.send_message({ id: message_id, text: SecureRandom.uuid }, 'legolas')
+    @channel.send_message({ id: message_id, text: SecureRandom.uuid }, @legolas)
     resp = @client.check_push({ message_id: message_id, skip_devices: true, user_id: @random_user[:id] })
     expect(resp['rendered_message']).not_to be_empty
   end
@@ -861,7 +873,7 @@ describe StreamChat::Client do
 
   it 'can translate a message' do
     message_id = SecureRandom.uuid
-    @channel.send_message({ id: message_id, text: SecureRandom.uuid }, 'legolas')
+    @channel.send_message({ id: message_id, text: SecureRandom.uuid }, @legolas)
     response = @client.translate_message(message_id, 'hu')
     expect(response['message']).not_to be_empty
   end
@@ -1113,15 +1125,14 @@ describe StreamChat::Client do
   end
 
   describe 'reminders' do
-    before do
-      @client = StreamChat::Client.from_env
-      @channel_id = SecureRandom.uuid
-      @channel = @client.channel('messaging', channel_id: @channel_id)
-      @channel.create('john')
+    before(:all) do
       @channel.update_partial({ config_overrides: { user_message_reminders: true } })
-      @message = @channel.send_message({ 'text' => 'Hello world' }, 'john')
+    end
+
+    before(:each) do
+      @user_id = @random_user[:id]
+      @message = @channel.send_message({ 'text' => 'Hello world' }, @user_id)
       @message_id = @message['message']['id']
-      @user_id = 'john'
     end
 
     describe 'create_reminder' do
