@@ -26,38 +26,50 @@ describe StreamChat::Client do
     @created_users = []
 
     @fellowship_of_the_ring = [
-      { id: 'frodo-baggins', name: 'Frodo Baggins', race: 'Hobbit', age: 50 },
-      { id: 'sam-gamgee', name: 'Samwise Gamgee', race: 'Hobbit', age: 38 },
-      { id: 'gandalf', name: 'Gandalf the Grey', race: 'Istari' },
-      { id: 'legolas', name: 'Legolas', race: 'Elf', age: 500 }
+      { id: SecureRandom.uuid, name: 'Frodo Baggins', race: 'Hobbit', age: 50 },
+      { id: SecureRandom.uuid, name: 'Samwise Gamgee', race: 'Hobbit', age: 38 },
+      { id: SecureRandom.uuid, name: 'Gandalf the Grey', race: 'Istari' },
+      { id: SecureRandom.uuid, name: 'Legolas', race: 'Elf', age: 500 }
     ]
+
+    @legolas = @fellowship_of_the_ring[3][:id]
+    @gandalf = @fellowship_of_the_ring[2][:id]
+    @frodo = @fellowship_of_the_ring[0][:id]
+    @sam = @fellowship_of_the_ring[1][:id]
+
     @client.upsert_users(@fellowship_of_the_ring)
-    @channel = @client.channel('team', channel_id: 'fellowship-of-the-ring',
+
+    # Create a new channel for chat max length for channel_id is 64 characters
+    channel_id = "fellowship-of-the-ring-chat-#{SecureRandom.alphanumeric(20)}"
+
+    @channel = @client.channel('team', channel_id: channel_id,
                                        data: { members: @fellowship_of_the_ring.map { |fellow| fellow[:id] } })
-    @channel.create('gandalf')
+    @channel.create(@gandalf)
   end
 
   before(:each) do
-    @random_users = [{ id: SecureRandom.uuid }, { id: SecureRandom.uuid }]
-    @random_user = { id: SecureRandom.uuid }
-    users_to_insert = [@random_users[0], @random_users[1], @random_user]
+    @random_users = [{ id: SecureRandom.uuid }, { id: SecureRandom.uuid }, { id: SecureRandom.uuid }]
+    @random_user = @random_users[0]
 
-    @created_users.push(*users_to_insert.map { |u| u[:id] })
+    @created_users.push(*@random_users.map { |u| u[:id] })
 
-    @client.upsert_users(users_to_insert)
+    @client.upsert_users(@random_users)
   end
 
   after(:all) do
+    @channel.delete
+
+    @users_to_delete = @created_users.dup + @fellowship_of_the_ring.map { |fellow| fellow[:id] }
     curr_idx = 0
     batch_size = 25
 
-    slice = @created_users.slice(0, batch_size)
+    slice = @users_to_delete.slice(0, batch_size)
 
     while !slice.nil? && !slice.empty?
       @client.delete_users(slice, user: StreamChat::HARD_DELETE, messages: StreamChat::HARD_DELETE)
 
       curr_idx += batch_size
-      slice = @created_users.slice(curr_idx, batch_size)
+      slice = @users_to_delete.slice(curr_idx, batch_size)
     end
   end
 
@@ -220,7 +232,7 @@ describe StreamChat::Client do
   end
 
   it 'exports a user' do
-    response = @client.export_user('gandalf')
+    response = @client.export_user(@gandalf)
     expect(response).to include 'user'
     expect(response['user']['name']).to eq('Gandalf the Grey')
   end
@@ -411,6 +423,28 @@ describe StreamChat::Client do
     @client.delete_message(msg_id, hard: true)
   end
 
+  it 'undeletes a message' do
+    msg_id = SecureRandom.uuid
+    user_id = @random_user[:id]
+    @channel.send_message({
+                            'id' => msg_id,
+                            'text' => 'to be deleted and restored'
+                          }, user_id)
+    # soft delete
+    @client.delete_message(msg_id)
+
+    # check it is deleted
+    response = @client.get_message(msg_id, show_deleted_message: true)
+    expect(response['message']['deleted_at']).not_to be_nil
+
+    # now undelete
+    @client.undelete_message(msg_id, user_id)
+
+    # now we should be able to get it without an error and without the flag
+    response = @client.get_message(msg_id)
+    expect(response['message']['deleted_at']).to be_nil
+  end
+
   it 'query banned users' do
     @client.ban_user(@random_user[:id], user_id: @random_users[0][:id], reason: 'rubytest')
     response = @client.query_banned_users({ 'reason' => 'rubytest' }, limit: 1)
@@ -424,9 +458,9 @@ describe StreamChat::Client do
   end
 
   it 'queries channels' do
-    response = @client.query_channels({ 'members' => { '$in' => ['legolas'] } }, sort: { 'id' => 1 })
+    response = @client.query_channels({ 'members' => { '$in' => [@legolas] } }, sort: { 'id' => 1 })
     expect(response['channels'].length).to eq 1
-    expect(response['channels'][0]['channel']['id']).to eq 'fellowship-of-the-ring'
+    expect(response['channels'][0]['channel']['id']).to eq @channel.id
     expect(response['channels'][0]['members'].length).to eq 4
   end
 
@@ -483,44 +517,113 @@ describe StreamChat::Client do
   describe 'search' do
     it 'search for messages' do
       text = SecureRandom.uuid
-      @channel.send_message({ text: text }, 'legolas')
-      resp = @client.search({ members: { '$in' => ['legolas'] } }, text)
+      @channel.send_message({ text: text }, @fellowship_of_the_ring[2][:id])
+      resp = @client.search({ members: { '$in' => [@fellowship_of_the_ring[2][:id]] } }, text)
       p resp
       expect(resp['results'].length).to eq(1)
     end
 
     it 'search for messages with filter conditions' do
       text = SecureRandom.uuid
-      @channel.send_message({ text: text }, 'legolas')
-      resp = @client.search({ members: { '$in' => ['legolas'] } }, { text: { '$q': text } })
+      @channel.send_message({ text: text }, @legolas)
+      resp = @client.search({ members: { '$in' => [@legolas] } }, { text: { '$q': text } })
       expect(resp['results'].length).to eq(1)
     end
 
     it 'offset with sort should fail' do
       expect do
-        @client.search({ members: { '$in' => ['legolas'] } }, SecureRandom.uuid, sort: { created_at: -1 }, offset: 2)
+        @client.search({ members: { '$in' => [@legolas] } }, SecureRandom.uuid, sort: { created_at: -1 }, offset: 2)
       end.to raise_error(/cannot use offset with next or sort parameters/)
     end
 
     it 'offset with next should fail' do
       expect do
-        @client.search({ members: { '$in' => ['legolas'] } }, SecureRandom.uuid, offset: 2, next: SecureRandom.uuid)
+        @client.search({ members: { '$in' => [@legolas] } }, SecureRandom.uuid, offset: 2, next: SecureRandom.uuid)
       end.to raise_error(/cannot use offset with next or sort parameters/)
     end
 
     xit 'search for messages with sorting' do
       text = SecureRandom.uuid
       message_ids = ["0-#{text}", "1-#{text}"]
-      @channel.send_message({ id: message_ids[0], text: text }, 'legolas')
-      @channel.send_message({ id: message_ids[1], text: text }, 'legolas')
-      page1 = @client.search({ members: { '$in' => ['legolas'] } }, text, sort: [{ created_at: -1 }], limit: 1)
+      @channel.send_message({ id: message_ids[0], text: text }, @legolas)
+      @channel.send_message({ id: message_ids[1], text: text }, @legolas)
+      page1 = @client.search({ members: { '$in' => [@legolas] } }, text, sort: [{ created_at: -1 }], limit: 1)
       expect(page1['results'].length).to eq
       expect(page1['results'][0]['message']['id']).to eq(message_ids[1])
       expect(page1['next']).not_to be_empty
-      page2 = @client.search({ members: { '$in' => ['legolas'] } }, text, limit: 1, next: page1['next'])
+      page2 = @client.search({ members: { '$in' => [@legolas] } }, text, limit: 1, next: page1['next'])
       expect(page2['results'].length).to eq(1)
       expect(page2['results'][0]['message']['id']).to eq(message_ids[0])
       expect(page2['previous']).not_to be_empty
+    end
+  end
+
+  describe 'unread count' do
+    before(:all) do
+      @user_id = SecureRandom.uuid
+      @client.update_users([{ id: @user_id }])
+      @channel = @client.channel('team', channel_id: SecureRandom.uuid)
+      @channel.create(@user_id)
+      @channel.add_members([@user_id])
+    end
+
+    before(:each) do
+      @client.mark_all_read(@user_id)
+    end
+
+    it 'gets unread count' do
+      resp = @client.unread_counts(@user_id)
+      expect(resp['total_unread_count']).to eq 0
+    end
+
+    it 'gets unread count if there are unread messages' do
+      @channel.send_message({ text: 'Hello world' }, @random_user[:id])
+      resp = @client.unread_counts(@user_id)
+      expect(resp['total_unread_count']).to eq 1
+    end
+
+    it 'gets unread count for a channel' do
+      @message = @channel.send_message({ text: 'Hello world' }, @random_user[:id])
+      resp = @client.unread_counts(@user_id)
+      expect(resp['total_unread_count']).to eq 1
+      expect(resp['channels'].length).to eq 1
+      expect(resp['channels'][0]['channel_id']).to eq @channel.cid
+      expect(resp['channels'][0]['unread_count']).to eq 1
+      expect(resp['channels'][0]['last_read']).not_to be_nil
+    end
+  end
+
+  describe 'unread counts batch' do
+    before(:all) do
+      @user_id1 = SecureRandom.uuid
+      @user_id2 = SecureRandom.uuid
+      @client.update_users([{ id: @user_id1 }, { id: @user_id2 }])
+      @channel = @client.channel('team', channel_id: SecureRandom.uuid)
+      @channel.create(@user_id1)
+      @channel.add_members([@user_id1, @user_id2])
+    end
+
+    before(:each) do
+      @client.mark_all_read(@user_id1)
+      @client.mark_all_read(@user_id2)
+    end
+
+    it 'gets unread counts for a batch of users' do
+      resp = @client.unread_counts_batch([@user_id1, @user_id2])
+      expect(resp['counts_by_user'].length).to eq 0
+    end
+
+    it 'gets unread counts for a batch of users with unread messages' do
+      @channel.send_message({ text: 'Hello world' }, @user_id1)
+      @channel.send_message({ text: 'Hello world' }, @user_id2)
+
+      resp = @client.unread_counts_batch([@user_id1, @user_id2])
+      expect(resp['counts_by_user'].length).to eq 2
+      expect(resp['counts_by_user'][@user_id1]['total_unread_count']).to eq 1
+      expect(resp['counts_by_user'][@user_id2]['total_unread_count']).to eq 1
+      expect(resp['counts_by_user'][@user_id1]['channels'].length).to eq 1
+      expect(resp['counts_by_user'][@user_id2]['channels'].length).to eq 1
+      expect(resp['counts_by_user'][@user_id1]['channels'][0]['channel_id']).to eq @channel.cid
     end
   end
 
@@ -740,7 +843,7 @@ describe StreamChat::Client do
 
   it 'check push notification test are working' do
     message_id = SecureRandom.uuid
-    @channel.send_message({ id: message_id, text: SecureRandom.uuid }, 'legolas')
+    @channel.send_message({ id: message_id, text: SecureRandom.uuid }, @legolas)
     resp = @client.check_push({ message_id: message_id, skip_devices: true, user_id: @random_user[:id] })
     expect(resp['rendered_message']).not_to be_empty
   end
@@ -770,7 +873,7 @@ describe StreamChat::Client do
 
   it 'can translate a message' do
     message_id = SecureRandom.uuid
-    @channel.send_message({ id: message_id, text: SecureRandom.uuid }, 'legolas')
+    @channel.send_message({ id: message_id, text: SecureRandom.uuid }, @legolas)
     response = @client.translate_message(message_id, 'hu')
     expect(response['message']).not_to be_empty
   end
@@ -1020,6 +1123,181 @@ describe StreamChat::Client do
 
       expect(response).to include 'threads'
       expect(response['threads'].length).to be >= 1
+    end
+  end
+
+  describe 'reminders' do
+    before(:all) do
+      @channel.update_partial({ config_overrides: { user_message_reminders: true } })
+    end
+
+    before(:each) do
+      @user_id = @random_user[:id]
+      @message = @channel.send_message({ 'text' => 'Hello world' }, @user_id)
+      @message_id = @message['message']['id']
+    end
+
+    describe 'create_reminder' do
+      it 'create reminder' do
+        remind_at = DateTime.now + 1
+        response = @client.create_reminder(@message_id, @user_id, remind_at)
+
+        expect(response).to include('reminder')
+        expect(response['reminder']).to include('message_id', 'user_id', 'remind_at')
+        expect(response['reminder']['message_id']).to eq(@message_id)
+        expect(response['reminder']['user_id']).to eq(@user_id)
+      end
+
+      it 'create reminder without remind_at' do
+        response = @client.create_reminder(@message_id, @user_id)
+
+        expect(response).to include('reminder')
+        expect(response['reminder']).to include('message_id', 'user_id')
+        expect(response['reminder']['message_id']).to eq(@message_id)
+        expect(response['reminder']['user_id']).to eq(@user_id)
+        expect(response['reminder']['remind_at']).to be_nil
+      end
+    end
+
+    describe 'update_reminder' do
+      before do
+        @client.create_reminder(@message_id, @user_id)
+      end
+
+      it 'update reminder' do
+        new_remind_at = DateTime.now + 2
+        response = @client.update_reminder(@message_id, @user_id, new_remind_at)
+
+        expect(response).to include('reminder')
+        expect(response['reminder']).to include('message_id', 'user_id', 'remind_at')
+        expect(response['reminder']['message_id']).to eq(@message_id)
+        expect(response['reminder']['user_id']).to eq(@user_id)
+        expect(DateTime.parse(response['reminder']['remind_at'])).to be_within(1).of(new_remind_at)
+      end
+    end
+
+    describe 'delete_reminder' do
+      before do
+        @client.create_reminder(@message_id, @user_id)
+      end
+
+      it 'delete reminder' do
+        response = @client.delete_reminder(@message_id, @user_id)
+        expect(response).to be_a(Hash)
+      end
+    end
+
+    describe 'query_reminders' do
+      before do
+        @reminder = @client.create_reminder(@message_id, @user_id)
+      end
+
+      it 'query reminders' do
+        # Query reminders for the user
+        response = @client.query_reminders(@user_id)
+
+        expect(response).to include('reminders')
+        expect(response['reminders']).to be_an(Array)
+        expect(response['reminders'].length).to be >= 1
+      end
+
+      it 'query reminders with channel filter' do
+        # Query reminders for the user in a specific channel
+        filter = { 'channel_cid' => @channel.cid }
+        response = @client.query_reminders(@user_id, filter)
+
+        expect(response).to include('reminders')
+        expect(response['reminders']).to be_an(Array)
+        expect(response['reminders'].length).to be >= 1
+
+        # All reminders should have a channel_cid
+        response['reminders'].each do |reminder|
+          expect(reminder).to include('channel_cid')
+        end
+      end
+
+      describe 'live locations' do
+    before(:all) do
+      @location_test_user = { id: SecureRandom.uuid }
+      @client.upsert_users([@location_test_user])
+      @location_channel = @client.channel('messaging', channel_id: SecureRandom.uuid)
+      @location_channel.create(@location_test_user[:id])
+      @location_message = @location_channel.send_message({ text: 'Location sharing message' }, @location_test_user[:id])
+    end
+
+    after(:all) do
+      @location_channel.delete
+      @client.delete_user(@location_test_user[:id])
+    end
+
+    it 'can create and update a location' do
+      location = {
+        created_by_device_id: SecureRandom.uuid,
+        latitude: 40.7128,
+        longitude: -74.0060,
+        end_at: (Time.now + 3600).iso8601
+      }
+
+      response = @channel.send_message(
+        { 
+          text: 'Location sharing message',
+          shared_location: location
+        }, @location_test_user[:id]
+      )
+
+      expect(response['message']).to include 'shared_location'
+      expect(response['message']['shared_location']['created_by_device_id']).to eq(location[:created_by_device_id])
+      expect(response['message']['shared_location']['latitude']).to eq(location[:latitude])
+      expect(response['message']['shared_location']['longitude']).to eq(location[:longitude])
+
+      new_latitude = location[:latitude] + 10
+      response = @client.update_location(
+        response['message']['user']['id'],
+        created_by_device_id: location[:created_by_device_id],
+        message_id: response['message']['id'],
+        latitude: new_latitude,
+        longitude: location[:longitude],
+        end_at: location[:end_at]
+      )
+
+      expect(response['created_by_device_id']).to eq(location[:created_by_device_id])
+      expect(response['latitude']).to eq(new_latitude)
+      expect(response['longitude']).to eq(location[:longitude])
+    end
+
+    it 'can get active live locations' do
+      device_id = SecureRandom.uuid
+      latitude = 40.7128
+      longitude = -74.0060
+      end_at = (Time.now + 3600).iso8601
+
+      response = @location_channel.send_message(
+        {
+          text: 'Location sharing message',
+          shared_location: {
+            created_by_device_id: device_id,
+            latitude: latitude,
+            longitude: longitude,
+            end_at: end_at
+          }
+        }, @location_test_user[:id]
+      )
+
+      response = @client.get_active_live_locations(@location_test_user[:id])
+      expect(response).to include 'active_live_locations'
+      expect(response['active_live_locations']).to be_an(Array)
+      expect(response['active_live_locations'].length).to be >= 1
+      location = response['active_live_locations'].find { |loc| loc['created_by_device_id'] == device_id }
+      expect(location).not_to be_nil
+      expect(location['latitude']).to eq(latitude)
+      expect(location['longitude']).to eq(longitude)
+      expect(DateTime.parse(location['end_at']).iso8601).to eq(end_at)
+    end
+
+    it 'should have active live locations on the channel' do
+      response = @channel.query
+      expect(response).to include 'active_live_locations'
+      expect(response['active_live_locations'].length).to be >= 1
     end
   end
 

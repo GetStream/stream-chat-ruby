@@ -7,6 +7,7 @@ require 'faraday/multipart'
 require 'faraday/net_http_persistent'
 require 'jwt'
 require 'time'
+require 'date'
 require 'sorbet-runtime'
 require 'stream-chat/channel'
 require 'stream-chat/errors'
@@ -359,6 +360,18 @@ module StreamChat
       post('channels/read', data: payload)
     end
 
+    # Get unread count for a user.
+    sig { params(user_id: String).returns(StreamChat::StreamResponse) }
+    def unread_counts(user_id)
+      get('/unread', params: { user_id: user_id })
+    end
+
+    # Get unread counts for a batch of users.
+    sig { params(user_ids: T::Array[String]).returns(StreamChat::StreamResponse) }
+    def unread_counts_batch(user_ids)
+      post('/unread_batch', data: { user_ids: user_ids })
+    end
+
     # Pins a message.
     #
     # Pinned messages allow users to highlight important messages, make announcements, or temporarily
@@ -416,6 +429,13 @@ module StreamChat
     sig { params(message_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def delete_message(message_id, **options)
       delete("messages/#{message_id}", params: options)
+    end
+
+    # Un-deletes a message.
+    sig { params(message_id: String, undeleted_by: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    def undelete_message(message_id, undeleted_by, **options)
+      payload = { undeleted_by: undeleted_by }.merge(options)
+      post("messages/#{message_id}/undelete", data: payload)
     end
 
     # Queries banned users.
@@ -964,6 +984,55 @@ module StreamChat
                                        })
 
       post('threads', data: params)
+    end
+
+    # Creates a reminder for a message.
+    # @param message_id [String] The ID of the message to create a reminder for
+    # @param user_id [String] The ID of the user creating the reminder
+    # @param remind_at [DateTime, nil] When to remind the user (optional)
+    # @return [StreamChat::StreamResponse] API response
+    sig { params(message_id: String, user_id: String, remind_at: T.nilable(DateTime)).returns(StreamChat::StreamResponse) }
+    def create_reminder(message_id, user_id, remind_at = nil)
+      data = { user_id: user_id }
+      data[:remind_at] = remind_at.rfc3339 if remind_at.instance_of?(DateTime)
+      post("messages/#{message_id}/reminders", data: data)
+    end
+
+    # Updates a reminder for a message.
+    # @param message_id [String] The ID of the message with the reminder
+    # @param user_id [String] The ID of the user who owns the reminder
+    # @param remind_at [DateTime, nil] When to remind the user (optional)
+    # @return [StreamChat::StreamResponse] API response
+    sig { params(message_id: String, user_id: String, remind_at: T.nilable(DateTime)).returns(StreamChat::StreamResponse) }
+    def update_reminder(message_id, user_id, remind_at = nil)
+      data = { user_id: user_id }
+      data[:remind_at] = remind_at.rfc3339 if remind_at
+      patch("messages/#{message_id}/reminders", data: data)
+    end
+
+    # Deletes a reminder for a message.
+    # @param message_id [String] The ID of the message with the reminder
+    # @param user_id [String] The ID of the user who owns the reminder
+    # @return [StreamChat::StreamResponse] API response
+    sig { params(message_id: String, user_id: String).returns(StreamChat::StreamResponse) }
+    def delete_reminder(message_id, user_id)
+      delete("messages/#{message_id}/reminders", params: { user_id: user_id })
+    end
+
+    # Queries reminders based on filter conditions.
+    # @param user_id [String] The ID of the user whose reminders to query
+    # @param filter_conditions [Hash] Conditions to filter reminders
+    # @param sort [Array<Hash>, nil] Sort parameters (default: [{ field: 'remind_at', direction: 1 }])
+    # @param options [Hash] Additional query options like limit, offset
+    # @return [StreamChat::StreamResponse] API response with reminders
+    sig { params(user_id: String, filter_conditions: T::Hash[T.untyped, T.untyped], sort: T.nilable(T::Array[T::Hash[T.untyped, T.untyped]]), options: T.untyped).returns(StreamChat::StreamResponse) }
+    def query_reminders(user_id, filter_conditions = {}, sort: nil, **options)
+      params = options.merge({
+                               filter_conditions: filter_conditions,
+                               sort: sort || [{ field: 'remind_at', direction: 1 }],
+                               user_id: user_id
+                             })
+      post('reminders/query', data: params)
     end
 
     private

@@ -26,38 +26,50 @@ describe StreamChat::Moderation do
     @created_users = []
 
     @fellowship_of_the_ring = [
-      { id: 'frodo-baggins', name: 'Frodo Baggins', race: 'Hobbit', age: 50 },
-      { id: 'sam-gamgee', name: 'Samwise Gamgee', race: 'Hobbit', age: 38 },
-      { id: 'gandalf', name: 'Gandalf the Grey', race: 'Istari' },
-      { id: 'legolas', name: 'Legolas', race: 'Elf', age: 500 }
+      { id: SecureRandom.uuid, name: 'Frodo Baggins', race: 'Hobbit', age: 50 },
+      { id: SecureRandom.uuid, name: 'Samwise Gamgee', race: 'Hobbit', age: 38 },
+      { id: SecureRandom.uuid, name: 'Gandalf the Grey', race: 'Istari' },
+      { id: SecureRandom.uuid, name: 'Legolas', race: 'Elf', age: 500 }
     ]
+    @gandalf = @fellowship_of_the_ring[2]
+    @frodo = @fellowship_of_the_ring[0]
+    @sam = @fellowship_of_the_ring[1]
+    @legolas = @fellowship_of_the_ring[3]
+
     @client.upsert_users(@fellowship_of_the_ring)
-    @channel = @client.channel('team', channel_id: 'fellowship-of-the-ring',
+
+    # Create a new channel for moderation
+    channel_id = "fellowship-of-the-ring-moderation-#{SecureRandom.alphanumeric(20)}"
+
+    @channel = @client.channel('team', channel_id: channel_id,
                                        data: { members: @fellowship_of_the_ring.map { |fellow| fellow[:id] } })
-    @channel.create('gandalf')
+    @channel.create(@fellowship_of_the_ring[2][:id])
   end
 
   before(:each) do
-    @random_users = [{ id: SecureRandom.uuid }, { id: SecureRandom.uuid }]
-    @random_user = { id: SecureRandom.uuid }
-    users_to_insert = [@random_users[0], @random_users[1], @random_user]
+    @random_users = [{ id: SecureRandom.uuid }, { id: SecureRandom.uuid }, { id: SecureRandom.uuid }]
+    @random_user = @random_users[0]
 
-    @created_users.push(*users_to_insert.map { |u| u[:id] })
+    @created_users.push(*@random_users.map { |u| u[:id] })
 
-    @client.upsert_users(users_to_insert)
+    @client.upsert_users(@random_users)
   end
 
   after(:all) do
+    @channel.delete
+
     curr_idx = 0
     batch_size = 25
 
-    slice = @created_users.slice(0, batch_size)
+    @users_to_delete = @created_users.dup + @fellowship_of_the_ring.map { |fellow| fellow[:id] }
+
+    slice = @users_to_delete.slice(0, batch_size)
 
     while !slice.nil? && !slice.empty?
       @client.delete_users(slice, user: StreamChat::HARD_DELETE, messages: StreamChat::HARD_DELETE)
 
       curr_idx += batch_size
-      slice = @created_users.slice(curr_idx, batch_size)
+      slice = @users_to_delete.slice(curr_idx, batch_size)
     end
   end
 
