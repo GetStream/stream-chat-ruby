@@ -1215,94 +1215,12 @@ describe StreamChat::Client do
           expect(reminder).to include('channel_cid')
         end
       end
-
-      describe 'live locations' do
-    before(:all) do
-      @location_test_user = { id: SecureRandom.uuid }
-      @client.upsert_users([@location_test_user])
-      @location_channel = @client.channel('messaging', channel_id: SecureRandom.uuid)
-      @location_channel.create(@location_test_user[:id])
-      @location_message = @location_channel.send_message({ text: 'Location sharing message' }, @location_test_user[:id])
-    end
-
-    after(:all) do
-      @location_channel.delete
-      @client.delete_user(@location_test_user[:id])
-    end
-
-    it 'can create and update a location' do
-      location = {
-        created_by_device_id: SecureRandom.uuid,
-        latitude: 40.7128,
-        longitude: -74.0060,
-        end_at: (Time.now + 3600).iso8601
-      }
-
-      response = @channel.send_message(
-        { 
-          text: 'Location sharing message',
-          shared_location: location
-        }, @location_test_user[:id]
-      )
-
-      expect(response['message']).to include 'shared_location'
-      expect(response['message']['shared_location']['created_by_device_id']).to eq(location[:created_by_device_id])
-      expect(response['message']['shared_location']['latitude']).to eq(location[:latitude])
-      expect(response['message']['shared_location']['longitude']).to eq(location[:longitude])
-
-      new_latitude = location[:latitude] + 10
-      response = @client.update_location(
-        response['message']['user']['id'],
-        created_by_device_id: location[:created_by_device_id],
-        message_id: response['message']['id'],
-        latitude: new_latitude,
-        longitude: location[:longitude],
-        end_at: location[:end_at]
-      )
-
-      expect(response['created_by_device_id']).to eq(location[:created_by_device_id])
-      expect(response['latitude']).to eq(new_latitude)
-      expect(response['longitude']).to eq(location[:longitude])
-    end
-
-    it 'can get active live locations' do
-      device_id = SecureRandom.uuid
-      latitude = 40.7128
-      longitude = -74.0060
-      end_at = (Time.now + 3600).iso8601
-
-      response = @location_channel.send_message(
-        {
-          text: 'Location sharing message',
-          shared_location: {
-            created_by_device_id: device_id,
-            latitude: latitude,
-            longitude: longitude,
-            end_at: end_at
-          }
-        }, @location_test_user[:id]
-      )
-
-      response = @client.get_active_live_locations(@location_test_user[:id])
-      expect(response).to include 'active_live_locations'
-      expect(response['active_live_locations']).to be_an(Array)
-      expect(response['active_live_locations'].length).to be >= 1
-      location = response['active_live_locations'].find { |loc| loc['created_by_device_id'] == device_id }
-      expect(location).not_to be_nil
-      expect(location['latitude']).to eq(latitude)
-      expect(location['longitude']).to eq(longitude)
-      expect(DateTime.parse(location['end_at']).iso8601).to eq(end_at)
-    end
-
-    it 'should have active live locations on the channel' do
-      response = @channel.query
-      expect(response).to include 'active_live_locations'
-      expect(response['active_live_locations'].length).to be >= 1
-    end
+    end      
   end
 
   describe 'live locations' do
     before(:all) do
+      @channel.update_partial({ config_overrides: { shared_locations: true } })
       @location_test_user = { id: SecureRandom.uuid }
       @client.upsert_users([@location_test_user])
       @location_channel = @client.channel('messaging', channel_id: SecureRandom.uuid)
