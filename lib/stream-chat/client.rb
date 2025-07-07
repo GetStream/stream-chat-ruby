@@ -832,7 +832,7 @@ module StreamChat
     # @return [StreamChat::StreamResponse]
     sig { params(user_id: String).returns(StreamChat::StreamResponse) }
     def get_active_live_locations(user_id)
-      get('users/locations', params: { user_id: user_id })
+      get('users/live_locations', params: { user_id: user_id })
     end
 
     # Update live location
@@ -851,7 +851,7 @@ module StreamChat
         message_id: message_id
       }
       data.merge!(options) if options
-      put('users/location', data: data, params: { user_id: user_id })
+      put('users/live_locations', data: data, params: { user_id: user_id })
     end
 
     # Gets a comamnd.

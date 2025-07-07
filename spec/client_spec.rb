@@ -1220,11 +1220,11 @@ describe StreamChat::Client do
 
   describe 'live locations' do
     before(:all) do
-      @channel.update_partial({ config_overrides: { shared_locations: true } })
       @location_test_user = { id: SecureRandom.uuid }
       @client.upsert_users([@location_test_user])
       @location_channel = @client.channel('messaging', channel_id: SecureRandom.uuid)
       @location_channel.create(@location_test_user[:id])
+      @location_channel.update_partial({ config_overrides: { shared_locations: true } })
       @location_message = @location_channel.send_message({ text: 'Location sharing message' }, @location_test_user[:id])
     end
 
