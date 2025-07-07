@@ -827,6 +827,33 @@ module StreamChat
       post('drafts/query', data: data)
     end
 
+    # Get active_live_locations for the current user
+    #
+    # @return [StreamChat::StreamResponse]
+    sig { params(user_id: String).returns(StreamChat::StreamResponse) }
+    def get_active_live_locations(user_id)
+      get('users/live_locations', params: { user_id: user_id })
+    end
+
+    # Update live location
+    #
+    # @param [String] user_id The ID of the user to update the location
+    # @param [String] created_by_device_id The device ID that created the location
+    # @param [String] message_id The message ID associated with the location
+    # @param [Float] latitude Optional latitude coordinate
+    # @param [Float] longitude Optional longitude coordinate
+    # @param [String] end_at Optional end time for the location sharing
+    # @return [StreamChat::StreamResponse]
+    sig { params(user_id: String, created_by_device_id: String, message_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    def update_location(user_id, created_by_device_id:, message_id:, **options)
+      data = {
+        created_by_device_id: created_by_device_id,
+        message_id: message_id
+      }
+      data.merge!(options) if options
+      put('users/live_locations', data: data, params: { user_id: user_id })
+    end
+
     # Gets a comamnd.
     sig { params(name: String).returns(StreamChat::StreamResponse) }
     def get_command(name)
