@@ -1241,7 +1241,7 @@ describe StreamChat::Client do
         end_at: (Time.now + 3600).iso8601
       }
 
-      response = @channel.send_message(
+      response = @location_channel.send_message(
         { 
           text: 'Location sharing message',
           shared_location: location
@@ -1298,7 +1298,7 @@ describe StreamChat::Client do
     end
 
     it 'should have active live locations on the channel' do
-      response = @channel.query
+      response = @location_channel.query
       expect(response).to include 'active_live_locations'
       expect(response['active_live_locations'].length).to be >= 1
     end
