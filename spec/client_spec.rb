@@ -1215,7 +1215,7 @@ describe StreamChat::Client do
           expect(reminder).to include('channel_cid')
         end
       end
-    end      
+    end
   end
 
   describe 'live locations' do
@@ -1242,7 +1242,7 @@ describe StreamChat::Client do
       }
 
       response = @location_channel.send_message(
-        { 
+        {
           text: 'Location sharing message',
           shared_location: location
         }, @location_test_user[:id]
@@ -1274,7 +1274,7 @@ describe StreamChat::Client do
       longitude = -74.0060
       end_at = (Time.now + 3600).iso8601
 
-      response = @location_channel.send_message(
+      @location_channel.send_message(
         {
           text: 'Location sharing message',
           shared_location: {
