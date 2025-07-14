@@ -1303,4 +1303,32 @@ describe StreamChat::Client do
       expect(response['active_live_locations'].length).to be >= 1
     end
   end
+
+  describe 'backwards compatibility' do
+    it 'message_re_engagement_hooks_interval is included in the app settings' do
+      response = @client.get_app_settings
+      expect(response['app']['message_re_engagement_hooks_interval']).not_to be_nil
+      expect(response['app']['reminders_interval']).not_to be_nil
+    end
+
+    it 'message_re_engagement_hooks_interval can be changed server-side for the app' do
+      @client.update_app_settings(message_re_engagement_hooks_interval: 68)
+      response = @client.get_app_settings
+      expect(response['app']['message_re_engagement_hooks_interval']).to eq(68)
+      expect(response['app']['reminders_interval']).to eq(68)
+    end
+
+    it 'can be enabled for channel type' do
+      response = @client.update_channel_type('messaging', message_re_engagement_hooks: true)
+      p response
+      expect(response['message_re_engagement_hooks']).to eq(true)
+      expect(response['reminders']).to eq(true)
+    end
+
+    it 'can be disabled for a channel type' do
+      response = @client.update_channel_type('messaging', message_re_engagement_hooks: false)
+      expect(response['message_re_engagement_hooks']).to eq(false)
+      expect(response['reminders']).to eq(false)
+    end
+  end
 end
