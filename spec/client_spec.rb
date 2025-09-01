@@ -423,6 +423,68 @@ describe StreamChat::Client do
     @client.delete_message(msg_id, hard: true)
   end
 
+  it 'hard deletes a message using hard_delete_message method' do
+    msg_id = SecureRandom.uuid
+    @channel.send_message({
+                            'id' => msg_id,
+                            'text' => 'hello world'
+                          }, @random_user[:id])
+    @client.hard_delete_message(msg_id)
+  end
+
+  it 'deletes a message for me using delete_message_for_me method' do
+    msg_id = SecureRandom.uuid
+    user_id = @random_user[:id]
+    @channel.send_message({
+                            'id' => msg_id,
+                            'text' => 'test message to delete for me'
+                          }, user_id)
+    @client.delete_message_for_me(msg_id, user_id)
+  end
+
+  it 'deletes a message with options using delete_message_with_options method' do
+    msg_id = SecureRandom.uuid
+    user_id = @random_user[:id]
+    @channel.send_message({
+                            'id' => msg_id,
+                            'text' => 'test message to delete with options'
+                          }, user_id)
+    @client.delete_message_with_options(msg_id, delete_for_me: true, user_id: user_id)
+  end
+
+  it 'hard deletes a message with options using delete_message_with_options method' do
+    msg_id = SecureRandom.uuid
+    @channel.send_message({
+                            'id' => msg_id,
+                            'text' => 'test message to hard delete with options'
+                          }, @random_user[:id])
+    @client.delete_message_with_options(msg_id, hard: true)
+  end
+
+  it 'raises error when delete_for_me is true but user_id is empty' do
+    msg_id = SecureRandom.uuid
+    @channel.send_message({
+                            'id' => msg_id,
+                            'text' => 'test message'
+                          }, @random_user[:id])
+    
+    expect {
+      @client.delete_message_for_me(msg_id, '')
+    }.to raise_error(ArgumentError, 'user_id must not be empty for delete_for_me functionality')
+  end
+
+  it 'raises error when delete_for_me is true but user_id is nil in delete_message_with_options' do
+    msg_id = SecureRandom.uuid
+    @channel.send_message({
+                            'id' => msg_id,
+                            'text' => 'test message'
+                          }, @random_user[:id])
+    
+    expect {
+      @client.delete_message_with_options(msg_id, delete_for_me: true, user_id: nil)
+    }.to raise_error(ArgumentError, 'user_id must not be empty for delete_for_me functionality')
+  end
+
   it 'undeletes a message' do
     msg_id = SecureRandom.uuid
     user_id = @random_user[:id]
