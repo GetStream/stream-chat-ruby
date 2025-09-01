@@ -431,6 +431,36 @@ module StreamChat
       delete("messages/#{message_id}", params: options)
     end
 
+    # Deletes a message with hard delete option.
+    sig { params(message_id: String).returns(StreamChat::StreamResponse) }
+    def hard_delete_message(message_id)
+      delete_message(message_id, hard: true)
+    end
+
+    # Deletes a message with delete_for_me option.
+    sig { params(message_id: String, user_id: String).returns(StreamChat::StreamResponse) }
+    def delete_message_for_me(message_id, user_id)
+      raise ArgumentError, 'user_id must not be empty for delete_for_me functionality' if user_id.to_s.empty?
+
+      delete_message(message_id, delete_for_me: true, deleted_by: user_id)
+    end
+
+    # Deletes a message with advanced options.
+    sig { params(message_id: String, hard: T.nilable(T::Boolean), delete_for_me: T.nilable(T::Boolean), user_id: T.nilable(String)).returns(StreamChat::StreamResponse) }
+    def delete_message_with_options(message_id, hard: nil, delete_for_me: nil, user_id: nil)
+      options = {}
+      options[:hard] = true if hard
+
+      if delete_for_me
+        raise ArgumentError, 'user_id must not be empty for delete_for_me functionality' if user_id.to_s.empty?
+
+        options[:delete_for_me] = true
+        options[:deleted_by] = user_id
+      end
+
+      delete_message(message_id, **options)
+    end
+
     # Un-deletes a message.
     sig { params(message_id: String, undeleted_by: String, options: T.untyped).returns(StreamChat::StreamResponse) }
     def undelete_message(message_id, undeleted_by, **options)
@@ -1073,7 +1103,7 @@ module StreamChat
       headers['Authorization'] = @auth_token
       headers['stream-auth-type'] = 'jwt'
       params = {} if params.nil?
-      params = (get_default_params.merge(params).sort_by { |k, _v| k.to_s }).to_h
+      params = get_default_params.merge(params).sort_by { |k, _v| k.to_s }.to_h
       url = "#{relative_url}?#{URI.encode_www_form(params)}"
 
       body = data.to_json if %w[patch post put].include? method.to_s
