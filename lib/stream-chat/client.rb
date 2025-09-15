@@ -1065,6 +1065,17 @@ module StreamChat
       post('reminders/query', data: params)
     end
 
+    # Send the mark delivered event for this user, only works if the `delivery_receipts` setting is enabled
+    #
+    # @param [StringKeyHash, nil] data The delivery confirmation data
+    # @return [StreamChat::StreamResponse] API response
+    sig { params(data: T.nilable(StringKeyHash)).returns(StreamChat::StreamResponse) }
+    def mark_channels_delivered(data = nil)
+      # Note: In the Ruby SDK, we don't have access to user privacy settings from the client
+      # The server will handle the delivery_receipts check and return appropriate response
+      post('channels/delivered', data: data || {})
+    end
+
     private
 
     sig { returns(T::Hash[String, String]) }
