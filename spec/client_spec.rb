@@ -1436,36 +1436,26 @@ describe StreamChat::Client do
     end
   end
 
-  describe '#mark_channels_delivered' do
-    it 'should mark channels as delivered' do
+  describe '#mark_delivered' do
+    it 'should mark messages as delivered' do
       # Create some test messages first
-      message1 = @channel.send_message({ text: 'Test message 1' }, @frodo)
-      message2 = @channel.send_message({ text: 'Test message 2' }, @sam)
+      message = @channel.send_message({ text: 'Test message 1' }, @frodo)
 
       # Create delivery confirmation data
       delivery_data = {
         latest_delivered_messages: [
           {
             cid: @channel.cid,
-            id: message1['message']['id']
-          },
-          {
-            cid: @channel.cid,
-            id: message2['message']['id']
+            id: message['message']['id']
           }
         ],
         user_id: @gandalf
       }
 
       # Call the method
-      response = @client.mark_channels_delivered(delivery_data)
+      response = @client.mark_delivered(delivery_data, user_id: @gandalf)
 
       # The response should be successful (status 200)
-      expect(response.status_code).to eq(200)
-    end
-
-    it 'should handle empty data' do
-      response = @client.mark_channels_delivered
       expect(response.status_code).to eq(200)
     end
   end
