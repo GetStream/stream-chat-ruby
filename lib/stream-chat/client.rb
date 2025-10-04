@@ -1069,7 +1069,7 @@ module StreamChat
     #
     # @param [StringKeyHash, nil] data The delivery confirmation data
     # @return [StreamChat::StreamResponse] API response
-    sig { params(data: T.nilable(StringKeyHash)).returns(StreamChat::StreamResponse) }
+    sig { params(data: T.nilable(StringKeyHash), user_id: T.nilable(String)).returns(StreamChat::StreamResponse) }
     def mark_delivered(data = nil, user_id: nil)
       post('channels/delivered', data: data || {}, params: { user_id: user_id })
     end

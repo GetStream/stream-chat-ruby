@@ -354,6 +354,9 @@ describe StreamChat::Channel do
   end
 
   it 'can send message with restricted visibility' do
+    # Add users as members before testing restricted visibility
+    @channel.add_members([@random_users[0][:id], @random_users[1][:id]])
+
     # Send a message that's only visible to specific users
     msg = @channel.send_message(
       {
@@ -372,6 +375,9 @@ describe StreamChat::Channel do
   end
 
   it 'can update message with restricted visibility' do
+    # Add users as members before testing restricted visibility
+    @channel.add_members([@random_users[0][:id], @random_users[1][:id]])
+
     # First send a regular message
     msg = @channel.send_message(
       {
@@ -399,6 +405,9 @@ describe StreamChat::Channel do
   end
 
   it 'can update message partially with restricted visibility' do
+    # Add users as members before testing restricted visibility
+    @channel.add_members([@random_users[0][:id], @random_users[1][:id]])
+
     # First send a regular message
     msg = @channel.send_message(
       {
