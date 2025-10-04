@@ -1455,8 +1455,8 @@ describe StreamChat::Client do
       # Call the method
       response = @client.mark_delivered(delivery_data, user_id: @gandalf)
 
-      # The response should be successful (status 200)
-      expect(response.status_code).to eq(200)
+      # The response should be successful (status 201)
+      expect(response.status_code).to eq(201)
     end
   end
 end
