@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.20.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.19.0...v3.20.0) (2025-10-06)
+
+
+### Features
+
+* Added `Delete for me` support on behalf of a user ([#178](https://github.com/GetStream/stream-chat-ruby/issues/178)) ([770a441](https://github.com/GetStream/stream-chat-ruby/commit/770a441ff6243ab6d10fde7daa2b75b4137c4db0))
+
+
+### Other
+
+* **release:** 3.19.1 ([#179](https://github.com/GetStream/stream-chat-ruby/issues/179)) ([bae463b](https://github.com/GetStream/stream-chat-ruby/commit/bae463b298ffd047624dfc6a35c14475fd97d475))
+
 ### [3.19.1](https://github.com/GetStream/stream-chat-ruby/compare/v3.19.0...v3.19.1) (2025-09-01)
 
 
