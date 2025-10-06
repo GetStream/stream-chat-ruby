@@ -1065,6 +1065,15 @@ module StreamChat
       post('reminders/query', data: params)
     end
 
+    # Send the mark delivered event for this user, only works if the `delivery_receipts` setting is enabled
+    #
+    # @param [StringKeyHash, nil] data The delivery confirmation data
+    # @return [StreamChat::StreamResponse] API response
+    sig { params(data: T.nilable(StringKeyHash), user_id: T.nilable(String)).returns(StreamChat::StreamResponse) }
+    def mark_delivered(data = nil, user_id: nil)
+      post('channels/delivered', data: data || {}, params: { user_id: user_id })
+    end
+
     private
 
     sig { returns(T::Hash[String, String]) }

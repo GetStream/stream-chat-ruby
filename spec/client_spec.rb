@@ -1435,4 +1435,28 @@ describe StreamChat::Client do
       expect(response['active_live_locations'].length).to be >= 1
     end
   end
+
+  describe '#mark_delivered' do
+    it 'should mark messages as delivered' do
+      # Create some test messages first
+      message = @channel.send_message({ text: 'Test message 1' }, @frodo)
+
+      # Create delivery confirmation data
+      delivery_data = {
+        latest_delivered_messages: [
+          {
+            cid: @channel.cid,
+            id: message['message']['id']
+          }
+        ],
+        user_id: @gandalf
+      }
+
+      # Call the method
+      response = @client.mark_delivered(delivery_data, user_id: @gandalf)
+
+      # The response should be successful (status 201)
+      expect(response.status_code).to eq(201)
+    end
+  end
 end
