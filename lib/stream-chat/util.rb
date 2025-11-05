@@ -14,4 +14,13 @@ module StreamChat
     end
     sort_fields
   end
+
+  # Normalizes a timestamp to RFC 3339 / ISO 8601 string format.
+  def self.normalize_timestamp(t)
+    case t
+    when DateTime then t.rfc3339
+    when Time then t.iso8601
+    else t
+    end
+  end
 end
