@@ -234,7 +234,19 @@ module StreamChat
     # Adds members to the channel.
     sig { params(user_ids: T::Array[String], options: T.untyped).returns(StreamChat::StreamResponse) }
     def add_members(user_ids, **options)
-      payload = options.merge({ add_members: user_ids })
+      payload = options.dup
+      
+      # Convert hide_history_before timestamp to RFC 3339 format if it's a DateTime or Time object
+      if payload.key?(:hide_history_before)
+        hide_history_before = payload[:hide_history_before]
+        if hide_history_before.is_a?(DateTime)
+          payload[:hide_history_before] = hide_history_before.rfc3339
+        elsif hide_history_before.is_a?(Time)
+          payload[:hide_history_before] = hide_history_before.iso8601
+        end
+      end
+      
+      payload = payload.merge({ add_members: user_ids })
       update(nil, nil, **payload)
     end
 
