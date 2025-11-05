@@ -235,7 +235,7 @@ module StreamChat
     sig { params(user_ids: T::Array[String], options: T.untyped).returns(StreamChat::StreamResponse) }
     def add_members(user_ids, **options)
       payload = options.dup
-      
+
       # Convert hide_history_before timestamp to RFC 3339 format if it's a DateTime or Time object
       if payload.key?(:hide_history_before)
         hide_history_before = payload[:hide_history_before]
@@ -245,7 +245,7 @@ module StreamChat
           payload[:hide_history_before] = hide_history_before.iso8601
         end
       end
-      
+
       payload = payload.merge({ add_members: user_ids })
       update(nil, nil, **payload)
     end
