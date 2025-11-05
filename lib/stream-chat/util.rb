@@ -16,7 +16,7 @@ module StreamChat
   end
 
   # Normalizes a timestamp to RFC 3339 / ISO 8601 string format.
-  sig { params(timestamp: T.any(DateTime, Time, String)).returns(String)} 
+  sig { params(timestamp: T.any(DateTime, Time, String)).returns(String) }
   def self.normalize_timestamp(timestamp)
     case timestamp
     when DateTime then timestamp.rfc3339
