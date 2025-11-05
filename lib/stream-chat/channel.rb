@@ -234,7 +234,9 @@ module StreamChat
     # Adds members to the channel.
     sig { params(user_ids: T::Array[String], options: T.untyped).returns(StreamChat::StreamResponse) }
     def add_members(user_ids, **options)
-      payload = options.merge({ add_members: user_ids })
+      payload = options.dup
+      payload[:hide_history_before] = StreamChat.normalize_timestamp(payload[:hide_history_before]) if payload[:hide_history_before]
+      payload = payload.merge({ add_members: user_ids })
       update(nil, nil, **payload)
     end
 
