@@ -145,7 +145,8 @@ describe StreamChat::Channel do
     response = @channel.remove_members([@random_users[0][:id], @random_users[1][:id]])
     expect(response['members'].length).to eq 0
 
-    @channel.add_members([@random_users[0][:id]])
+    history_cutoff = DateTime.now - 1.day
+    @channel.add_members([@random_users[0][:id]], hide_history_before: history_cutoff)
     response = @channel.add_members([@random_users[1][:id]], hide_history: true)
     expect(response['members'].length).to eq 2
     response['members']&.each do |m|
