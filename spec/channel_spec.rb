@@ -504,7 +504,7 @@ describe StreamChat::Channel do
   end
 
   it 'can add and remove filter tags' do
-    tags = ['urgent', 'bug']
+    tags = %w[urgent bug]
     # Add tags
     response = @channel.add_filter_tags(tags)
     expect(response).to include 'channel'
