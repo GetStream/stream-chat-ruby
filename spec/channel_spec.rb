@@ -502,4 +502,20 @@ describe StreamChat::Channel do
     # Verify it's deleted
     expect { @channel.get_draft(@random_user[:id], parent_id: parent_id) }.to raise_error(StreamChat::StreamAPIException)
   end
+
+  it 'can add and remove filter tags' do
+    tags = %w[urgent bug]
+    # Add tags
+    response = @channel.add_filter_tags(tags)
+    expect(response).to include 'channel'
+
+    # Ensure tags are set
+    response = @channel.query
+    expect(response['channel']['filter_tags']).to match_array(tags)
+
+    # Remove one tag
+    @channel.remove_filter_tags(['urgent'])
+    response = @channel.query
+    expect(response['channel']['filter_tags']).to match_array(['bug'])
+  end
 end

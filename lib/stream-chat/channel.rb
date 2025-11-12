@@ -267,6 +267,18 @@ module StreamChat
       update(nil, nil, add_moderators: user_ids)
     end
 
+    # Adds filter tags to the channel.
+    sig { params(tags: T::Array[String]).returns(StreamChat::StreamResponse) }
+    def add_filter_tags(tags)
+      update(nil, nil, add_filter_tags: tags)
+    end
+
+    # Removes filter tags from the channel.
+    sig { params(tags: T::Array[String]).returns(StreamChat::StreamResponse) }
+    def remove_filter_tags(tags)
+      update(nil, nil, remove_filter_tags: tags)
+    end
+
     # Removes members from the channel.
     sig { params(user_ids: T::Array[String]).returns(StreamChat::StreamResponse) }
     def remove_members(user_ids)
