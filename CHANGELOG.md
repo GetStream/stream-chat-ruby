@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.21.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.20.0...v3.21.0) (2025-11-12)
+
+
+### Features
+
+* add filter tags support for channels ([#183](https://github.com/GetStream/stream-chat-ruby/issues/183)) ([e4844de](https://github.com/GetStream/stream-chat-ruby/commit/e4844de6325ac89a130f7eafbd1a86eaa57c893e))
+* add hide_history_before option for adding members ([#182](https://github.com/GetStream/stream-chat-ruby/issues/182)) ([ccc2f94](https://github.com/GetStream/stream-chat-ruby/commit/ccc2f94f29af19f1d1127ff0add61ba3d02de37a))
+
 ## [3.20.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.19.0...v3.20.0) (2025-10-06)
 
 
