@@ -1342,9 +1342,25 @@ describe StreamChat::Client do
         expect(response['reminders']).to be_an(Array)
         expect(response['reminders'].length).to be >= 1
 
-        # All reminders should have a channel_cid
+        # All reminders should have a channel_cid that matches the filter
         response['reminders'].each do |reminder|
           expect(reminder).to include('channel_cid')
+          expect(reminder['channel_cid']).to eq(@channel.cid)
+        end
+      end
+
+      it 'query reminders with message_id filter' do
+        # Query reminders for a specific message
+        filter = { 'message_id' => @message_id }
+        response = @client.query_reminders(@user_id, filter)
+
+        expect(response).to include('reminders')
+        expect(response['reminders']).to be_an(Array)
+        expect(response['reminders'].length).to be >= 1
+
+        # All reminders should have the filtered message_id
+        response['reminders'].each do |reminder|
+          expect(reminder['message_id']).to eq(@message_id)
         end
       end
     end

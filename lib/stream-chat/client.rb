@@ -1058,7 +1058,7 @@ module StreamChat
     sig { params(user_id: String, filter_conditions: T::Hash[T.untyped, T.untyped], sort: T.nilable(T::Array[T::Hash[T.untyped, T.untyped]]), options: T.untyped).returns(StreamChat::StreamResponse) }
     def query_reminders(user_id, filter_conditions = {}, sort: nil, **options)
       params = options.merge({
-                               filter_conditions: filter_conditions,
+                               filter: filter_conditions,
                                sort: sort || [{ field: 'remind_at', direction: 1 }],
                                user_id: user_id
                              })
