@@ -123,7 +123,7 @@ describe StreamChat::Campaign do
 
     # Read
     received = campaign.get
-    expect(received.status_code).to be 201
+    expect(received.status_code).to be 200
     expect(received).to include 'campaign'
     expect(received['campaign']).to include 'id'
     expect(received['campaign']).to include 'name'
@@ -259,7 +259,7 @@ describe StreamChat::Campaign do
 
     # Get using client method
     got = @client.get_campaign(campaign_id)
-    expect(got.status_code).to be 201
+    expect(got.status_code).to be 200
     expect(got['campaign']['id']).to eq campaign_id
 
     # Update using client method
