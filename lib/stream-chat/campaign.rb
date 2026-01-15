@@ -103,7 +103,7 @@ module StreamChat
     sig { params(data1: T.nilable(StringKeyHash), data2: T.nilable(StringKeyHash)).returns(StringKeyHash) }
     def merge_campaign_data(data1, data2)
       return T.must(data2) if data1.nil?
-      return T.must(data1) if data2.nil?
+      return data1 if data2.nil?
 
       data1.merge(data2)
     end
