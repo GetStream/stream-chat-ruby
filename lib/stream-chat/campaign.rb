@@ -35,7 +35,7 @@ module StreamChat
 
       state = @client.create_campaign(campaign_id: @campaign_id, data: @data)
 
-      @campaign_id = state['campaign']['id'] if @campaign_id.nil? && state.status_code == 200 && state['campaign']
+      @campaign_id = state['campaign']['id'] if @campaign_id.nil? && state.status_code >= 200 && state.status_code < 300 && state['campaign']
       state
     end
 

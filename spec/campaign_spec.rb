@@ -113,7 +113,7 @@ describe StreamChat::Campaign do
         name: 'created name'
       }
     )
-    expect(created.status_code).to be 200
+    expect(created.status_code).to be 201
     expect(created).to include 'campaign'
     expect(created['campaign']).to include 'id'
     expect(created['campaign']).to include 'name'
