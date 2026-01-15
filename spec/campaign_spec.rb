@@ -265,6 +265,11 @@ describe StreamChat::Campaign do
     # Update using client method
     updated = @client.update_campaign(
       campaign_id,
+      message_template: {
+        text: 'Hello'
+      },
+      sender_id: sender_id,
+      user_ids: [receiver_id],
       name: 'updated via client'
     )
     expect(updated.status_code).to be 200
