@@ -138,7 +138,7 @@ describe StreamChat::Campaign do
       user_ids: [receiver_id],
       name: 'updated_name'
     )
-    expect(updated.status_code).to be 200
+    expect(updated.status_code).to be 201
     expect(updated).to include 'campaign'
     expect(updated['campaign']).to include 'id'
     expect(updated['campaign']).to include 'name'
@@ -272,7 +272,7 @@ describe StreamChat::Campaign do
       user_ids: [receiver_id],
       name: 'updated via client'
     )
-    expect(updated.status_code).to be 200
+    expect(updated.status_code).to be 201
     expect(updated['campaign']['name']).to eq 'updated via client'
 
     # Start using client method
