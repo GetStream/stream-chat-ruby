@@ -285,7 +285,7 @@ describe StreamChat::Campaign do
 
     # Delete using client method
     deleted = @client.delete_campaign(campaign_id)
-    expect(deleted.status_code).to be 201
+    expect(deleted.status_code).to be 200
     @created_campaigns.delete(campaign_id)
   end
 end
