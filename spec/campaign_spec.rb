@@ -51,13 +51,14 @@ describe StreamChat::Campaign do
     slice = @users_to_delete.slice(0, batch_size)
 
     while !slice.nil? && !slice.empty?
-      @client.delete_users(slice, user: StreamChat::HARD_DELETE, messages: StreamChat::HARD_DELETE)
-    rescue StreamChat::StreamAPIException
-      # Users may already be deleted, ignore
-    end
+      begin
+        @client.delete_users(slice, user: StreamChat::HARD_DELETE, messages: StreamChat::HARD_DELETE)
+      rescue StreamChat::StreamAPIException
+        # Users may already be deleted, ignore
+      end
 
-    curr_idx += batch_size
-    slice = @users_to_delete.slice(curr_idx, batch_size)
+      curr_idx += batch_size
+      slice = @users_to_delete.slice(curr_idx, batch_size)
     end
   end
 
