@@ -82,7 +82,7 @@ describe StreamChat::Campaign do
         name: 'created name'
       }
     )
-    expect(created.status_code).to be 200
+    expect(created.status_code).to be 201
     expect(created).to include 'campaign'
     expect(created['campaign']).to include 'id'
     expect(created['campaign']).to include 'name'
@@ -123,7 +123,7 @@ describe StreamChat::Campaign do
 
     # Read
     received = campaign.get
-    expect(received.status_code).to be 200
+    expect(received.status_code).to be 201
     expect(received).to include 'campaign'
     expect(received['campaign']).to include 'id'
     expect(received['campaign']).to include 'name'
@@ -138,7 +138,7 @@ describe StreamChat::Campaign do
       user_ids: [receiver_id],
       name: 'updated_name'
     )
-    expect(updated.status_code).to be 200
+    expect(updated.status_code).to be 201
     expect(updated).to include 'campaign'
     expect(updated['campaign']).to include 'id'
     expect(updated['campaign']).to include 'name'
@@ -146,7 +146,7 @@ describe StreamChat::Campaign do
 
     # Delete
     deleted = campaign.delete
-    expect(deleted.status_code).to be 200
+    expect(deleted.status_code).to be 201
     @created_campaigns.delete(campaign_id)
   end
 
@@ -166,7 +166,7 @@ describe StreamChat::Campaign do
     )
 
     created = campaign.create
-    expect(created.status_code).to be 200
+    expect(created.status_code).to be 201
     expect(created).to include 'campaign'
     expect(created['campaign']).to include 'id'
     expect(created['campaign']).to include 'name'
@@ -179,14 +179,14 @@ describe StreamChat::Campaign do
     two_hours_later = now + 7200
 
     started = campaign.start(scheduled_for: one_hour_later, stop_at: two_hours_later)
-    expect(started.status_code).to be 200
+    expect(started.status_code).to be 201
     expect(started).to include 'campaign'
     expect(started['campaign']).to include 'id'
     expect(started['campaign']).to include 'name'
 
     # Stop
     stopped = campaign.stop
-    expect(stopped.status_code).to be 200
+    expect(stopped.status_code).to be 201
     expect(stopped).to include 'campaign'
     expect(stopped['campaign']).to include 'id'
     expect(stopped['campaign']).to include 'name'
@@ -210,7 +210,7 @@ describe StreamChat::Campaign do
         name: 'some name'
       }
     )
-    expect(created.status_code).to be 200
+    expect(created.status_code).to be 201
     expect(created).to include 'campaign'
     expect(created['campaign']).to include 'id'
     expect(created['campaign']).to include 'name'
@@ -226,7 +226,7 @@ describe StreamChat::Campaign do
       sort: { 'created_at' => -1 },
       limit: 10
     )
-    expect(query_campaigns.status_code).to be 200
+    expect(query_campaigns.status_code).to be 201
     expect(query_campaigns).to include 'campaigns'
     expect(query_campaigns['campaigns'].length).to be >= 1
     found_campaign = query_campaigns['campaigns'].find { |c| c['id'] == campaign_id }
@@ -253,13 +253,13 @@ describe StreamChat::Campaign do
         name: 'direct create'
       }
     )
-    expect(created.status_code).to be 200
+    expect(created.status_code).to be 201
     campaign_id = created['campaign']['id']
     @created_campaigns << campaign_id
 
     # Get using client method
     got = @client.get_campaign(campaign_id)
-    expect(got.status_code).to be 200
+    expect(got.status_code).to be 201
     expect(got['campaign']['id']).to eq campaign_id
 
     # Update using client method
@@ -267,20 +267,20 @@ describe StreamChat::Campaign do
       campaign_id,
       name: 'updated via client'
     )
-    expect(updated.status_code).to be 200
+    expect(updated.status_code).to be 201
     expect(updated['campaign']['name']).to eq 'updated via client'
 
     # Start using client method
     started = @client.start_campaign(campaign_id)
-    expect(started.status_code).to be 200
+    expect(started.status_code).to be 201
 
     # Stop using client method
     stopped = @client.stop_campaign(campaign_id)
-    expect(stopped.status_code).to be 200
+    expect(stopped.status_code).to be 201
 
     # Delete using client method
     deleted = @client.delete_campaign(campaign_id)
-    expect(deleted.status_code).to be 200
+    expect(deleted.status_code).to be 201
     @created_campaigns.delete(campaign_id)
   end
 end
