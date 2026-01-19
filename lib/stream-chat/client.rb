@@ -10,6 +10,7 @@ require 'time'
 require 'date'
 require 'sorbet-runtime'
 require 'stream-chat/channel'
+require 'stream-chat/campaign'
 require 'stream-chat/errors'
 require 'stream-chat/stream_response'
 require 'stream-chat/version'
@@ -553,6 +554,101 @@ module StreamChat
     sig { params(channel_type: String, channel_id: T.nilable(String), data: T.nilable(StringKeyHash)).returns(StreamChat::Channel) }
     def channel(channel_type, channel_id: nil, data: nil)
       StreamChat::Channel.new(self, channel_type, channel_id, data)
+    end
+
+    # Creates a campaign instance
+    #
+    # @param [String, nil] campaign_id the campaign identifier
+    # @param [StringKeyHash, nil] data additional campaign data
+    #
+    # @return [StreamChat::Campaign]
+    #
+    sig { params(campaign_id: T.nilable(String), data: T.nilable(StringKeyHash)).returns(StreamChat::Campaign) }
+    def campaign(campaign_id: nil, data: nil)
+      StreamChat::Campaign.new(self, campaign_id, data)
+    end
+
+    # Creates a campaign.
+    #
+    # @param [String, nil] campaign_id Optional campaign ID
+    # @param [StringKeyHash, nil] data Campaign data including message_template, sender_id, segment_ids or user_ids, etc.
+    # @return [StreamChat::StreamResponse] API response
+    sig { params(campaign_id: T.nilable(String), data: T.nilable(StringKeyHash)).returns(StreamChat::StreamResponse) }
+    def create_campaign(campaign_id: nil, data: nil)
+      payload = {}
+      payload['id'] = campaign_id if campaign_id
+      payload.merge!(data) if data
+      post('campaigns', data: payload)
+    end
+
+    # Gets a campaign by ID.
+    #
+    # @param [String] campaign_id The campaign ID
+    # @return [StreamChat::StreamResponse] API response
+    sig { params(campaign_id: String).returns(StreamChat::StreamResponse) }
+    def get_campaign(campaign_id)
+      get("campaigns/#{campaign_id}")
+    end
+
+    # Updates a campaign.
+    #
+    # @param [String] campaign_id The campaign ID
+    # @param [StringKeyHash] data Campaign data to update
+    # @return [StreamChat::StreamResponse] API response
+    sig { params(campaign_id: String, data: StringKeyHash).returns(StreamChat::StreamResponse) }
+    def update_campaign(campaign_id, data)
+      put("campaigns/#{campaign_id}", data: data)
+    end
+
+    # Deletes a campaign.
+    #
+    # @param [String] campaign_id The campaign ID
+    # @param [Hash] options Optional deletion options (e.g., gdpr: true)
+    # @return [StreamChat::StreamResponse] API response
+    sig { params(campaign_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    def delete_campaign(campaign_id, **options)
+      delete("campaigns/#{campaign_id}", params: options)
+    end
+
+    # Starts a campaign.
+    #
+    # @param [String] campaign_id The campaign ID
+    # @param [DateTime, Time, String, nil] scheduled_for Optional scheduled start time
+    # @param [DateTime, Time, String, nil] stop_at Optional scheduled stop time
+    # @return [StreamChat::StreamResponse] API response
+    sig { params(campaign_id: String, scheduled_for: T.nilable(T.any(DateTime, Time, String)), stop_at: T.nilable(T.any(DateTime, Time, String))).returns(StreamChat::StreamResponse) }
+    def start_campaign(campaign_id, scheduled_for: nil, stop_at: nil)
+      payload = {}
+      payload['scheduled_for'] = StreamChat.normalize_timestamp(scheduled_for) if scheduled_for
+      payload['stop_at'] = StreamChat.normalize_timestamp(stop_at) if stop_at
+      post("campaigns/#{campaign_id}/start", data: payload)
+    end
+
+    # Stops a campaign.
+    #
+    # @param [String] campaign_id The campaign ID
+    # @return [StreamChat::StreamResponse] API response
+    sig { params(campaign_id: String).returns(StreamChat::StreamResponse) }
+    def stop_campaign(campaign_id)
+      post("campaigns/#{campaign_id}/stop")
+    end
+
+    # Queries campaigns.
+    #
+    # You can query campaigns based on built-in fields as well as any custom field you add to campaigns.
+    # Multiple filters can be combined using AND, OR logical operators, each filter can use its
+    # comparison (equality, inequality, greater than, greater or equal, etc.).
+    # @param [StringKeyHash] filter_conditions Filter conditions for the query
+    # @param [Hash, nil] sort Optional sort parameters (e.g., { 'created_at' => -1 })
+    # @param [Hash] options Additional query options (limit, offset, etc.)
+    # @return [StreamChat::StreamResponse] API response
+    sig { params(filter_conditions: StringKeyHash, sort: T.nilable(T::Hash[String, Integer]), options: T.untyped).returns(StreamChat::StreamResponse) }
+    def query_campaigns(filter_conditions, sort: nil, **options)
+      data = options.merge({
+                             filter: filter_conditions,
+                             sort: StreamChat.get_sort_fields(sort)
+                           })
+      post('campaigns/query', data: data)
     end
 
     # Adds a device to a user.
