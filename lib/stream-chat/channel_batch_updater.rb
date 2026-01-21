@@ -134,28 +134,32 @@ module StreamChat
       )
     end
 
-    # archive - Archive channels matching the filter
+    # archive - Archive channels matching the filter for specified members
     # @param filter [StringKeyHash] Filter to select channels
+    # @param members [T::Array[String]] Member IDs to archive the channels for
     # @return [StreamChat::StreamResponse] The server response
-    sig { params(filter: StringKeyHash).returns(StreamChat::StreamResponse) }
-    def archive(filter)
+    sig { params(filter: StringKeyHash, members: T::Array[String]).returns(StreamChat::StreamResponse) }
+    def archive(filter, members)
       @client.update_channels_batch(
         {
           operation: 'archive',
-          filter: filter
+          filter: filter,
+          members: members
         }
       )
     end
 
-    # unarchive - Unarchive channels matching the filter
+    # unarchive - Unarchive channels matching the filter for specified members
     # @param filter [StringKeyHash] Filter to select channels
+    # @param members [T::Array[String]] Member IDs to unarchive the channels for
     # @return [StreamChat::StreamResponse] The server response
-    sig { params(filter: StringKeyHash).returns(StreamChat::StreamResponse) }
-    def unarchive(filter)
+    sig { params(filter: StringKeyHash, members: T::Array[String]).returns(StreamChat::StreamResponse) }
+    def unarchive(filter, members)
       @client.update_channels_batch(
         {
           operation: 'unarchive',
-          filter: filter
+          filter: filter,
+          members: members
         }
       )
     end
