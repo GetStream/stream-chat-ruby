@@ -17,6 +17,7 @@ require 'stream-chat/version'
 require 'stream-chat/util'
 require 'stream-chat/types'
 require 'stream-chat/moderation'
+require 'stream-chat/channel_batch_updater'
 
 module StreamChat
   DEFAULT_BLOCKLIST = 'profanity_en_2020_v1'
