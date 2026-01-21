@@ -18,19 +18,31 @@ describe StreamChat::ChannelBatchUpdater do
     end
   end
 
+  def rate_limit_error?(task)
+    result = task['result']
+    return false unless result.is_a?(Hash)
+
+    description = result['description']
+    return false unless description.is_a?(String)
+
+    description.downcase.include?('rate limit')
+  end
+
+  def fetch_task_with_retry(task_id, attempt)
+    @client.get_task(task_id)
+  rescue StandardError => e
+    raise e if attempt >= 10
+
+    sleep(1)
+    nil
+  end
+
   def wait_for_task(task_id, timeout_seconds: 120)
     sleep(2) # Initial delay
 
     timeout_seconds.times do |i|
-      begin
-        task = @client.get_task(task_id)
-      rescue StandardError => e
-        if i < 10
-          sleep(1)
-          next
-        end
-        raise e
-      end
+      task = fetch_task_with_retry(task_id, i)
+      next if task.nil?
 
       expect(task['id']).to eq(task_id)
 
@@ -40,11 +52,9 @@ describe StreamChat::ChannelBatchUpdater do
       when 'completed'
         return task
       when 'failed'
-        if task['result']&.dig('description')&.downcase&.include?('rate limit')
-          sleep(2)
-          next
-        end
-        raise "Task failed with result: #{task['result']}"
+        raise "Task failed with result: #{task['result']}" unless rate_limit_error?(task)
+
+        sleep(2)
       end
     end
 
@@ -108,7 +118,7 @@ describe StreamChat::ChannelBatchUpdater do
         {
           operation: 'addMembers',
           filter: { cid: { '$in' => [@channel1.cid, @channel2.cid] } },
-          members: [@random_users[0][:id]]
+          members: [{ 'user_id' => @random_users[0][:id] }]
         }
       )
 
@@ -120,7 +130,8 @@ describe StreamChat::ChannelBatchUpdater do
     it 'adds members to channels matching filter' do
       updater = @client.channel_batch_updater
 
-      members = @random_users.map { |u| u[:id] }
+      member_ids = @random_users.map { |u| u[:id] }
+      members = member_ids.map { |id| { 'user_id' => id } }
       response = updater.add_members(
         { cid: { '$in' => [@channel1.cid, @channel2.cid] } },
         members
@@ -136,7 +147,7 @@ describe StreamChat::ChannelBatchUpdater do
         ch1_state = @channel1.query
         ch1_member_ids = ch1_state['members'].map { |m| m['user_id'] }
 
-        members.each do |member_id|
+        member_ids.each do |member_id|
           expect(ch1_member_ids).to include(member_id)
         end
       end
@@ -174,7 +185,7 @@ describe StreamChat::ChannelBatchUpdater do
 
       response = updater.remove_members(
         { cid: { '$in' => [@channel1.cid, @channel2.cid] } },
-        [member_to_remove]
+        [{ 'user_id' => member_to_remove }]
       )
 
       expect(response['task_id']).not_to be_empty
@@ -211,7 +222,7 @@ describe StreamChat::ChannelBatchUpdater do
 
       response = updater.archive(
         { cid: { '$in' => [@channel1.cid, @channel2.cid] } },
-        [member_to_archive]
+        [{ 'user_id' => member_to_archive }]
       )
 
       expect(response['task_id']).not_to be_empty
