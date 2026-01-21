@@ -44,7 +44,7 @@ describe StreamChat::ChannelBatchUpdater do
       task = fetch_task_with_retry(task_id, i)
       next if task.nil?
 
-      expect(task['id']).to eq(task_id)
+      expect(task['task_id']).to eq(task_id)
 
       case task['status']
       when 'waiting', 'pending', 'running'
