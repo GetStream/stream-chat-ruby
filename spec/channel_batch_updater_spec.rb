@@ -150,8 +150,8 @@ describe StreamChat::ChannelBatchUpdater do
 
       # Verify members were added
       loop_times(120) do
-        ch1_state = @channel1.query
-        ch1_member_ids = ch1_state['members'].map { |m| m['user_id'] }
+        @channel1.refresh_state
+        ch1_member_ids = @channel1.members.map { |m| m['user_id'] }
 
         member_ids.each do |member_id|
           expect(ch1_member_ids).to include(member_id)
@@ -169,20 +169,20 @@ describe StreamChat::ChannelBatchUpdater do
 
       # Verify members were added
       loop_times(60) do
-        ch1_state = @channel1.query
-        expect(ch1_state['members'].length).to eq(2)
+        @channel1.refresh_state
+        expect(@channel1.members.length).to eq(2)
 
-        ch2_state = @channel2.query
-        expect(ch2_state['members'].length).to eq(2)
+        @channel2.refresh_state
+        expect(@channel2.members.length).to eq(2)
       end
 
       # Verify member IDs match
-      ch1_state = @channel1.query
-      ch1_member_ids = ch1_state['members'].map { |m| m['user_id'] }
+      @channel1.refresh_state
+      ch1_member_ids = @channel1.members.map { |m| m['user_id'] }
       expect(ch1_member_ids).to match_array(members_to_add)
 
-      ch2_state = @channel2.query
-      ch2_member_ids = ch2_state['members'].map { |m| m['user_id'] }
+      @channel2.refresh_state
+      ch2_member_ids = @channel2.members.map { |m| m['user_id'] }
       expect(ch2_member_ids).to match_array(members_to_add)
 
       # Now remove one member using batch updater
@@ -201,8 +201,8 @@ describe StreamChat::ChannelBatchUpdater do
 
       # Verify member was removed
       loop_times(120) do
-        ch1_state = @channel1.query
-        ch1_member_ids = ch1_state['members'].map { |m| m['user_id'] }
+        @channel1.refresh_state
+        ch1_member_ids = @channel1.members.map { |m| m['user_id'] }
 
         expect(ch1_member_ids).not_to include(member_to_remove)
       end
@@ -218,8 +218,8 @@ describe StreamChat::ChannelBatchUpdater do
 
       # Wait for members to be added
       loop_times(60) do
-        ch1_state = @channel1.query
-        expect(ch1_state['members'].length).to eq(2)
+        @channel1.refresh_state
+        expect(@channel1.members.length).to eq(2)
       end
 
       # Archive channels for one member
@@ -238,8 +238,8 @@ describe StreamChat::ChannelBatchUpdater do
 
       # Verify archived_at is set for the member
       loop_times(120) do
-        ch1_state = @channel1.query
-        member = ch1_state['members'].find { |m| m['user_id'] == member_to_archive }
+        @channel1.refresh_state
+        member = @channel1.members.find { |m| m['user_id'] == member_to_archive }
 
         expect(member).not_to be_nil
         expect(member['archived_at']).not_to be_nil
