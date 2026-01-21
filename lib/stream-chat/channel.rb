@@ -101,9 +101,7 @@ module StreamChat
     # Updates the channel's members attribute with fresh data.
     sig { returns(StreamChat::StreamResponse) }
     def refresh_state
-      url = "channels/#{@channel_type}/#{@id}/query"
-      state = @client.post(url, data: { state: true })
-
+      state = query_members
       @members = state['members'] if state['members']
       state
     end
