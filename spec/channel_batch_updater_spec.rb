@@ -151,7 +151,7 @@ describe StreamChat::ChannelBatchUpdater do
       # Verify members were added
       loop_times(120) do
         @channel1.refresh_state
-        ch1_member_ids = @channel1.members.map { |m| m['user_id'] }
+        ch1_member_ids = @channel1.members.map { |m| m['user']['id'] }
 
         member_ids.each do |member_id|
           expect(ch1_member_ids).to include(member_id)
@@ -178,11 +178,11 @@ describe StreamChat::ChannelBatchUpdater do
 
       # Verify member IDs match
       @channel1.refresh_state
-      ch1_member_ids = @channel1.members.map { |m| m['user_id'] }
+      ch1_member_ids = @channel1.members.map { |m| m['user']['id'] }
       expect(ch1_member_ids).to match_array(members_to_add)
 
       @channel2.refresh_state
-      ch2_member_ids = @channel2.members.map { |m| m['user_id'] }
+      ch2_member_ids = @channel2.members.map { |m| m['user']['id'] }
       expect(ch2_member_ids).to match_array(members_to_add)
 
       # Now remove one member using batch updater
@@ -202,7 +202,7 @@ describe StreamChat::ChannelBatchUpdater do
       # Verify member was removed
       loop_times(120) do
         @channel1.refresh_state
-        ch1_member_ids = @channel1.members.map { |m| m['user_id'] }
+        ch1_member_ids = @channel1.members.map { |m| m['user']['id'] }
 
         expect(ch1_member_ids).not_to include(member_to_remove)
       end
@@ -239,7 +239,7 @@ describe StreamChat::ChannelBatchUpdater do
       # Verify archived_at is set for the member
       loop_times(120) do
         @channel1.refresh_state
-        member = @channel1.members.find { |m| m['user_id'] == member_to_archive }
+        member = @channel1.members.find { |m| m['user']['id'] == member_to_archive }
 
         expect(member).not_to be_nil
         expect(member['archived_at']).not_to be_nil
