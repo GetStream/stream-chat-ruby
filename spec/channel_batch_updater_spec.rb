@@ -52,9 +52,15 @@ describe StreamChat::ChannelBatchUpdater do
       when 'completed'
         return task
       when 'failed'
-        raise "Task failed with result: #{task['result']}" unless rate_limit_error?(task)
-
-        sleep(2)
+        # If result is empty, continue polling (matches Go behavior)
+        result = task['result']
+        if result.nil? || (result.is_a?(Hash) && result.empty?)
+          sleep(2)
+        elsif rate_limit_error?(task)
+          sleep(2)
+        else
+          raise "Task failed with result: #{task['result']}"
+        end
       end
     end
 
