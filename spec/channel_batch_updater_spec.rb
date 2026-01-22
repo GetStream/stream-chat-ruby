@@ -4,20 +4,6 @@ require 'securerandom'
 require 'stream-chat'
 
 describe StreamChat::ChannelBatchUpdater do
-  def loop_times(times)
-    loop do
-      begin
-        yield()
-        return
-      rescue StandardError, RSpec::Expectations::ExpectationNotMetError
-        raise if times.zero?
-      end
-
-      sleep(1)
-      times -= 1
-    end
-  end
-
   def rate_limit_error?(task)
     result = task['result']
     return false unless result.is_a?(Hash)
@@ -149,13 +135,18 @@ describe StreamChat::ChannelBatchUpdater do
       wait_for_task(task_id)
 
       # Verify members were added
-      loop_times(120) do
+      120.times do |i|
         @channel1.refresh_state
         ch1_member_ids = @channel1.members.map { |m| m['user']['id'] }
 
         member_ids.each do |member_id|
           expect(ch1_member_ids).to include(member_id)
         end
+        break
+      rescue StandardError, RSpec::Expectations::ExpectationNotMetError => e
+        raise e if i == 119
+
+        sleep(1)
       end
     end
   end
@@ -168,12 +159,17 @@ describe StreamChat::ChannelBatchUpdater do
       @channel2.add_members(members_to_add)
 
       # Verify members were added
-      loop_times(60) do
+      60.times do |i|
         @channel1.refresh_state
         expect(@channel1.members.length).to eq(2)
 
         @channel2.refresh_state
         expect(@channel2.members.length).to eq(2)
+        break
+      rescue StandardError, RSpec::Expectations::ExpectationNotMetError => e
+        raise e if i == 59
+
+        sleep(1)
       end
 
       # Verify member IDs match
@@ -200,11 +196,16 @@ describe StreamChat::ChannelBatchUpdater do
       wait_for_task(task_id)
 
       # Verify member was removed
-      loop_times(120) do
+      120.times do |i|
         @channel1.refresh_state
         ch1_member_ids = @channel1.members.map { |m| m['user']['id'] }
 
         expect(ch1_member_ids).not_to include(member_to_remove)
+        break
+      rescue StandardError, RSpec::Expectations::ExpectationNotMetError => e
+        raise e if i == 119
+
+        sleep(1)
       end
     end
   end
@@ -217,9 +218,14 @@ describe StreamChat::ChannelBatchUpdater do
       @channel2.add_members(members_to_add)
 
       # Wait for members to be added
-      loop_times(60) do
+      60.times do |i|
         @channel1.refresh_state
         expect(@channel1.members.length).to eq(2)
+        break
+      rescue StandardError, RSpec::Expectations::ExpectationNotMetError => e
+        raise e if i == 59
+
+        sleep(1)
       end
 
       # Archive channels for one member
@@ -237,12 +243,17 @@ describe StreamChat::ChannelBatchUpdater do
       wait_for_task(task_id)
 
       # Verify archived_at is set for the member
-      loop_times(120) do
+      120.times do |i|
         @channel1.refresh_state
         member = @channel1.members.find { |m| m['user']['id'] == member_to_archive }
 
         expect(member).not_to be_nil
         expect(member['archived_at']).not_to be_nil
+        break
+      rescue StandardError, RSpec::Expectations::ExpectationNotMetError => e
+        raise e if i == 119
+
+        sleep(1)
       end
     end
   end
