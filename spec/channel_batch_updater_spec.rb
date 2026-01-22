@@ -109,7 +109,7 @@ describe StreamChat::ChannelBatchUpdater do
       response = @client.update_channels_batch(
         {
           operation: 'addMembers',
-          filter: { cid: { '$in' => [@channel1.cid, @channel2.cid] } },
+          filter: { cids: { '$in' => [@channel1.cid, @channel2.cid] } },
           members: [{ 'user_id' => @random_users[0][:id] }]
         }
       )
@@ -125,7 +125,7 @@ describe StreamChat::ChannelBatchUpdater do
       member_ids = @random_users.map { |u| u[:id] }
       members = member_ids.map { |id| { 'user_id' => id } }
       response = updater.add_members(
-        { cid: { '$in' => [@channel1.cid, @channel2.cid] } },
+        { cids: { '$in' => [@channel1.cid, @channel2.cid] } },
         members
       )
 
@@ -186,7 +186,7 @@ describe StreamChat::ChannelBatchUpdater do
       member_to_remove = members_to_add[0]
 
       response = updater.remove_members(
-        { cid: { '$in' => [@channel1.cid, @channel2.cid] } },
+        { cids: { '$in' => [@channel1.cid, @channel2.cid] } },
         [{ 'user_id' => member_to_remove }]
       )
 
@@ -233,7 +233,7 @@ describe StreamChat::ChannelBatchUpdater do
       member_to_archive = members_to_add[0]
 
       response = updater.archive(
-        { cid: { '$in' => [@channel1.cid, @channel2.cid] } },
+        { cids: { '$in' => [@channel1.cid, @channel2.cid] } },
         [{ 'user_id' => member_to_archive }]
       )
 
