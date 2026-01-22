@@ -23,6 +23,13 @@ describe StreamChat::ChannelBatchUpdater do
     nil
   end
 
+  def transient_failure?(task)
+    result = task['result']
+    return true if result.nil? || (result.is_a?(Hash) && result.empty?)
+
+    rate_limit_error?(task)
+  end
+
   def wait_for_task(task_id, timeout_seconds: 120)
     sleep(2) # Initial delay
 
@@ -38,15 +45,9 @@ describe StreamChat::ChannelBatchUpdater do
       when 'completed'
         return task
       when 'failed'
-        # If result is empty, continue polling (matches Go behavior)
-        result = task['result']
-        if result.nil? || (result.is_a?(Hash) && result.empty?)
-          sleep(2)
-        elsif rate_limit_error?(task)
-          sleep(2)
-        else
-          raise "Task failed with result: #{task['result']}"
-        end
+        raise "Task failed with result: #{task['result']}" unless transient_failure?(task)
+
+        sleep(2)
       end
     end
 
