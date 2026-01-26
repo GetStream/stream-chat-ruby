@@ -97,6 +97,22 @@ module StreamChat
       state
     end
 
+    # Refreshes the channel state from the server.
+    # Updates the channel's members attribute with fresh data.
+    sig { returns(StreamChat::StreamResponse) }
+    def refresh_state
+      url = "channels/#{@channel_type}/#{@id}/query"
+      state = @client.post(url, data: { state: true })
+
+      # Members can be at top level or inside channel object (like Go's updateChannel)
+      if state['members'] && !state['members'].empty?
+        @members = state['members']
+      elsif state['channel'] && state['channel']['members']
+        @members = state['channel']['members']
+      end
+      state
+    end
+
     # Queries members of a channel.
     #
     # The queryMembers endpoint allows you to list and paginate members from a channel. The

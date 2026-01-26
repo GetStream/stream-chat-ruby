@@ -17,6 +17,7 @@ require 'stream-chat/version'
 require 'stream-chat/util'
 require 'stream-chat/types'
 require 'stream-chat/moderation'
+require 'stream-chat/channel_batch_updater'
 
 module StreamChat
   DEFAULT_BLOCKLIST = 'profanity_en_2020_v1'
@@ -1177,6 +1178,21 @@ module StreamChat
     sig { params(data: T.nilable(StringKeyHash), user_id: T.nilable(String)).returns(StreamChat::StreamResponse) }
     def mark_delivered(data = nil, user_id: nil)
       post('channels/delivered', data: data || {}, params: { user_id: user_id })
+    end
+
+    # Update channels in batch.
+    # @param payload [StringKeyHash] Payload containing operation, filter, and optional members/data/filter_tags_update
+    # @return [StreamChat::StreamResponse] API response
+    sig { params(payload: StringKeyHash).returns(StreamChat::StreamResponse) }
+    def update_channels_batch(payload)
+      put('channels/batch', data: payload)
+    end
+
+    # Returns a ChannelBatchUpdater instance for batch channel operations.
+    # @return [StreamChat::ChannelBatchUpdater] A ChannelBatchUpdater instance
+    sig { returns(StreamChat::ChannelBatchUpdater) }
+    def channel_batch_updater
+      ChannelBatchUpdater.new(self)
     end
 
     private

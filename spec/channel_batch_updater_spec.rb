@@ -1,0 +1,261 @@
+# frozen_string_literal: true
+
+require 'securerandom'
+require 'stream-chat'
+
+describe StreamChat::ChannelBatchUpdater do
+  def rate_limit_error?(task)
+    result = task['result']
+    return false unless result.is_a?(Hash)
+
+    description = result['description']
+    return false unless description.is_a?(String)
+
+    description.downcase.include?('rate limit')
+  end
+
+  def fetch_task_with_retry(task_id, attempt)
+    @client.get_task(task_id)
+  rescue StandardError => e
+    raise e if attempt >= 10
+
+    sleep(1)
+    nil
+  end
+
+  def transient_failure?(task)
+    result = task['result']
+    return true if result.nil? || (result.is_a?(Hash) && result.empty?)
+
+    rate_limit_error?(task)
+  end
+
+  def wait_for_task(task_id, timeout_seconds: 120)
+    sleep(2) # Initial delay
+
+    timeout_seconds.times do |i|
+      task = fetch_task_with_retry(task_id, i)
+      next if task.nil?
+
+      expect(task['task_id']).to eq(task_id)
+
+      case task['status']
+      when 'waiting', 'pending', 'running'
+        sleep(1)
+      when 'completed'
+        return task
+      when 'failed'
+        raise "Task failed with result: #{task['result']}" unless transient_failure?(task)
+
+        sleep(2)
+      end
+    end
+
+    raise "Task did not complete within #{timeout_seconds} seconds"
+  end
+
+  before(:all) do
+    @client = StreamChat::Client.from_env
+    @created_users = []
+  end
+
+  before(:each) do
+    @random_users = [{ id: SecureRandom.uuid, name: 'user1' }, { id: SecureRandom.uuid, name: 'user2' }]
+    @random_user = { id: SecureRandom.uuid }
+
+    users_to_insert = [@random_users[0], @random_users[1], @random_user]
+
+    @created_users.push(*users_to_insert.map { |u| u[:id] })
+    @client.upsert_users(users_to_insert)
+
+    @channel1 = @client.channel('messaging', channel_id: SecureRandom.uuid, data: { test: true })
+    @channel1.create(@random_user[:id])
+
+    @channel2 = @client.channel('messaging', channel_id: SecureRandom.uuid, data: { test: true })
+    @channel2.create(@random_user[:id])
+  end
+
+  after(:each) do
+    @channel1&.delete
+  rescue StreamChat::StreamAPIException
+    # Ignore if channel already deleted
+  ensure
+    begin
+      @channel2&.delete
+    rescue StreamChat::StreamAPIException
+      # Ignore if channel already deleted
+    end
+  end
+
+  after(:all) do
+    curr_idx = 0
+    batch_size = 25
+
+    slice = @created_users.slice(0, batch_size)
+
+    while !slice.nil? && !slice.empty?
+      @client.delete_users(slice, user: StreamChat::HARD_DELETE, messages: StreamChat::HARD_DELETE)
+
+      curr_idx += batch_size
+      slice = @created_users.slice(curr_idx, batch_size)
+    end
+  end
+
+  describe 'Client#update_channels_batch' do
+    it 'returns error if options is empty' do
+      expect { @client.update_channels_batch({}) }.to raise_error(StreamChat::StreamAPIException)
+    end
+
+    it 'batch updates channels with valid options' do
+      response = @client.update_channels_batch(
+        {
+          operation: 'addMembers',
+          filter: { cids: { '$in' => [@channel1.cid, @channel2.cid] } },
+          members: [{ 'user_id' => @random_users[0][:id] }]
+        }
+      )
+
+      expect(response['task_id']).not_to be_empty
+    end
+  end
+
+  describe 'ChannelBatchUpdater#add_members' do
+    it 'adds members to channels matching filter' do
+      updater = @client.channel_batch_updater
+
+      member_ids = @random_users.map { |u| u[:id] }
+      members = member_ids.map { |id| { 'user_id' => id } }
+      response = updater.add_members(
+        { cids: { '$in' => [@channel1.cid, @channel2.cid] } },
+        members
+      )
+
+      expect(response['task_id']).not_to be_empty
+      task_id = response['task_id']
+
+      wait_for_task(task_id)
+
+      # Verify members were added
+      120.times do |i|
+        @channel1.refresh_state
+        ch1_member_ids = @channel1.members.map { |m| m['user']['id'] }
+
+        member_ids.each do |member_id|
+          expect(ch1_member_ids).to include(member_id)
+        end
+        break
+      rescue StandardError, RSpec::Expectations::ExpectationNotMetError => e
+        raise e if i == 119
+
+        sleep(1)
+      end
+    end
+  end
+
+  describe 'ChannelBatchUpdater#remove_members' do
+    it 'removes members from channels matching filter' do
+      # First add both users as members to both channels
+      members_to_add = @random_users.map { |u| u[:id] }
+      @channel1.add_members(members_to_add)
+      @channel2.add_members(members_to_add)
+
+      # Verify members were added
+      60.times do |i|
+        @channel1.refresh_state
+        expect(@channel1.members.length).to eq(2)
+
+        @channel2.refresh_state
+        expect(@channel2.members.length).to eq(2)
+        break
+      rescue StandardError, RSpec::Expectations::ExpectationNotMetError => e
+        raise e if i == 59
+
+        sleep(1)
+      end
+
+      # Verify member IDs match
+      @channel1.refresh_state
+      ch1_member_ids = @channel1.members.map { |m| m['user']['id'] }
+      expect(ch1_member_ids).to match_array(members_to_add)
+
+      @channel2.refresh_state
+      ch2_member_ids = @channel2.members.map { |m| m['user']['id'] }
+      expect(ch2_member_ids).to match_array(members_to_add)
+
+      # Now remove one member using batch updater
+      updater = @client.channel_batch_updater
+      member_to_remove = members_to_add[0]
+
+      response = updater.remove_members(
+        { cids: { '$in' => [@channel1.cid, @channel2.cid] } },
+        [{ 'user_id' => member_to_remove }]
+      )
+
+      expect(response['task_id']).not_to be_empty
+      task_id = response['task_id']
+
+      wait_for_task(task_id)
+
+      # Verify member was removed
+      120.times do |i|
+        @channel1.refresh_state
+        ch1_member_ids = @channel1.members.map { |m| m['user']['id'] }
+
+        expect(ch1_member_ids).not_to include(member_to_remove)
+        break
+      rescue StandardError, RSpec::Expectations::ExpectationNotMetError => e
+        raise e if i == 119
+
+        sleep(1)
+      end
+    end
+  end
+
+  describe 'ChannelBatchUpdater#archive' do
+    it 'archives channels for specified members' do
+      # First add both users as members to both channels
+      members_to_add = @random_users.map { |u| u[:id] }
+      @channel1.add_members(members_to_add)
+      @channel2.add_members(members_to_add)
+
+      # Wait for members to be added
+      60.times do |i|
+        @channel1.refresh_state
+        expect(@channel1.members.length).to eq(2)
+        break
+      rescue StandardError, RSpec::Expectations::ExpectationNotMetError => e
+        raise e if i == 59
+
+        sleep(1)
+      end
+
+      # Archive channels for one member
+      updater = @client.channel_batch_updater
+      member_to_archive = members_to_add[0]
+
+      response = updater.archive(
+        { cids: { '$in' => [@channel1.cid, @channel2.cid] } },
+        [{ 'user_id' => member_to_archive }]
+      )
+
+      expect(response['task_id']).not_to be_empty
+      task_id = response['task_id']
+
+      wait_for_task(task_id)
+
+      # Verify archived_at is set for the member
+      120.times do |i|
+        @channel1.refresh_state
+        member = @channel1.members.find { |m| m['user']['id'] == member_to_archive }
+
+        expect(member).not_to be_nil
+        expect(member['archived_at']).not_to be_nil
+        break
+      rescue StandardError, RSpec::Expectations::ExpectationNotMetError => e
+        raise e if i == 119
+
+        sleep(1)
+      end
+    end
+  end
+end
