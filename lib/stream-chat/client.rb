@@ -486,6 +486,15 @@ module StreamChat
       get('query_banned_users', params: { payload: params.to_json })
     end
 
+    # Queries future channel bans.
+    #
+    # Future channel bans are automatically applied when a user creates a new channel
+    # or adds a member to an existing channel.
+    sig { params(options: T.untyped).returns(StreamChat::StreamResponse) }
+    def query_future_channel_bans(**options)
+      get('query_future_channel_bans', params: { payload: options.to_json })
+    end
+
     # Allows you to search for users and see if they are online/offline.
     # You can filter and sort on the custom fields you've set for your user, the user id, and when the user was last active.
     sig { params(filter_conditions: StringKeyHash, sort: T.nilable(T::Hash[String, Integer]), options: T.untyped).returns(StreamChat::StreamResponse) }

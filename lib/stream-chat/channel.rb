@@ -339,9 +339,9 @@ module StreamChat
     end
 
     # Removes the ban for a user on this channel.
-    sig { params(user_id: String).returns(StreamChat::StreamResponse) }
-    def unban_user(user_id)
-      @client.unban_user(user_id, type: @channel_type, id: @id)
+    sig { params(user_id: String, options: T.untyped).returns(StreamChat::StreamResponse) }
+    def unban_user(user_id, **options)
+      @client.unban_user(user_id, type: @channel_type, id: @id, **options)
     end
 
     # Removes a channel from query channel requests for that user until a new message is added.
