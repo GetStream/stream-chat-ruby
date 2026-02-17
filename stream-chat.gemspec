@@ -27,7 +27,7 @@ Gem::Specification.new do |gem|
   }
 
   gem.add_dependency 'faraday', '~> 2.12.2'
-  gem.add_dependency 'faraday-multipart', '~> 1.1.0'
+  gem.add_dependency 'faraday-multipart', '>=1.1.0'
   gem.add_dependency 'faraday-net_http_persistent', '~> 2.3.0'
   gem.add_dependency 'jwt', '~> 2.10'
   gem.add_dependency 'net-http-persistent', '~> 4.0'

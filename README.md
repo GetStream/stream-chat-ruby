@@ -28,7 +28,7 @@ For the client-side integrations (web and mobile) have a look at the JavaScript,
 
 ## ⚙️ Installation
 
-[`stream-chat-ruby`](https://rubygems.org/gems/stream-chat-ruby) supports Ruby version `3.0` and greater. We test against Ruby versions `3.0`, `3.1` and `3.4`.
+[`stream-chat-ruby`](https://rubygems.org/gems/stream-chat-ruby) supports Ruby version `3.0` and greater. We test against Ruby versions `3.0`, `3.1`, `3.4` and 4.0.
 
 ```bash
 $ gem install stream-chat-ruby
