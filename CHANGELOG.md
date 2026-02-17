@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.23.1](https://github.com/GetStream/stream-chat-ruby/compare/v3.23.0...v3.23.1) (2026-02-17)
+
+
+### Features
+
+* add query_team_usage_stats API for multi-tenant metrics ([#195](https://github.com/GetStream/stream-chat-ruby/issues/195)) ([5ef2cc6](https://github.com/GetStream/stream-chat-ruby/commit/5ef2cc6409eb21e5430c9cc64d0e5fc77cb9b288))
+
 ## [3.23.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.22.0...v3.23.0) (2026-01-29)
 
 ## [3.22.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.21.0...v3.22.0) (2026-01-15)
