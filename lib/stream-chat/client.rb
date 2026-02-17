@@ -1195,6 +1195,27 @@ module StreamChat
       ChannelBatchUpdater.new(self)
     end
 
+    # Queries team-level usage statistics from the warehouse database.
+    #
+    # Returns all 16 metrics grouped by team with cursor-based pagination.
+    # This endpoint is server-side only.
+    #
+    # Date Range Options (mutually exclusive):
+    # - Use 'month' parameter (YYYY-MM format) for monthly aggregated values
+    # - Use 'start_date'/'end_date' parameters (YYYY-MM-DD format) for daily breakdown
+    # - If neither provided, defaults to current month (monthly mode)
+    #
+    # @param month [String, nil] Month in YYYY-MM format (e.g., '2026-01')
+    # @param start_date [String, nil] Start date in YYYY-MM-DD format
+    # @param end_date [String, nil] End date in YYYY-MM-DD format
+    # @param limit [Integer, nil] Maximum number of teams to return per page (default: 30, max: 30)
+    # @param next_cursor [String, nil] Cursor for pagination to fetch next page of teams
+    # @return [StreamChat::StreamResponse] Response with teams array and optional next cursor
+    sig { params(options: T.untyped).returns(StreamChat::StreamResponse) }
+    def query_team_usage_stats(**options)
+      post('stats/team_usage', data: options)
+    end
+
     private
 
     sig { returns(T::Hash[String, String]) }
