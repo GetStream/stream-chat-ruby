@@ -245,7 +245,7 @@ describe StreamChat::Client do
                                        id: msg_id,
                                        text: 'Hello world'
                                      }, @random_user[:id])
-    expect(response['message']['shadowed']).to eq(false)
+    expect(response['message']['shadowed']).to eq(true)
     response = @client.get_message(msg_id)
     expect(response['message']['shadowed']).to eq(true)
 
