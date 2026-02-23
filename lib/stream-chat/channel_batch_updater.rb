@@ -180,6 +180,5 @@ module StreamChat
         }
       )
     end
-
   end
 end
