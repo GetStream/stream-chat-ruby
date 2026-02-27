@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.24.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.23.1...v3.24.0) (2026-02-26)
+
+
+### Features
+
+* remove filterTags from channel batch update API ([#198](https://github.com/GetStream/stream-chat-ruby/issues/198)) ([f8aa0f0](https://github.com/GetStream/stream-chat-ruby/commit/f8aa0f02579cdff4c6610cf5c4021f574065a1d6))
+
 ### [3.23.1](https://github.com/GetStream/stream-chat-ruby/compare/v3.23.0...v3.23.1) (2026-02-17)
 
 
