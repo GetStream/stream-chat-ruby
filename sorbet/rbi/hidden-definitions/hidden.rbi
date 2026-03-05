@@ -4607,8 +4607,6 @@ class Gem::SpecFetcher
 
   def specs(); end
 
-  def suggest_gems_from_name(gem_name, type=T.unsafe(nil)); end
-
   def tuples_for(source, type, gracefully_ignore=T.unsafe(nil)); end
 end
 
@@ -4727,8 +4725,6 @@ class IO
   def ready?(); end
 
   def wait(*arg); end
-
-  def wait_readable(*arg); end
 
   def wait_writable(*arg); end
 end
