@@ -1,4 +1,8 @@
 --dir
 .
---ignore=vendor/bundle,spec
+--ignore=vendor/bundle,spec,sorbet/rbi/sorbet-typed
+# sorbet/rbi/sorbet-typed contains community stubs generated for Sorbet 0.5.
+# Sorbet 0.6 defaults unsigned RBI files to typed: strict, causing 7017 errors
+# in these stale stubs. They cover dev tools (rake, rspec, rubocop) that don't
+# need type checking. Migrate to Tapioca in a follow-up to replace all stubs.
 --disable-watchman
