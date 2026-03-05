@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.25.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.24.0...v3.25.0) (2026-03-05)
+
+
+### Other
+
+* relax faraday and sorbet-runtime version constraints ([509ab83](https://github.com/GetStream/stream-chat-ruby/commit/509ab8386861aa9a1d62e85df305e9c98e332cec)), closes [#196](https://github.com/GetStream/stream-chat-ruby/issues/196) [#189](https://github.com/GetStream/stream-chat-ruby/issues/189)
+
 ## [3.24.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.23.1...v3.24.0) (2026-02-26)
 
 
