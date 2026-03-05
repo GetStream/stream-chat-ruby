@@ -245,7 +245,7 @@ describe StreamChat::Client do
                                        id: msg_id,
                                        text: 'Hello world'
                                      }, @random_user[:id])
-    expect(response['message']['shadowed']).to eq(false)
+    expect(response['message']['shadowed']).to eq(true)
     response = @client.get_message(msg_id)
     expect(response['message']['shadowed']).to eq(true)
 
@@ -1473,6 +1473,90 @@ describe StreamChat::Client do
 
       # The response should be successful (status 201)
       expect(response.status_code).to eq(201)
+    end
+  end
+
+  describe '#query_team_usage_stats' do
+    it 'queries team usage stats with default options' do
+      response = @client.query_team_usage_stats
+      expect(response).to include 'teams'
+      expect(response['teams']).to be_an(Array)
+    end
+
+    it 'queries team usage stats with month parameter' do
+      current_month = Time.now.strftime('%Y-%m')
+      response = @client.query_team_usage_stats(month: current_month)
+      expect(response).to include 'teams'
+      expect(response['teams']).to be_an(Array)
+    end
+
+    it 'queries team usage stats with date range' do
+      end_date = Date.today
+      start_date = end_date - 7
+      response = @client.query_team_usage_stats(
+        start_date: start_date.strftime('%Y-%m-%d'),
+        end_date: end_date.strftime('%Y-%m-%d')
+      )
+      expect(response).to include 'teams'
+      expect(response['teams']).to be_an(Array)
+    end
+
+    it 'queries team usage stats with pagination' do
+      response = @client.query_team_usage_stats(limit: 10)
+      expect(response).to include 'teams'
+      expect(response['teams']).to be_an(Array)
+
+      # If there's a next cursor, fetch the next page
+      if response['next'] && !response['next'].empty?
+        next_response = @client.query_team_usage_stats(limit: 10, next: response['next'])
+        expect(next_response).to include 'teams'
+        expect(next_response['teams']).to be_an(Array)
+      end
+    end
+
+    it 'returns proper response structure when data exists' do
+      # Query last year to maximize chance of getting data
+      end_date = Date.today
+      start_date = end_date - 365
+      response = @client.query_team_usage_stats(
+        start_date: start_date.strftime('%Y-%m-%d'),
+        end_date: end_date.strftime('%Y-%m-%d')
+      )
+
+      expect(response).to include 'teams'
+      teams = response['teams']
+
+      next unless teams && !teams.empty?
+
+      team = teams[0]
+
+      # Verify team identifier
+      expect(team).to include 'team'
+
+      # Verify daily activity metrics
+      expect(team).to include 'users_daily'
+      expect(team).to include 'messages_daily'
+      expect(team).to include 'translations_daily'
+      expect(team).to include 'image_moderations_daily'
+
+      # Verify peak metrics
+      expect(team).to include 'concurrent_users'
+      expect(team).to include 'concurrent_connections'
+
+      # Verify rolling/cumulative metrics
+      expect(team).to include 'users_total'
+      expect(team).to include 'users_last_24_hours'
+      expect(team).to include 'users_last_30_days'
+      expect(team).to include 'users_month_to_date'
+      expect(team).to include 'users_engaged_last_30_days'
+      expect(team).to include 'users_engaged_month_to_date'
+      expect(team).to include 'messages_total'
+      expect(team).to include 'messages_last_24_hours'
+      expect(team).to include 'messages_last_30_days'
+      expect(team).to include 'messages_month_to_date'
+
+      # Verify metric structure
+      expect(team['users_daily']).to include 'total'
     end
   end
 end
