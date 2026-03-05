@@ -14,6 +14,8 @@ jobs:
           # Always include 4.0; also add it to the latest Ruby when a newer version is added.
           - ruby: "4.0"
             lint: true
+          - ruby: "3.4"
+            lint: true
     name: 💎 Ruby ${{ matrix.ruby }}
     steps:
       - uses: actions/checkout@v4
