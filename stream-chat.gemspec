@@ -14,7 +14,7 @@ Gem::Specification.new do |gem|
   gem.homepage = 'http://github.com/GetStream/stream-chat-ruby'
   gem.authors = ['getstream.io']
   gem.files = Dir.chdir(File.expand_path(__dir__)) do
-    `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|sorbet|spec|\.github|scripts|assets)/}) }
+    `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|sorbet|spec|\.github|scripts|assets|docs)/}) }
   end
   gem.required_ruby_version = '>=3.0.0'
   gem.metadata = {
