@@ -14,7 +14,7 @@ group :dev do
   gem 'rubocop-ast', '~> 1.23', require: false
   gem 'simplecov', '~> 0.21.2'
   gem 'simplecov-console', '~> 0.9.1'
-  gem 'sorbet', '~> 0.5.10539'
+  gem 'sorbet', '~> 0.6'
 end
 
 group :test do

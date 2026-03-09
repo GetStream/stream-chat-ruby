@@ -180,35 +180,5 @@ module StreamChat
         }
       )
     end
-
-    # addFilterTags - Add filter tags to channels matching the filter
-    # @param filter [StringKeyHash] Filter to select channels
-    # @param tags [T::Array[String]] Tags to add
-    # @return [StreamChat::StreamResponse] The server response
-    sig { params(filter: StringKeyHash, tags: T::Array[String]).returns(StreamChat::StreamResponse) }
-    def add_filter_tags(filter, tags)
-      @client.update_channels_batch(
-        {
-          operation: 'addFilterTags',
-          filter: filter,
-          filter_tags_update: tags
-        }
-      )
-    end
-
-    # removeFilterTags - Remove filter tags from channels matching the filter
-    # @param filter [StringKeyHash] Filter to select channels
-    # @param tags [T::Array[String]] Tags to remove
-    # @return [StreamChat::StreamResponse] The server response
-    sig { params(filter: StringKeyHash, tags: T::Array[String]).returns(StreamChat::StreamResponse) }
-    def remove_filter_tags(filter, tags)
-      @client.update_channels_batch(
-        {
-          operation: 'removeFilterTags',
-          filter: filter,
-          filter_tags_update: tags
-        }
-      )
-    end
   end
 end
