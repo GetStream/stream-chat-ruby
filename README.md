@@ -1,3 +1,9 @@
+> **Note:** [`getstream-ruby`](https://github.com/GetStream/getstream-ruby) is the new full-product SDK for Stream, covering Chat, Video, Moderation, and Feeds with long-term support.
+>
+> **`stream-chat-ruby` is now in maintenance mode.** It will continue to receive critical fixes and requested features, so it is safe to keep using. However, we encourage existing users to migrate when convenient and strongly recommend that new projects start with `getstream-ruby`.
+>
+> Check out the [Migration Guide](https://github.com/GetStream/getstream-ruby/blob/570aaf9b73b27fe01a4abbc1f7c6b639595c304e/docs/migration-from-stream-chat-ruby/README.md) for side-by-side examples covering common use cases.
+
 # Official Ruby SDK for [Stream Chat](https://getstream.io/chat/)
 
 [![build](https://github.com/GetStream/stream-chat-ruby/workflows/build/badge.svg)](https://github.com/GetStream/stream-chat-ruby/actions) [![Gem Version](https://badge.fury.io/rb/stream-chat-ruby.svg)](http://badge.fury.io/rb/stream-chat-ruby)
