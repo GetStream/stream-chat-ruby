@@ -265,6 +265,10 @@ describe StreamChat::Client do
     @client.ban_user(@random_user[:id], user_id: @random_users[0][:id])
   end
 
+  it 'bans a user with delete_reactions' do
+    @client.ban_user(@random_user[:id], user_id: @random_users[0][:id], delete_reactions: true)
+  end
+
   it 'unbans a user' do
     @client.ban_user(@random_user[:id], user_id: @random_users[0][:id])
     @client.unban_user(@random_user[:id], user_id: @random_users[0][:id])
