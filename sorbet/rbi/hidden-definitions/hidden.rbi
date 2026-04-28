@@ -8698,8 +8698,6 @@ end
 
 class StringScanner
   def bol?(); end
-
-  def initialize(*arg); end
   Id = ::T.let(nil, ::T.untyped)
   Version = ::T.let(nil, ::T.untyped)
 end
