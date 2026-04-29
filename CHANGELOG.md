@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.26.1](https://github.com/GetStream/stream-chat-ruby/compare/v3.25.0...v3.26.1) (2026-04-29)
+
+
+### Features
+
+* add delete_reactions support for ban user ([#206](https://github.com/GetStream/stream-chat-ruby/issues/206)) ([c876050](https://github.com/GetStream/stream-chat-ruby/commit/c876050936b3f4727002707e94db872c91a6114c))
+
+
+### Other
+
+* relax jwt dependency to allow v3 ([#208](https://github.com/GetStream/stream-chat-ruby/issues/208)) ([8305806](https://github.com/GetStream/stream-chat-ruby/commit/8305806127859540bbcd936ccda19ac9c13b9897)), closes [#12716](https://github.com/GetStream/stream-chat-ruby/issues/12716)
+
 ## [3.25.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.24.0...v3.25.0) (2026-03-05)
 
 
