@@ -16,11 +16,18 @@ jobs:
             lint: true
           - ruby: "3.4"
             lint: true
-    name: 💎 Ruby ${{ matrix.ruby }}
+          # Exercise jwt v3 alongside the default v2 resolution.
+          - ruby: "4.0"
+            jwt: "~> 3.0"
+    name: 💎 Ruby ${{ matrix.ruby }}${{ matrix.jwt && format(' (jwt {0})', matrix.jwt) || '' }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # gives the commit linter access to previous commits
+
+      - name: Pin jwt to ${{ matrix.jwt }}
+        if: matrix.jwt
+        run: echo "gem 'jwt', '${{ matrix.jwt }}'" >> Gemfile
 
       - uses: ruby/setup-ruby@v1
         with:

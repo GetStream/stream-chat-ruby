@@ -118,7 +118,7 @@ describe StreamChat::Client do
 
   it 'creates a user token' do
     token = @client.create_token('tommaso')
-    payload = JWT.decode(token, @client.api_secret)
+    payload = JWT.decode(token, @client.api_secret, true, { algorithm: 'HS256' })
     expect(payload[0].fetch('user_id')).to eq 'tommaso'
   end
 

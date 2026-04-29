@@ -197,7 +197,7 @@ describe StreamChat::Moderation do
           enabled: true,
           rules: [
             {
-              name: 'profanity_en_2020_v1',
+              name: StreamChat::DEFAULT_BLOCKLIST,
               action: 'flag'
             }
           ]
