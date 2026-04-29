@@ -20,7 +20,7 @@ require 'stream-chat/moderation'
 require 'stream-chat/channel_batch_updater'
 
 module StreamChat
-  DEFAULT_BLOCKLIST = 'profanity_en_2020_v1'
+  DEFAULT_BLOCKLIST = 'profanity'
   SOFT_DELETE = 'soft'
   HARD_DELETE = 'hard'
 
@@ -739,7 +739,7 @@ module StreamChat
     # Returns all blocklists.
     #
     # A Block List is a list of words that you can use to moderate chat messages. Stream Chat
-    # comes with a built-in Block List called profanity_en_2020_v1 which contains over a thousand
+    # comes with a built-in Block List called profanity which contains over a thousand
     # of the most common profane words.
     # You can manage your own block lists via the Stream dashboard or APIs to a manage
     # blocklists and configure your channel types to use them.
@@ -751,7 +751,7 @@ module StreamChat
     # Returns a blocklist.
     #
     # A Block List is a list of words that you can use to moderate chat messages. Stream Chat
-    # comes with a built-in Block List called profanity_en_2020_v1 which contains over a thousand
+    # comes with a built-in Block List called profanity which contains over a thousand
     # of the most common profane words.
     # You can manage your own block lists via the Stream dashboard or APIs to a manage
     # blocklists and configure your channel types to use them.
@@ -763,7 +763,7 @@ module StreamChat
     # Creates a blocklist.
     #
     # A Block List is a list of words that you can use to moderate chat messages. Stream Chat
-    # comes with a built-in Block List called profanity_en_2020_v1 which contains over a thousand
+    # comes with a built-in Block List called profanity which contains over a thousand
     # of the most common profane words.
     # You can manage your own block lists via the Stream dashboard or APIs to a manage
     # blocklists and configure your channel types to use them.
@@ -775,7 +775,7 @@ module StreamChat
     # Updates a blocklist.
     #
     # A Block List is a list of words that you can use to moderate chat messages. Stream Chat
-    # comes with a built-in Block List called profanity_en_2020_v1 which contains over a thousand
+    # comes with a built-in Block List called profanity which contains over a thousand
     # of the most common profane words.
     # You can manage your own block lists via the Stream dashboard or APIs to a manage
     # blocklists and configure your channel types to use them.
@@ -787,7 +787,7 @@ module StreamChat
     # Deletes a blocklist.
     #
     # A Block List is a list of words that you can use to moderate chat messages. Stream Chat
-    # comes with a built-in Block List called profanity_en_2020_v1 which contains over a thousand
+    # comes with a built-in Block List called profanity which contains over a thousand
     # of the most common profane words.
     # You can manage your own block lists via the Stream dashboard or APIs to a manage
     # blocklists and configure your channel types to use them.

@@ -99,7 +99,7 @@ client.update_channel_type(
 
 ### Blocklist
 
-A Blocklist is a list of words that you can use to moderate chat messages. Stream Chat comes with a built-in Blocklist called `profanity_en_2020_v1` which contains over a thousand of the most common profane words.
+A Blocklist is a list of words that you can use to moderate chat messages. Stream Chat comes with a built-in Blocklist called `profanity` which contains over a thousand of the most common profane words.
 
 You can manage your own blocklists via the Stream dashboard or APIs to a manage blocklists and configure your channel types to use them. Channel types can be configured to block or flag messages from your users based on your blocklists. To do this you need to configure your channel type(s) with these two configurations: `blocklist` and `blocklist_behavior` . The first one refers to the name of the blocklist and the second must be set as `block` or `flag` .
 
@@ -145,7 +145,7 @@ client.update_channel_type("messaging", blocklist: "no-cakes", blocklist_behavio
 
 #### List available blocklists
 
-All applications have the `profanity_en_2020_v1` blocklist available. This endpoint returns all blocklists available for this application.
+All applications have the `profanity` blocklist available. This endpoint returns all blocklists available for this application.
 
 ```ruby
 client.list_blocklists()

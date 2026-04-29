@@ -574,7 +574,7 @@ When applicable, the following attributes are included to the event user and to 
       "blocklist_behavior": "flag",
       "blocklists": [
         {
-          "blocklist": "profanity_en_2020_v1",
+          "blocklist": "profanity",
           "behavior": "block"
         }
       ],
@@ -877,7 +877,7 @@ When applicable, the following attributes are included to the event user and to 
         "max_message_length": 5000,
         "automod": "disabled",
         "automod_behavior": "flag",
-        "blocklist": "profanity_en_2020_v1",
+        "blocklist": "profanity",
         "blocklist_behavior": "block",
         "automod_thresholds": {},
         "commands": [
