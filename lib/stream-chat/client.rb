@@ -703,69 +703,67 @@ module StreamChat
       get('rate_limits', params: params)
     end
 
-    # Verify the signature added to a webhook event.
+    # Verify the signature on a webhook event using the client's API secret.
+    #
+    # Backward-compatible boolean helper. New integrations should call
+    # {#verify_and_parse_webhook} (or the SQS / SNS variants), which also handle
+    # gzip payload compression and return the parsed event.
     sig { params(request_body: String, x_signature: String).returns(T::Boolean) }
     def verify_webhook(request_body, x_signature)
-      signature = OpenSSL::HMAC.hexdigest('SHA256', @api_secret, request_body)
-      signature == x_signature
+      StreamChat::Webhook.verify_signature(request_body, x_signature, @api_secret)
     end
 
-    # Decodes a webhook body that may have been base64-wrapped (SQS / SNS) and
-    # / or gzip-compressed (Content-Encoding: gzip), without verifying the
-    # signature. Returns the raw JSON bytes as a binary `String`; callers can
-    # `.force_encoding('UTF-8')` or pass the result to `JSON.parse` directly.
+    # Verify and parse an HTTP webhook event.
     #
-    # @param body [String, Array<Integer>] The raw webhook payload.
-    # @param content_encoding [String, nil] Value of the `Content-Encoding`
-    #   HTTP header (or the corresponding SQS / SNS message attribute). Pass
-    #   `nil` or an empty string to skip decompression.
-    # @param payload_encoding [String, nil] How the queue wrapped the bytes,
-    #   typically `"base64"` for SQS / SNS firehoses. Pass `nil` for plain
-    #   HTTP webhooks.
-    # @return [String] Uncompressed JSON bytes (binary encoded).
+    # Decompresses `body` when gzipped (detected from the body bytes), verifies
+    # the `X-Signature` header against the client's API secret, and returns the
+    # parsed event as a `Hash`. Typed event classes are planned for a future
+    # release.
+    #
+    # @param body [String, Array<Integer>] Raw HTTP request body bytes Stream
+    #   signed.
+    # @param signature [String] Value of the `X-Signature` header.
+    # @return [Hash] The parsed event.
+    # @raise [WebhookSignatureError] When the signature does not match or the
+    #   gzip envelope is malformed.
     sig do
       params(
         body: T.any(String, T::Array[Integer]),
-        content_encoding: T.nilable(String),
-        payload_encoding: T.nilable(String)
-      ).returns(String)
+        signature: String
+      ).returns(T::Hash[String, T.untyped])
     end
-    def decompress_webhook_body(body, content_encoding = nil, payload_encoding = nil)
-      raw = StreamChat::Webhook.normalize_body(body)
-      raw = StreamChat::Webhook.apply_payload_encoding(raw, payload_encoding)
-      StreamChat::Webhook.apply_content_encoding(raw, content_encoding)
+    def verify_and_parse_webhook(body, signature)
+      StreamChat::Webhook.verify_and_parse_webhook(body, signature, @api_secret)
     end
 
-    # Decodes a (possibly base64-wrapped, possibly gzip-compressed) webhook
-    # body and verifies its `X-Signature` HMAC against `@api_secret`. The
-    # signature is always computed over the *uncompressed* JSON bytes — both
-    # for plain HTTP webhooks and for SQS / SNS messages — matching what the
-    # Stream backend signs.
+    # Verify and parse an SQS firehose webhook event.
     #
-    # @param body [String, Array<Integer>] The raw webhook payload.
-    # @param x_signature [String] Value of the `X-Signature` header (or the
-    #   corresponding SQS / SNS message attribute).
-    # @param content_encoding [String, nil] Value of the `Content-Encoding`
-    #   HTTP header. `nil` or empty means the body is already raw JSON.
-    # @param payload_encoding [String, nil] Set to `"base64"` for SQS / SNS
-    #   firehose envelopes; `nil` for plain HTTP.
-    # @return [String] Uncompressed JSON bytes (binary encoded).
-    # @raise [WebhookSignatureError] if decoding fails or the signature does
-    #   not match.
-    sig do
-      params(
-        body: T.any(String, T::Array[Integer]),
-        x_signature: String,
-        content_encoding: T.nilable(String),
-        payload_encoding: T.nilable(String)
-      ).returns(String)
+    # Reverses the base64 (+ optional gzip) wrapping on the SQS `Body`,
+    # verifies the `X-Signature` message attribute against the client's API
+    # secret, and returns the parsed event.
+    #
+    # @param message_body [String] SQS message `Body` string.
+    # @param signature [String] Value of the `X-Signature` message attribute.
+    # @return [Hash] The parsed event.
+    # @raise [WebhookSignatureError]
+    sig { params(message_body: String, signature: String).returns(T::Hash[String, T.untyped]) }
+    def verify_and_parse_sqs(message_body, signature)
+      StreamChat::Webhook.verify_and_parse_sqs(message_body, signature, @api_secret)
     end
-    def verify_and_decode_webhook(body, x_signature, content_encoding = nil, payload_encoding = nil)
-      decoded = decompress_webhook_body(body, content_encoding, payload_encoding)
-      expected = OpenSSL::HMAC.hexdigest('SHA256', @api_secret, decoded)
-      raise WebhookSignatureError, 'invalid webhook signature' unless StreamChat::Webhook.constant_time_equal?(expected, x_signature)
 
-      decoded
+    # Verify and parse an SNS firehose webhook event.
+    #
+    # Reverses the base64 (+ optional gzip) wrapping on the SNS notification
+    # `Message`, verifies the `X-Signature` message attribute against the
+    # client's API secret, and returns the parsed event.
+    #
+    # @param message [String] SNS notification `Message` field.
+    # @param signature [String] Value of the `X-Signature` message attribute.
+    # @return [Hash] The parsed event.
+    # @raise [WebhookSignatureError]
+    sig { params(message: String, signature: String).returns(T::Hash[String, T.untyped]) }
+    def verify_and_parse_sns(message, signature)
+      StreamChat::Webhook.verify_and_parse_sns(message, signature, @api_secret)
     end
 
     # Allows you to send custom events to a connected user.
