@@ -25,7 +25,7 @@ module StreamChat
   module Webhook # rubocop:disable Metrics/ModuleLength
     extend T::Sig
 
-    GZIP_MAGIC = T.let("\x1f\x8b\x08".b.freeze, String)
+    GZIP_MAGIC = T.let("\x1f\x8b".b.freeze, String)
 
     # Coerces the webhook body into a binary `String` regardless of whether
     # the caller hands us a `String` (HTTP `request.raw_post`) or an array of
@@ -43,8 +43,8 @@ module StreamChat
     end
 
     # Returns `body` unchanged unless it starts with the gzip magic
-    # (`1f 8b 08`), in which case the gzip stream is inflated and the
-    # decompressed bytes are returned.
+    # (`1f 8b`, per RFC 1952), in which case the gzip stream is inflated and
+    # the decompressed bytes are returned.
     #
     # Magic-byte detection (rather than relying on a header) keeps the same
     # handler correct when middleware - Rack, Rails - auto-decompresses the
