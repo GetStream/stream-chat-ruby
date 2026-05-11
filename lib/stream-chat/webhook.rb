@@ -75,12 +75,34 @@ module StreamChat
       ungzip_payload(decoded)
     end
 
-    # Identical to `decode_sqs_payload`; exposed under both names so call sites
-    # read intent.
-    sig { params(message: String).returns(String) }
-    def self.decode_sns_payload(message)
-      decode_sqs_payload(message)
+    # Reverses an SNS HTTP notification envelope. When `notification_body` is a
+    # JSON envelope (`{"Type":"Notification","Message":"..."}`), the inner
+    # `Message` field is extracted and run through the SQS pipeline
+    # (base64-decode, then gzip-if-magic). When the input is not a JSON
+    # envelope it is treated as the already-extracted `Message` string, so
+    # call sites that pre-unwrap continue to work.
+    sig { params(notification_body: String).returns(String) }
+    def self.decode_sns_payload(notification_body)
+      inner = extract_sns_message(notification_body)
+      decode_sqs_payload(inner.nil? ? notification_body : inner)
     end
+
+    sig { params(notification_body: String).returns(T.nilable(String)) }
+    def self.extract_sns_message(notification_body)
+      trimmed = notification_body.to_s.lstrip
+      return nil unless trimmed.start_with?('{')
+
+      begin
+        parsed = JSON.parse(trimmed)
+      rescue JSON::ParserError
+        return nil
+      end
+      return nil unless parsed.is_a?(Hash)
+
+      message = parsed['Message']
+      message.is_a?(String) ? message : nil
+    end
+    private_class_method :extract_sns_message
 
     # Constant-time HMAC-SHA256 verification of `signature` against the digest
     # of `body` keyed by `secret`.

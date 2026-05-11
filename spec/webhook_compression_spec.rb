@@ -25,6 +25,20 @@ describe 'StreamChat webhook verification + parsing' do
     OpenSSL::HMAC.hexdigest('SHA256', secret, data)
   end
 
+  def sns_envelope(inner_message)
+    JSON.generate({
+                    'Type' => 'Notification',
+                    'MessageId' => '22b80b92-fdea-4c2c-8f9d-bdfb0c7bf324',
+                    'TopicArn' => 'arn:aws:sns:us-east-1:123456789012:stream-webhooks',
+                    'Message' => inner_message,
+                    'Timestamp' => '2026-05-11T10:00:00.000Z',
+                    'SignatureVersion' => '1',
+                    'MessageAttributes' => {
+                      'X-Signature' => { 'Type' => 'String', 'Value' => '<signature placeholder>' }
+                    }
+                  })
+  end
+
   let(:client) { StreamChat::Client.new(api_key, api_secret) }
 
   describe 'StreamChat::Webhook.ungzip_payload' do
@@ -73,10 +87,22 @@ describe 'StreamChat webhook verification + parsing' do
   end
 
   describe 'StreamChat::Webhook.decode_sns_payload' do
-    it 'aliases decode_sqs_payload' do
+    it 'treats a pre-extracted Message identically to decode_sqs_payload' do
       wrapped = Base64.strict_encode64(gzip(json_body))
       expect(StreamChat::Webhook.decode_sns_payload(wrapped))
         .to eq(StreamChat::Webhook.decode_sqs_payload(wrapped))
+    end
+
+    it 'unwraps a full SNS HTTP notification envelope' do
+      wrapped = Base64.strict_encode64(gzip(json_body))
+      envelope = sns_envelope(wrapped)
+      expect(StreamChat::Webhook.decode_sns_payload(envelope)).to eq(json_body)
+    end
+
+    it 'handles whitespace before the envelope JSON' do
+      wrapped = Base64.strict_encode64(gzip(json_body))
+      envelope = "\n  #{sns_envelope(wrapped)}"
+      expect(StreamChat::Webhook.decode_sns_payload(envelope)).to eq(json_body)
     end
   end
 
@@ -174,17 +200,32 @@ describe 'StreamChat webhook verification + parsing' do
   end
 
   describe '#verify_and_parse_sns' do
-    it 'parses a base64 + gzip notification' do
+    it 'parses a pre-extracted base64 + gzip notification' do
       wrapped = Base64.strict_encode64(gzip(json_body))
       sig = hmac_hex(api_secret, json_body)
       expect(client.verify_and_parse_sns(wrapped, sig)).to eq(event_hash)
     end
 
-    it 'returns the same event as verify_and_parse_sqs' do
+    it 'returns the same event as verify_and_parse_sqs for pre-extracted Message' do
       wrapped = Base64.strict_encode64(gzip(json_body))
       sig = hmac_hex(api_secret, json_body)
       expect(client.verify_and_parse_sns(wrapped, sig))
         .to eq(client.verify_and_parse_sqs(wrapped, sig))
+    end
+
+    it 'parses a full SNS HTTP notification envelope' do
+      wrapped = Base64.strict_encode64(gzip(json_body))
+      envelope = sns_envelope(wrapped)
+      sig = hmac_hex(api_secret, json_body)
+      expect(client.verify_and_parse_sns(envelope, sig)).to eq(event_hash)
+    end
+
+    it 'rejects signature computed over the envelope JSON, not the payload' do
+      wrapped = Base64.strict_encode64(gzip(json_body))
+      envelope = sns_envelope(wrapped)
+      sig_over_envelope = hmac_hex(api_secret, envelope)
+      expect { client.verify_and_parse_sns(envelope, sig_over_envelope) }
+        .to raise_error(StreamChat::WebhookSignatureError, 'invalid webhook signature')
     end
   end
 end
