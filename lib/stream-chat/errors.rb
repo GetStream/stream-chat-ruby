@@ -49,32 +49,19 @@ module StreamChat
   class StreamChannelException < StandardError; end
 
   # Raised when a webhook payload cannot be decoded, decompressed, or its
-  # signature does not match the expected HMAC. Carries a human readable
-  # reason instead of an HTTP response so it can be raised from the local
-  # webhook helpers (decompress / verify) without involving Faraday.
-  class WebhookSignatureError < StreamAPIException
+  # signature does not match the expected HMAC. This is a local verification
+  # failure with no HTTP response attached, so it inherits directly from
+  # `StandardError` rather than `StreamAPIException`.
+  class WebhookSignatureError < StandardError
     extend T::Sig
 
     sig { returns(String) }
     attr_reader :reason
 
     sig { params(reason: String).void }
-    def initialize(reason) # rubocop:disable Lint/MissingSuper
+    def initialize(reason)
       @reason = T.let(reason, String)
-      @json_response = T.let(false, T::Boolean)
-      @error_code = T.let(0, Integer)
-      @error_message = T.let(reason, String)
-      StandardError.instance_method(:initialize).bind_call(self, reason)
-    end
-
-    sig { returns(String) }
-    def message
-      @reason
-    end
-
-    sig { returns(String) }
-    def to_s
-      @reason
+      super
     end
   end
 end
