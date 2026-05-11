@@ -173,7 +173,7 @@ end
 
 The exact attribute name that carries the signature may vary — refer to the SQS / SNS pages in this section for the up-to-date list. The decoding rules themselves do not change: the signature is always computed over the **uncompressed** JSON.
 
-If you need to build a custom pipeline, the module-level primitives are also exposed: `StreamChat::Webhook.ungzip_payload`, `decode_sqs_payload`, `decode_sns_payload`, `verify_signature`, and `parse_event`. The composite `verify_and_parse_*` methods are thin wrappers on top of these.
+If you need to build a custom pipeline, the module-level primitives are also exposed: `StreamChat::Webhook.gunzip_payload`, `decode_sqs_payload`, `decode_sns_payload`, `verify_signature`, and `parse_event`. The composite `verify_and_parse_*` methods are thin wrappers on top of these.
 
 ## Webhook types
 

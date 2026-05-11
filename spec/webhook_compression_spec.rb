@@ -41,31 +41,36 @@ describe 'StreamChat webhook verification + parsing' do
 
   let(:client) { StreamChat::Client.new(api_key, api_secret) }
 
-  describe 'StreamChat::Webhook.ungzip_payload' do
+  describe 'StreamChat::Webhook.gunzip_payload' do
     it 'passes through plain bytes unchanged' do
-      expect(StreamChat::Webhook.ungzip_payload(json_body)).to eq(json_body)
+      expect(StreamChat::Webhook.gunzip_payload(json_body)).to eq(json_body)
     end
 
     it 'inflates gzip-magic bytes' do
-      expect(StreamChat::Webhook.ungzip_payload(gzip(json_body))).to eq(json_body)
+      expect(StreamChat::Webhook.gunzip_payload(gzip(json_body))).to eq(json_body)
     end
 
     it 'accepts a body provided as an array of integers' do
-      expect(StreamChat::Webhook.ungzip_payload(json_body.bytes)).to eq(json_body)
+      expect(StreamChat::Webhook.gunzip_payload(json_body.bytes)).to eq(json_body)
     end
 
     it 'returns empty input unchanged' do
-      expect(StreamChat::Webhook.ungzip_payload('')).to eq('')
+      expect(StreamChat::Webhook.gunzip_payload('')).to eq('')
     end
 
     it 'returns short input below magic length unchanged' do
-      expect(StreamChat::Webhook.ungzip_payload('ab')).to eq('ab')
+      expect(StreamChat::Webhook.gunzip_payload('ab')).to eq('ab')
     end
 
     it 'raises on truncated gzip with magic' do
       bad = "\x1f\x8b\x08\x00\x00\x00".b
-      expect { StreamChat::Webhook.ungzip_payload(bad) }
+      expect { StreamChat::Webhook.gunzip_payload(bad) }
         .to raise_error(StreamChat::WebhookSignatureError, /decompress gzip/i)
+    end
+
+    it 'decompresses the helloworld fixture' do
+      expect(StreamChat::Webhook.gunzip_payload(Base64.decode64('H4sIAGrYAWoAA8tIzcnJL88vykkBAK0g6/kKAAAA')))
+        .to eq('helloworld')
     end
   end
 
@@ -83,6 +88,15 @@ describe 'StreamChat webhook verification + parsing' do
     it 'raises on invalid base64' do
       expect { StreamChat::Webhook.decode_sqs_payload('!!!not-base64!!!') }
         .to raise_error(StreamChat::WebhookSignatureError, /base64-decode/i)
+    end
+
+    it 'decodes the helloworld base64 fixture' do
+      expect(StreamChat::Webhook.decode_sqs_payload('aGVsbG93b3JsZA==')).to eq('helloworld')
+    end
+
+    it 'decodes the helloworld base64+gzip fixture' do
+      expect(StreamChat::Webhook.decode_sqs_payload('H4sIAGrYAWoAA8tIzcnJL88vykkBAK0g6/kKAAAA'))
+        .to eq('helloworld')
     end
   end
 

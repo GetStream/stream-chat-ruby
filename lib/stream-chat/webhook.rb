@@ -16,7 +16,7 @@ module StreamChat
   #
   # The composite functions (`verify_and_parse_webhook`, `verify_and_parse_sqs`,
   # `verify_and_parse_sns`) are the recommended entry points. The primitives
-  # they compose (`ungzip_payload`, `decode_sqs_payload`, `decode_sns_payload`,
+  # they compose (`gunzip_payload`, `decode_sqs_payload`, `decode_sns_payload`,
   # `verify_signature`, `parse_event`) are exposed so callers can build custom
   # flows or run individual steps in isolation.
   #
@@ -50,7 +50,7 @@ module StreamChat
     # handler correct when middleware - Rack, Rails - auto-decompresses the
     # request before your code sees it.
     sig { params(body: T.any(String, T::Array[Integer])).returns(String) }
-    def self.ungzip_payload(body)
+    def self.gunzip_payload(body)
       raw = normalize_body(body)
       return raw unless raw.start_with?(GZIP_MAGIC)
 
@@ -72,7 +72,7 @@ module StreamChat
         rescue ArgumentError => e
           raise WebhookSignatureError, "failed to base64-decode payload: #{e.message}"
         end
-      ungzip_payload(decoded)
+      gunzip_payload(decoded)
     end
 
     # Reverses an SNS HTTP notification envelope. When `notification_body` is a
@@ -161,7 +161,7 @@ module StreamChat
       ).returns(T::Hash[String, T.untyped])
     end
     def self.verify_and_parse_webhook(body, signature, secret)
-      verify_and_parse_internal(ungzip_payload(body), signature, secret)
+      verify_and_parse_internal(gunzip_payload(body), signature, secret)
     end
 
     # Decode the SQS `Body` (base64, then gzip-if-magic), verify the HMAC
