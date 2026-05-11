@@ -110,16 +110,16 @@ Before enabling compression, make sure that:
 
 ### Decoding a compressed webhook in Ruby (Rails)
 
-The Ruby SDK exposes two helpers on `StreamChat::Client` so you do not have to wire `Zlib` and `OpenSSL::HMAC` together yourself:
+The Ruby SDK exposes three composite helpers on `StreamChat::Client`, one per transport, so you do not have to wire `Zlib`, `Base64`, and `OpenSSL::HMAC` together yourself. Each method decodes the body, verifies the `X-Signature` HMAC against the **uncompressed** JSON, parses the JSON, and returns the event as a `Hash`. Any failure (bad signature, malformed gzip, malformed base64) raises `StreamChat::WebhookSignatureError`.
 
-* `decompress_webhook_body(body, content_encoding = nil, payload_encoding = nil)` — primitive that just decodes the body. No signature check.
-* `verify_and_decode_webhook(body, x_signature, content_encoding = nil, payload_encoding = nil)` — decodes **and** verifies the `X-Signature` HMAC against the uncompressed JSON. Raises `StreamChat::WebhookSignatureError` if anything is wrong.
+* `verify_and_parse_webhook(body, x_signature)` — HTTP webhooks.
+* `verify_and_parse_sqs(message_body, x_signature)` — SQS firehose messages (base64 + optional gzip).
+* `verify_and_parse_sns(message, x_signature)` — SNS notification messages (base64 + optional gzip).
 
-Both methods return the raw JSON bytes as a binary `String`; you can `.force_encoding('UTF-8')` it or pass it straight to `JSON.parse`. Passing `nil` (or an empty string) for either encoding is a no-op, so the same handler works whether or not compression is enabled.
+GZIP is detected from the body bytes (the `1f 8b` magic prefix), not from the `Content-Encoding` header, so the same handler works whether or not your HTTP server transparently decompresses the request body before it reaches you.
 
 ```ruby
 require 'stream-chat'
-require 'json'
 
 STREAM_CLIENT = StreamChat::Client.new('STREAM_KEY', 'STREAM_SECRET')
 
@@ -129,15 +129,12 @@ class WebhooksController < ApplicationController
   def stream
     body = request.raw_post # binary safe; do NOT use params
 
-    json_bytes = STREAM_CLIENT.verify_and_decode_webhook(
+    event = STREAM_CLIENT.verify_and_parse_webhook(
       body,
-      request.headers['X-Signature'],
-      request.headers['Content-Encoding'] # 'gzip' when compressed, nil otherwise
+      request.headers['X-Signature']
     )
 
-    event = JSON.parse(json_bytes)
     Rails.logger.info("Stream webhook: #{event['type']}")
-
     head :ok
   rescue StreamChat::WebhookSignatureError => e
     Rails.logger.warn("Rejected Stream webhook: #{e.message}")
@@ -146,16 +143,14 @@ class WebhooksController < ApplicationController
 end
 ```
 
-> [!NOTE]
-> If you sit behind middleware that already inflates `Content-Encoding: gzip` requests for you, pass `nil` for `content_encoding` (or just don't forward the header) — `request.raw_post` will already be raw JSON.
+If you also want to support the legacy "I just want to check the signature myself" flow, `client.verify_webhook(body, x_signature)` is still available and returns a boolean. It does **not** handle compression — use `verify_and_parse_webhook` for new integrations.
 
 ### Decoding a compressed SQS / SNS firehose message
 
-SQS and SNS message bodies must be valid UTF-8, so when GZIP compression is enabled the gzipped bytes are additionally **base64-wrapped** before being placed on the queue. Pass `payload_encoding: 'base64'` so the SDK unwraps the queue envelope before decompressing:
+SQS and SNS message bodies must be valid UTF-8, so when GZIP compression is enabled the gzipped bytes are additionally **base64-wrapped** before being placed on the queue. `verify_and_parse_sqs` (and its SNS twin) unwrap the queue envelope before verifying the signature, so the same call works whether or not compression is enabled:
 
 ```ruby
 require 'aws-sdk-sqs'
-require 'json'
 require 'stream-chat'
 
 client = StreamChat::Client.new('STREAM_KEY', 'STREAM_SECRET')
@@ -164,26 +159,21 @@ sqs = Aws::SQS::Client.new
 resp = sqs.receive_message(queue_url: ENV.fetch('STREAM_SQS_URL'), max_number_of_messages: 10)
 
 resp.messages.each do |msg|
-  attrs = msg.message_attributes || {}
-  signature        = attrs.dig('X-Signature',     :string_value)
-  content_encoding = attrs.dig('Content-Encoding', :string_value) # 'gzip' when compressed
-  payload_encoding = attrs.dig('Payload-Encoding', :string_value) || 'base64'
+  signature = msg.message_attributes&.dig('X-Signature', :string_value)
 
-  json_bytes = client.verify_and_decode_webhook(
-    msg.body,
-    signature,
-    content_encoding,
-    payload_encoding
-  )
-
-  event = JSON.parse(json_bytes)
-  # ...handle the event...
+  event = client.verify_and_parse_sqs(msg.body, signature)
+  # ...handle event...
 
   sqs.delete_message(queue_url: ENV.fetch('STREAM_SQS_URL'), receipt_handle: msg.receipt_handle)
+rescue StreamChat::WebhookSignatureError => e
+  # do NOT delete the message - leave it for the DLQ / retry policy
+  Rails.logger.warn("Rejected Stream SQS message: #{e.message}")
 end
 ```
 
-The exact attribute names that carry the signature and encoding metadata may vary — refer to the SQS / SNS pages in this section for the up-to-date list. The decoding rules themselves do not change: signature is always computed over the **uncompressed** JSON.
+The exact attribute name that carries the signature may vary — refer to the SQS / SNS pages in this section for the up-to-date list. The decoding rules themselves do not change: the signature is always computed over the **uncompressed** JSON.
+
+If you need to build a custom pipeline, the module-level primitives are also exposed: `StreamChat::Webhook.ungzip_payload`, `decode_sqs_payload`, `decode_sns_payload`, `verify_signature`, and `parse_event`. The composite `verify_and_parse_*` methods are thin wrappers on top of these.
 
 ## Webhook types
 
