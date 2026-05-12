@@ -711,9 +711,6 @@ module StreamChat
     sig { params(request_body: String, x_signature: String).returns(T::Boolean) }
     def verify_webhook(request_body, x_signature)
       StreamChat::Webhook.verify_signature(request_body, x_signature, @api_secret)
-      true
-    rescue StreamChat::InvalidWebhookError
-      false
     end
 
     # Verify and parse an HTTP webhook event.
@@ -727,7 +724,7 @@ module StreamChat
     #   signed.
     # @param signature [String] Value of the `X-Signature` header.
     # @return [Hash] The parsed event.
-    # @raise [InvalidWebhookError] When the signature does not match or the
+    # @raise [WebhookSignatureError] When the signature does not match or the
     #   gzip envelope is malformed.
     sig do
       params(
@@ -739,48 +736,24 @@ module StreamChat
       StreamChat::Webhook.verify_and_parse_webhook(body, signature, @api_secret)
     end
 
-    # Verify and parse an SQS firehose webhook event.
-    #
-    # Reverses the base64 (+ optional gzip) wrapping on the SQS `Body` and
-    # returns the parsed event. When `signature` is provided, the HMAC is
-    # verified against the client's API secret; when omitted, signature
-    # verification is skipped (Stream's SQS deliveries are not signed).
+    # Parse an SQS-delivered webhook event (decode only; Stream does not HMAC-sign SQS bodies).
     #
     # @param message_body [String] SQS message `Body` string.
-    # @param signature [String, nil] Value of the `X-Signature` message
-    #   attribute, or `nil` to skip verification.
     # @return [Hash] The parsed event.
-    # @raise [InvalidWebhookError]
-    sig { params(message_body: String, signature: T.nilable(String)).returns(T::Hash[String, T.untyped]) }
-    def verify_and_parse_sqs(message_body, signature = nil)
-      if signature.nil?
-        StreamChat::Webhook.verify_and_parse_sqs(message_body)
-      else
-        StreamChat::Webhook.verify_and_parse_sqs(message_body, signature, @api_secret)
-      end
+    # @raise [WebhookSignatureError] on malformed base64 or gzip envelope
+    sig { params(message_body: String).returns(T::Hash[String, T.untyped]) }
+    def parse_sqs(message_body)
+      StreamChat::Webhook.parse_sqs(message_body)
     end
 
-    # Verify and parse an SNS firehose webhook event.
+    # Parse an SNS-delivered webhook event (unwraps envelope JSON when needed).
     #
-    # Reverses the base64 (+ optional gzip) wrapping on the SNS notification
-    # `Message` and returns the parsed event. When `signature` is provided,
-    # the HMAC is verified against the client's API secret; when omitted,
-    # signature verification is skipped (Stream's SNS deliveries are not
-    # signed by Stream — they carry AWS's own SNS signature).
-    #
-    # @param notification_body [String] SNS notification body (envelope JSON
-    #   or pre-extracted `Message` field).
-    # @param signature [String, nil] Value of the `X-Signature` message
-    #   attribute, or `nil` to skip verification.
+    # @param message [String] Raw SNS POST body or pre-extracted Message string.
     # @return [Hash] The parsed event.
-    # @raise [InvalidWebhookError]
-    sig { params(notification_body: String, signature: T.nilable(String)).returns(T::Hash[String, T.untyped]) }
-    def verify_and_parse_sns(notification_body, signature = nil)
-      if signature.nil?
-        StreamChat::Webhook.verify_and_parse_sns(notification_body)
-      else
-        StreamChat::Webhook.verify_and_parse_sns(notification_body, signature, @api_secret)
-      end
+    # @raise [WebhookSignatureError] on decode failures
+    sig { params(message: String).returns(T::Hash[String, T.untyped]) }
+    def parse_sns(message)
+      StreamChat::Webhook.parse_sns(message)
     end
 
     # Allows you to send custom events to a connected user.

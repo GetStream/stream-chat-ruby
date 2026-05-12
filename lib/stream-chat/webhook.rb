@@ -8,29 +8,17 @@ require 'sorbet-runtime'
 require 'stringio'
 require 'zlib'
 
-module StreamChat
-  # Single exception class raised by every webhook primitive when the payload
-  # cannot be decoded, decompressed, verified, or parsed. Callers only need
-  # one `rescue` arm and can branch on `message` (or the constants below) for
-  # mode-specific behaviour.
-  class InvalidWebhookError < StandardError
-    SIGNATURE_MISMATCH = T.let('signature mismatch', String)
-    INVALID_BASE64     = T.let('invalid base64 encoding', String)
-    GZIP_FAILED        = T.let('gzip decompression failed', String)
-    INVALID_JSON       = T.let('invalid JSON payload', String)
-  end
+require 'stream-chat/errors'
 
+module StreamChat
   # Stateless helpers implementing the cross-SDK webhook contract documented at
   # https://getstream.io/chat/docs/node/webhooks_overview/.
   #
-  # The composite functions (`verify_and_parse_webhook`, `verify_and_parse_sqs`,
-  # `verify_and_parse_sns`) are the recommended entry points. The primitives
-  # they compose (`gunzip_payload`, `decode_sqs_payload`, `decode_sns_payload`,
+  # The composite functions (`verify_and_parse_webhook`, `parse_sqs`,
+  # `parse_sns`) are the recommended entry points. The primitives
+  # they compose (`ungzip_payload`, `decode_sqs_payload`, `decode_sns_payload`,
   # `verify_signature`, `parse_event`) are exposed so callers can build custom
   # flows or run individual steps in isolation.
-  #
-  # Every failure path raises `StreamChat::InvalidWebhookError`. The original
-  # underlying exception (Zlib, Base64, JSON) is preserved on `Exception#cause`.
   #
   # The Ruby SDK currently returns the parsed JSON as a `Hash`; typed event
   # classes will land in a future release.
@@ -62,14 +50,14 @@ module StreamChat
     # handler correct when middleware - Rack, Rails - auto-decompresses the
     # request before your code sees it.
     sig { params(body: T.any(String, T::Array[Integer])).returns(String) }
-    def self.gunzip_payload(body)
+    def self.ungzip_payload(body)
       raw = normalize_body(body)
       return raw unless raw.start_with?(GZIP_MAGIC)
 
       begin
         Zlib::GzipReader.new(StringIO.new(raw)).read.force_encoding(Encoding::ASCII_8BIT)
-      rescue Zlib::Error
-        raise InvalidWebhookError, InvalidWebhookError::GZIP_FAILED
+      rescue Zlib::Error => e
+        raise WebhookSignatureError, "failed to decompress gzip payload: #{e.message}"
       end
     end
 
@@ -81,10 +69,10 @@ module StreamChat
       decoded =
         begin
           Base64.strict_decode64(body)
-        rescue ArgumentError
-          raise InvalidWebhookError, InvalidWebhookError::INVALID_BASE64
+        rescue ArgumentError => e
+          raise WebhookSignatureError, "failed to base64-decode payload: #{e.message}"
         end
-      gunzip_payload(decoded)
+      ungzip_payload(decoded)
     end
 
     # Reverses an SNS HTTP notification envelope. When `notification_body` is a
@@ -93,10 +81,6 @@ module StreamChat
     # (base64-decode, then gzip-if-magic). When the input is not a JSON
     # envelope it is treated as the already-extracted `Message` string, so
     # call sites that pre-unwrap continue to work.
-    #
-    # The envelope parsing is intentionally lenient: malformed envelope JSON
-    # is silently ignored and the input falls through to the SQS pipeline,
-    # which is the path that surfaces structural errors.
     sig { params(notification_body: String).returns(String) }
     def self.decode_sns_payload(notification_body)
       inner = extract_sns_message(notification_body)
@@ -121,7 +105,7 @@ module StreamChat
     private_class_method :extract_sns_message
 
     # Constant-time HMAC-SHA256 verification of `signature` against the digest
-    # of `body` keyed by `secret`. Raises `InvalidWebhookError` on mismatch.
+    # of `body` keyed by `secret`.
     #
     # The signature is always computed over the **uncompressed** JSON bytes,
     # so callers that decoded a gzipped or base64-wrapped payload must pass
@@ -131,12 +115,12 @@ module StreamChat
         body: T.any(String, T::Array[Integer]),
         signature: String,
         secret: String
-      ).void
+      ).returns(T::Boolean)
     end
     def self.verify_signature(body, signature, secret)
       raw = normalize_body(body)
       expected = OpenSSL::HMAC.hexdigest('SHA256', secret, raw)
-      raise InvalidWebhookError, InvalidWebhookError::SIGNATURE_MISMATCH unless constant_time_equal?(expected, signature)
+      constant_time_equal?(expected, signature)
     end
 
     # Parse a JSON-encoded webhook event into a `Hash`.
@@ -147,13 +131,8 @@ module StreamChat
     # changing call sites.
     sig { params(payload: String).returns(T::Hash[String, T.untyped]) }
     def self.parse_event(payload)
-      result =
-        begin
-          JSON.parse(payload)
-        rescue JSON::ParserError
-          raise InvalidWebhookError, InvalidWebhookError::INVALID_JSON
-        end
-      raise InvalidWebhookError, InvalidWebhookError::INVALID_JSON unless result.is_a?(Hash)
+      result = JSON.parse(payload)
+      raise WebhookSignatureError, 'failed to parse webhook event: top-level value is not an object' unless result.is_a?(Hash)
 
       result
     end
@@ -166,7 +145,8 @@ module StreamChat
       ).returns(T::Hash[String, T.untyped])
     end
     def self.verify_and_parse_internal(payload, signature, secret)
-      verify_signature(payload, signature, secret)
+      raise WebhookSignatureError, 'invalid webhook signature' unless verify_signature(payload, signature, secret)
+
       parse_event(payload)
     end
     private_class_method :verify_and_parse_internal
@@ -181,73 +161,21 @@ module StreamChat
       ).returns(T::Hash[String, T.untyped])
     end
     def self.verify_and_parse_webhook(body, signature, secret)
-      verify_and_parse_internal(gunzip_payload(body), signature, secret)
+      verify_and_parse_internal(ungzip_payload(body), signature, secret)
     end
 
-    # Decode the SQS `Body` (base64, then gzip-if-magic), optionally verify the
-    # HMAC `signature` from the `X-Signature` message attribute, and return the
-    # parsed event.
-    #
-    # Stream's SQS deliveries are not signed: SQS messages ride
-    # IAM-authenticated queues, so an additional HMAC on top is redundant.
-    # `signature` and `secret` are therefore optional; pass both to opt into
-    # the legacy verification path, omit both to skip it. Passing exactly one
-    # raises `InvalidWebhookError`.
-    sig do
-      params(
-        message_body: String,
-        signature: T.nilable(String),
-        secret: T.nilable(String)
-      ).returns(T::Hash[String, T.untyped])
-    end
-    def self.verify_and_parse_sqs(message_body, signature = nil, secret = nil)
-      decoded = decode_sqs_payload(message_body)
-      verify_and_parse_optional(decoded, signature, secret, 'SQS')
+    # Decode the SQS `Body` (base64 + gzip-if-magic) and return the parsed Hash.
+    # Stream does not HMAC-sign SQS bodies.
+    sig { params(message_body: String).returns(T::Hash[String, T.untyped]) }
+    def self.parse_sqs(message_body)
+      parse_event(decode_sqs_payload(message_body))
     end
 
-    # Decode the SNS notification `Message` (identical to SQS handling),
-    # optionally verify the HMAC `signature` from the `X-Signature` message
-    # attribute, and return the parsed event.
-    #
-    # Stream's SNS deliveries are not signed by Stream: SNS notifications carry
-    # AWS's own SNS signature, so an additional HMAC on top is redundant.
-    # `signature` and `secret` are therefore optional; pass both to opt into
-    # the legacy verification path, omit both to skip it. Passing exactly one
-    # raises `InvalidWebhookError`.
-    sig do
-      params(
-        notification_body: String,
-        signature: T.nilable(String),
-        secret: T.nilable(String)
-      ).returns(T::Hash[String, T.untyped])
+    # Decode an SNS-delivered payload (unwrap envelope when needed). No HMAC.
+    sig { params(message: String).returns(T::Hash[String, T.untyped]) }
+    def self.parse_sns(message)
+      parse_event(decode_sns_payload(message))
     end
-    def self.verify_and_parse_sns(notification_body, signature = nil, secret = nil)
-      decoded = decode_sns_payload(notification_body)
-      verify_and_parse_optional(decoded, signature, secret, 'SNS')
-    end
-
-    sig do
-      params(
-        payload: String,
-        signature: T.nilable(String),
-        secret: T.nilable(String),
-        transport: String
-      ).returns(T::Hash[String, T.untyped])
-    end
-    def self.verify_and_parse_optional(payload, signature, secret, transport)
-      has_signature = !signature.nil? && !signature.empty?
-      has_secret    = !secret.nil?    && !secret.empty?
-
-      if has_signature && has_secret
-        verify_and_parse_internal(payload, signature, secret)
-      elsif has_signature || has_secret
-        raise InvalidWebhookError,
-              "signature and secret must both be provided to verify the #{transport} payload"
-      else
-        parse_event(payload)
-      end
-    end
-    private_class_method :verify_and_parse_optional
 
     # Timing-safe equality check used to compare the locally computed HMAC
     # with the `X-Signature` header. Prefers the OpenSSL primitive when the

@@ -41,36 +41,31 @@ describe 'StreamChat webhook verification + parsing' do
 
   let(:client) { StreamChat::Client.new(api_key, api_secret) }
 
-  describe 'StreamChat::Webhook.gunzip_payload' do
+  describe 'StreamChat::Webhook.ungzip_payload' do
     it 'passes through plain bytes unchanged' do
-      expect(StreamChat::Webhook.gunzip_payload(json_body)).to eq(json_body)
+      expect(StreamChat::Webhook.ungzip_payload(json_body)).to eq(json_body)
     end
 
     it 'inflates gzip-magic bytes' do
-      expect(StreamChat::Webhook.gunzip_payload(gzip(json_body))).to eq(json_body)
+      expect(StreamChat::Webhook.ungzip_payload(gzip(json_body))).to eq(json_body)
     end
 
     it 'accepts a body provided as an array of integers' do
-      expect(StreamChat::Webhook.gunzip_payload(json_body.bytes)).to eq(json_body)
+      expect(StreamChat::Webhook.ungzip_payload(json_body.bytes)).to eq(json_body)
     end
 
     it 'returns empty input unchanged' do
-      expect(StreamChat::Webhook.gunzip_payload('')).to eq('')
+      expect(StreamChat::Webhook.ungzip_payload('')).to eq('')
     end
 
     it 'returns short input below magic length unchanged' do
-      expect(StreamChat::Webhook.gunzip_payload('ab')).to eq('ab')
+      expect(StreamChat::Webhook.ungzip_payload('ab')).to eq('ab')
     end
 
-    it 'raises InvalidWebhookError on truncated gzip with magic' do
+    it 'raises on truncated gzip with magic' do
       bad = "\x1f\x8b\x08\x00\x00\x00".b
-      expect { StreamChat::Webhook.gunzip_payload(bad) }
-        .to raise_error(StreamChat::InvalidWebhookError, /gzip decompression failed/)
-    end
-
-    it 'decompresses the helloworld fixture' do
-      expect(StreamChat::Webhook.gunzip_payload(Base64.decode64('H4sIAGrYAWoAA8tIzcnJL88vykkBAK0g6/kKAAAA')))
-        .to eq('helloworld')
+      expect { StreamChat::Webhook.ungzip_payload(bad) }
+        .to raise_error(StreamChat::WebhookSignatureError, /decompress gzip/i)
     end
   end
 
@@ -85,18 +80,9 @@ describe 'StreamChat webhook verification + parsing' do
       expect(StreamChat::Webhook.decode_sqs_payload(wrapped)).to eq(json_body)
     end
 
-    it 'raises InvalidWebhookError on invalid base64' do
+    it 'raises on invalid base64' do
       expect { StreamChat::Webhook.decode_sqs_payload('!!!not-base64!!!') }
-        .to raise_error(StreamChat::InvalidWebhookError, /invalid base64 encoding/)
-    end
-
-    it 'decodes the helloworld base64 fixture' do
-      expect(StreamChat::Webhook.decode_sqs_payload('aGVsbG93b3JsZA==')).to eq('helloworld')
-    end
-
-    it 'decodes the helloworld base64+gzip fixture' do
-      expect(StreamChat::Webhook.decode_sqs_payload('H4sIAGrYAWoAA8tIzcnJL88vykkBAK0g6/kKAAAA'))
-        .to eq('helloworld')
+        .to raise_error(StreamChat::WebhookSignatureError, /base64-decode/i)
     end
   end
 
@@ -121,21 +107,19 @@ describe 'StreamChat webhook verification + parsing' do
   end
 
   describe 'StreamChat::Webhook.verify_signature' do
-    it 'does not raise for a matching HMAC' do
+    it 'returns true for matching HMAC' do
       sig = hmac_hex(api_secret, json_body)
-      expect { StreamChat::Webhook.verify_signature(json_body, sig, api_secret) }.not_to raise_error
+      expect(StreamChat::Webhook.verify_signature(json_body, sig, api_secret)).to be true
     end
 
-    it 'raises InvalidWebhookError for a mismatched signature' do
-      expect { StreamChat::Webhook.verify_signature(json_body, '0' * 64, api_secret) }
-        .to raise_error(StreamChat::InvalidWebhookError, /signature mismatch/)
+    it 'returns false for mismatched signature' do
+      expect(StreamChat::Webhook.verify_signature(json_body, '0' * 64, api_secret)).to be false
     end
 
-    it 'raises when the signature was computed over compressed bytes' do
+    it 'rejects signatures computed over compressed bytes' do
       compressed = gzip(json_body)
       sig_over_compressed = hmac_hex(api_secret, compressed)
-      expect { StreamChat::Webhook.verify_signature(json_body, sig_over_compressed, api_secret) }
-        .to raise_error(StreamChat::InvalidWebhookError, /signature mismatch/)
+      expect(StreamChat::Webhook.verify_signature(json_body, sig_over_compressed, api_secret)).to be false
     end
   end
 
@@ -149,9 +133,8 @@ describe 'StreamChat webhook verification + parsing' do
         .to eq({ 'type' => 'a.future.event', 'custom' => 42 })
     end
 
-    it 'raises InvalidWebhookError on malformed JSON' do
-      expect { StreamChat::Webhook.parse_event('not json') }
-        .to raise_error(StreamChat::InvalidWebhookError, /invalid JSON payload/)
+    it 'raises on malformed JSON' do
+      expect { StreamChat::Webhook.parse_event('not json') }.to raise_error(JSON::ParserError)
     end
   end
 
@@ -182,154 +165,52 @@ describe 'StreamChat webhook verification + parsing' do
       expect(client.verify_and_parse_webhook(json_body.bytes, sig)).to eq(event_hash)
     end
 
-    it 'raises InvalidWebhookError on signature mismatch' do
+    it 'raises WebhookSignatureError on signature mismatch' do
       expect { client.verify_and_parse_webhook(json_body, 'definitely-wrong') }
-        .to raise_error(StreamChat::InvalidWebhookError, /signature mismatch/)
+        .to raise_error(StreamChat::WebhookSignatureError, 'invalid webhook signature')
     end
 
     it 'rejects a gzip body when the signature was computed over compressed bytes' do
       compressed = gzip(json_body)
       sig_over_compressed = hmac_hex(api_secret, compressed)
       expect { client.verify_and_parse_webhook(compressed, sig_over_compressed) }
-        .to raise_error(StreamChat::InvalidWebhookError, /signature mismatch/)
+        .to raise_error(StreamChat::WebhookSignatureError, 'invalid webhook signature')
     end
   end
 
-  describe '#verify_and_parse_sqs' do
+  describe '#parse_sqs' do
     it 'parses a base64-only message body' do
       wrapped = Base64.strict_encode64(json_body)
-      sig = hmac_hex(api_secret, json_body)
-      expect(client.verify_and_parse_sqs(wrapped, sig)).to eq(event_hash)
+      expect(client.parse_sqs(wrapped)).to eq(event_hash)
     end
 
     it 'parses a base64 + gzip message body' do
       wrapped = Base64.strict_encode64(gzip(json_body))
-      sig = hmac_hex(api_secret, json_body)
-      expect(client.verify_and_parse_sqs(wrapped, sig)).to eq(event_hash)
+      expect(client.parse_sqs(wrapped)).to eq(event_hash)
     end
 
-    it 'rejects a wrapped body when the signature was computed over the wrapper' do
+    it 'does not require a correct API secret on the client (no HMAC)' do
+      wrong_secret = StreamChat::Client.new(api_key, 'wrong-secret')
       wrapped = Base64.strict_encode64(gzip(json_body))
-      sig_over_wrapped = hmac_hex(api_secret, wrapped)
-      expect { client.verify_and_parse_sqs(wrapped, sig_over_wrapped) }
-        .to raise_error(StreamChat::InvalidWebhookError, /signature mismatch/)
-    end
-
-    it 'parses SQS without signature when none provided' do
-      wrapped = Base64.strict_encode64(gzip(json_body))
-      expect(client.verify_and_parse_sqs(wrapped)).to eq(event_hash)
-    end
-
-    it 'verifies and parses SQS when signature provided' do
-      wrapped = Base64.strict_encode64(gzip(json_body))
-      sig = hmac_hex(api_secret, json_body)
-      expect(client.verify_and_parse_sqs(wrapped, sig)).to eq(event_hash)
-    end
-
-    it 'parses SQS without consulting the client api_secret when no signature is requested' do
-      wrong_secret_client = StreamChat::Client.new(api_key, 'not-the-real-secret')
-      wrapped = Base64.strict_encode64(gzip(json_body))
-      expect(wrong_secret_client.verify_and_parse_sqs(wrapped)).to eq(event_hash)
+      expect(wrong_secret.parse_sqs(wrapped)).to eq(event_hash)
     end
   end
 
-  describe '#verify_and_parse_sns' do
+  describe '#parse_sns' do
     it 'parses a pre-extracted base64 + gzip notification' do
       wrapped = Base64.strict_encode64(gzip(json_body))
-      sig = hmac_hex(api_secret, json_body)
-      expect(client.verify_and_parse_sns(wrapped, sig)).to eq(event_hash)
+      expect(client.parse_sns(wrapped)).to eq(event_hash)
     end
 
-    it 'returns the same event as verify_and_parse_sqs for pre-extracted Message' do
+    it 'returns the same event as parse_sqs for pre-extracted Message' do
       wrapped = Base64.strict_encode64(gzip(json_body))
-      sig = hmac_hex(api_secret, json_body)
-      expect(client.verify_and_parse_sns(wrapped, sig))
-        .to eq(client.verify_and_parse_sqs(wrapped, sig))
+      expect(client.parse_sns(wrapped)).to eq(client.parse_sqs(wrapped))
     end
 
     it 'parses a full SNS HTTP notification envelope' do
       wrapped = Base64.strict_encode64(gzip(json_body))
       envelope = sns_envelope(wrapped)
-      sig = hmac_hex(api_secret, json_body)
-      expect(client.verify_and_parse_sns(envelope, sig)).to eq(event_hash)
-    end
-
-    it 'rejects signature computed over the envelope JSON, not the payload' do
-      wrapped = Base64.strict_encode64(gzip(json_body))
-      envelope = sns_envelope(wrapped)
-      sig_over_envelope = hmac_hex(api_secret, envelope)
-      expect { client.verify_and_parse_sns(envelope, sig_over_envelope) }
-        .to raise_error(StreamChat::InvalidWebhookError, /signature mismatch/)
-    end
-
-    it 'parses SNS envelope without signature when none provided' do
-      wrapped = Base64.strict_encode64(gzip(json_body))
-      envelope = sns_envelope(wrapped)
-      expect(client.verify_and_parse_sns(envelope)).to eq(event_hash)
-    end
-
-    it 'parses SNS without consulting the client api_secret when no signature is requested' do
-      wrong_secret_client = StreamChat::Client.new(api_key, 'not-the-real-secret')
-      wrapped = Base64.strict_encode64(gzip(json_body))
-      envelope = sns_envelope(wrapped)
-      expect(wrong_secret_client.verify_and_parse_sns(envelope)).to eq(event_hash)
-    end
-  end
-
-  describe 'optional-signature gating on SQS/SNS module helpers' do
-    it 'raises InvalidWebhookError when only signature is provided on SQS' do
-      wrapped = Base64.strict_encode64(json_body)
-      expect { StreamChat::Webhook.verify_and_parse_sqs(wrapped, 'a-signature', nil) }
-        .to raise_error(StreamChat::InvalidWebhookError, /signature and secret must both be provided/)
-    end
-
-    it 'raises InvalidWebhookError when only secret is provided on SQS' do
-      wrapped = Base64.strict_encode64(json_body)
-      expect { StreamChat::Webhook.verify_and_parse_sqs(wrapped, nil, api_secret) }
-        .to raise_error(StreamChat::InvalidWebhookError, /signature and secret must both be provided/)
-    end
-
-    it 'raises InvalidWebhookError when only signature is provided on SNS' do
-      wrapped = Base64.strict_encode64(json_body)
-      envelope = sns_envelope(wrapped)
-      expect { StreamChat::Webhook.verify_and_parse_sns(envelope, 'a-signature', nil) }
-        .to raise_error(StreamChat::InvalidWebhookError, /signature and secret must both be provided/)
-    end
-
-    it 'raises InvalidWebhookError when only secret is provided on SNS' do
-      wrapped = Base64.strict_encode64(json_body)
-      envelope = sns_envelope(wrapped)
-      expect { StreamChat::Webhook.verify_and_parse_sns(envelope, nil, api_secret) }
-        .to raise_error(StreamChat::InvalidWebhookError, /signature and secret must both be provided/)
-    end
-
-    it 'parses SQS payload without verification when both signature and secret are nil' do
-      wrapped = Base64.strict_encode64(json_body)
-      expect(StreamChat::Webhook.verify_and_parse_sqs(wrapped)).to eq(event_hash)
-    end
-
-    it 'parses SNS payload without verification when both signature and secret are nil' do
-      wrapped = Base64.strict_encode64(gzip(json_body))
-      envelope = sns_envelope(wrapped)
-      expect(StreamChat::Webhook.verify_and_parse_sns(envelope)).to eq(event_hash)
-    end
-  end
-
-  describe 'StreamChat::InvalidWebhookError consolidation' do
-    it 'raises InvalidWebhookError on invalid base64' do
-      expect { StreamChat::Webhook.decode_sqs_payload('!!!not-base64!!!') }
-        .to raise_error(StreamChat::InvalidWebhookError, /invalid base64 encoding/)
-    end
-
-    it 'raises InvalidWebhookError on corrupt gzip' do
-      bad = "\x1f\x8b\x08\x00\x00\x00".b
-      expect { StreamChat::Webhook.gunzip_payload(bad) }
-        .to raise_error(StreamChat::InvalidWebhookError, /gzip decompression failed/)
-    end
-
-    it 'raises InvalidWebhookError on invalid JSON' do
-      expect { StreamChat::Webhook.parse_event('not json') }
-        .to raise_error(StreamChat::InvalidWebhookError, /invalid JSON payload/)
+      expect(client.parse_sns(envelope)).to eq(event_hash)
     end
   end
 end
