@@ -164,14 +164,14 @@ module StreamChat
       verify_and_parse_internal(ungzip_payload(body), signature, secret)
     end
 
-    # Decode the SQS `Body` (base64 + gzip-if-magic) and return the parsed Hash.
-    # Stream does not HMAC-sign SQS bodies.
+    # Decode the SQS `Body` (base64, then gzip-if-magic) and return the parsed
+    # event JSON. Stream does not ship an application-level signature on SQS payloads.
     sig { params(message_body: String).returns(T::Hash[String, T.untyped]) }
     def self.parse_sqs(message_body)
       parse_event(decode_sqs_payload(message_body))
     end
 
-    # Decode an SNS-delivered payload (unwrap envelope when needed). No HMAC.
+    # Decode SNS (unwrap envelope when needed) and return the parsed event JSON.
     sig { params(message: String).returns(T::Hash[String, T.untyped]) }
     def self.parse_sns(message)
       parse_event(decode_sns_payload(message))

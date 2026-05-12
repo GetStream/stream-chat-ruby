@@ -47,4 +47,8 @@ module StreamChat
   end
 
   class StreamChannelException < StandardError; end
+
+  # Raised by webhook verify/parse helpers when the HMAC does not match or a
+  # gzip/base64 envelope cannot be decoded.
+  class WebhookSignatureError < StandardError; end
 end
