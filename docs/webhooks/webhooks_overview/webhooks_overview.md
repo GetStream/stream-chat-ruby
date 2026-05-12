@@ -110,7 +110,7 @@ Before enabling compression, make sure that:
 
 ### Decoding a compressed webhook in Ruby (Rails)
 
-The Ruby SDK exposes three composite helpers on `StreamChat::Client`, one per transport, so you do not have to wire `Zlib`, `Base64`, and `OpenSSL::HMAC` together yourself. Each method decodes the body, verifies the `X-Signature` HMAC against the **uncompressed** JSON, parses the JSON, and returns the event as a `Hash`. Any failure (bad signature, malformed gzip, malformed base64) raises `StreamChat::WebhookSignatureError`.
+The Ruby SDK exposes three composite helpers on `StreamChat::Client`, one per transport, so you do not have to wire `Zlib`, `Base64`, and `OpenSSL::HMAC` together yourself. Each method decodes the body, verifies the `X-Signature` HMAC against the **uncompressed** JSON, parses the JSON, and returns the event as a `Hash`. Any failure (bad signature, malformed gzip, malformed base64) raises `StreamChat::InvalidWebhookError`.
 
 * `verify_and_parse_webhook(body, x_signature)` — HTTP webhooks.
 * `verify_and_parse_sqs(message_body, x_signature)` — SQS firehose messages (base64 + optional gzip).
@@ -136,7 +136,7 @@ class WebhooksController < ApplicationController
 
     Rails.logger.info("Stream webhook: #{event['type']}")
     head :ok
-  rescue StreamChat::WebhookSignatureError => e
+  rescue StreamChat::InvalidWebhookError => e
     Rails.logger.warn("Rejected Stream webhook: #{e.message}")
     head :unauthorized
   end
@@ -165,7 +165,7 @@ resp.messages.each do |msg|
   # ...handle event...
 
   sqs.delete_message(queue_url: ENV.fetch('STREAM_SQS_URL'), receipt_handle: msg.receipt_handle)
-rescue StreamChat::WebhookSignatureError => e
+rescue StreamChat::InvalidWebhookError => e
   # do NOT delete the message - leave it for the DLQ / retry policy
   Rails.logger.warn("Rejected Stream SQS message: #{e.message}")
 end

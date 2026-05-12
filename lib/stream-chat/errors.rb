@@ -47,21 +47,4 @@ module StreamChat
   end
 
   class StreamChannelException < StandardError; end
-
-  # Raised when a webhook payload cannot be decoded, decompressed, or its
-  # signature does not match the expected HMAC. This is a local verification
-  # failure with no HTTP response attached, so it inherits directly from
-  # `StandardError` rather than `StreamAPIException`.
-  class WebhookSignatureError < StandardError
-    extend T::Sig
-
-    sig { returns(String) }
-    attr_reader :reason
-
-    sig { params(reason: String).void }
-    def initialize(reason)
-      @reason = T.let(reason, String)
-      super
-    end
-  end
 end

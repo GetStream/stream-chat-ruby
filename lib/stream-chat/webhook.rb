@@ -8,9 +8,18 @@ require 'sorbet-runtime'
 require 'stringio'
 require 'zlib'
 
-require 'stream-chat/errors'
-
 module StreamChat
+  # Single exception class raised by every webhook primitive when the payload
+  # cannot be decoded, decompressed, verified, or parsed. Callers only need
+  # one `rescue` arm and can branch on `message` (or the constants below) for
+  # mode-specific behaviour.
+  class InvalidWebhookError < StandardError
+    SIGNATURE_MISMATCH = T.let('signature mismatch', String)
+    INVALID_BASE64     = T.let('invalid base64 encoding', String)
+    GZIP_FAILED        = T.let('gzip decompression failed', String)
+    INVALID_JSON       = T.let('invalid JSON payload', String)
+  end
+
   # Stateless helpers implementing the cross-SDK webhook contract documented at
   # https://getstream.io/chat/docs/node/webhooks_overview/.
   #
@@ -19,6 +28,9 @@ module StreamChat
   # they compose (`gunzip_payload`, `decode_sqs_payload`, `decode_sns_payload`,
   # `verify_signature`, `parse_event`) are exposed so callers can build custom
   # flows or run individual steps in isolation.
+  #
+  # Every failure path raises `StreamChat::InvalidWebhookError`. The original
+  # underlying exception (Zlib, Base64, JSON) is preserved on `Exception#cause`.
   #
   # The Ruby SDK currently returns the parsed JSON as a `Hash`; typed event
   # classes will land in a future release.
@@ -56,8 +68,8 @@ module StreamChat
 
       begin
         Zlib::GzipReader.new(StringIO.new(raw)).read.force_encoding(Encoding::ASCII_8BIT)
-      rescue Zlib::Error => e
-        raise WebhookSignatureError, "failed to decompress gzip payload: #{e.message}"
+      rescue Zlib::Error
+        raise InvalidWebhookError, InvalidWebhookError::GZIP_FAILED
       end
     end
 
@@ -69,8 +81,8 @@ module StreamChat
       decoded =
         begin
           Base64.strict_decode64(body)
-        rescue ArgumentError => e
-          raise WebhookSignatureError, "failed to base64-decode payload: #{e.message}"
+        rescue ArgumentError
+          raise InvalidWebhookError, InvalidWebhookError::INVALID_BASE64
         end
       gunzip_payload(decoded)
     end
@@ -81,6 +93,10 @@ module StreamChat
     # (base64-decode, then gzip-if-magic). When the input is not a JSON
     # envelope it is treated as the already-extracted `Message` string, so
     # call sites that pre-unwrap continue to work.
+    #
+    # The envelope parsing is intentionally lenient: malformed envelope JSON
+    # is silently ignored and the input falls through to the SQS pipeline,
+    # which is the path that surfaces structural errors.
     sig { params(notification_body: String).returns(String) }
     def self.decode_sns_payload(notification_body)
       inner = extract_sns_message(notification_body)
@@ -105,7 +121,7 @@ module StreamChat
     private_class_method :extract_sns_message
 
     # Constant-time HMAC-SHA256 verification of `signature` against the digest
-    # of `body` keyed by `secret`.
+    # of `body` keyed by `secret`. Raises `InvalidWebhookError` on mismatch.
     #
     # The signature is always computed over the **uncompressed** JSON bytes,
     # so callers that decoded a gzipped or base64-wrapped payload must pass
@@ -115,12 +131,12 @@ module StreamChat
         body: T.any(String, T::Array[Integer]),
         signature: String,
         secret: String
-      ).returns(T::Boolean)
+      ).void
     end
     def self.verify_signature(body, signature, secret)
       raw = normalize_body(body)
       expected = OpenSSL::HMAC.hexdigest('SHA256', secret, raw)
-      constant_time_equal?(expected, signature)
+      raise InvalidWebhookError, InvalidWebhookError::SIGNATURE_MISMATCH unless constant_time_equal?(expected, signature)
     end
 
     # Parse a JSON-encoded webhook event into a `Hash`.
@@ -131,8 +147,13 @@ module StreamChat
     # changing call sites.
     sig { params(payload: String).returns(T::Hash[String, T.untyped]) }
     def self.parse_event(payload)
-      result = JSON.parse(payload)
-      raise WebhookSignatureError, 'failed to parse webhook event: top-level value is not an object' unless result.is_a?(Hash)
+      result =
+        begin
+          JSON.parse(payload)
+        rescue JSON::ParserError
+          raise InvalidWebhookError, InvalidWebhookError::INVALID_JSON
+        end
+      raise InvalidWebhookError, InvalidWebhookError::INVALID_JSON unless result.is_a?(Hash)
 
       result
     end
@@ -145,8 +166,7 @@ module StreamChat
       ).returns(T::Hash[String, T.untyped])
     end
     def self.verify_and_parse_internal(payload, signature, secret)
-      raise WebhookSignatureError, 'invalid webhook signature' unless verify_signature(payload, signature, secret)
-
+      verify_signature(payload, signature, secret)
       parse_event(payload)
     end
     private_class_method :verify_and_parse_internal

@@ -711,6 +711,9 @@ module StreamChat
     sig { params(request_body: String, x_signature: String).returns(T::Boolean) }
     def verify_webhook(request_body, x_signature)
       StreamChat::Webhook.verify_signature(request_body, x_signature, @api_secret)
+      true
+    rescue StreamChat::InvalidWebhookError
+      false
     end
 
     # Verify and parse an HTTP webhook event.
@@ -724,7 +727,7 @@ module StreamChat
     #   signed.
     # @param signature [String] Value of the `X-Signature` header.
     # @return [Hash] The parsed event.
-    # @raise [WebhookSignatureError] When the signature does not match or the
+    # @raise [InvalidWebhookError] When the signature does not match or the
     #   gzip envelope is malformed.
     sig do
       params(
@@ -745,7 +748,7 @@ module StreamChat
     # @param message_body [String] SQS message `Body` string.
     # @param signature [String] Value of the `X-Signature` message attribute.
     # @return [Hash] The parsed event.
-    # @raise [WebhookSignatureError]
+    # @raise [InvalidWebhookError]
     sig { params(message_body: String, signature: String).returns(T::Hash[String, T.untyped]) }
     def verify_and_parse_sqs(message_body, signature)
       StreamChat::Webhook.verify_and_parse_sqs(message_body, signature, @api_secret)
@@ -760,7 +763,7 @@ module StreamChat
     # @param message [String] SNS notification `Message` field.
     # @param signature [String] Value of the `X-Signature` message attribute.
     # @return [Hash] The parsed event.
-    # @raise [WebhookSignatureError]
+    # @raise [InvalidWebhookError]
     sig { params(message: String, signature: String).returns(T::Hash[String, T.untyped]) }
     def verify_and_parse_sns(message, signature)
       StreamChat::Webhook.verify_and_parse_sns(message, signature, @api_secret)
