@@ -184,33 +184,70 @@ module StreamChat
       verify_and_parse_internal(gunzip_payload(body), signature, secret)
     end
 
-    # Decode the SQS `Body` (base64, then gzip-if-magic), verify the HMAC
-    # `signature` from the `X-Signature` message attribute, and return the
+    # Decode the SQS `Body` (base64, then gzip-if-magic), optionally verify the
+    # HMAC `signature` from the `X-Signature` message attribute, and return the
     # parsed event.
+    #
+    # Stream's SQS deliveries are not signed: SQS messages ride
+    # IAM-authenticated queues, so an additional HMAC on top is redundant.
+    # `signature` and `secret` are therefore optional; pass both to opt into
+    # the legacy verification path, omit both to skip it. Passing exactly one
+    # raises `InvalidWebhookError`.
     sig do
       params(
         message_body: String,
-        signature: String,
-        secret: String
+        signature: T.nilable(String),
+        secret: T.nilable(String)
       ).returns(T::Hash[String, T.untyped])
     end
-    def self.verify_and_parse_sqs(message_body, signature, secret)
-      verify_and_parse_internal(decode_sqs_payload(message_body), signature, secret)
+    def self.verify_and_parse_sqs(message_body, signature = nil, secret = nil)
+      decoded = decode_sqs_payload(message_body)
+      verify_and_parse_optional(decoded, signature, secret, 'SQS')
     end
 
-    # Decode the SNS notification `Message` (identical to SQS handling), verify
-    # the HMAC `signature` from the `X-Signature` message attribute, and return
-    # the parsed event.
+    # Decode the SNS notification `Message` (identical to SQS handling),
+    # optionally verify the HMAC `signature` from the `X-Signature` message
+    # attribute, and return the parsed event.
+    #
+    # Stream's SNS deliveries are not signed by Stream: SNS notifications carry
+    # AWS's own SNS signature, so an additional HMAC on top is redundant.
+    # `signature` and `secret` are therefore optional; pass both to opt into
+    # the legacy verification path, omit both to skip it. Passing exactly one
+    # raises `InvalidWebhookError`.
     sig do
       params(
-        message: String,
-        signature: String,
-        secret: String
+        notification_body: String,
+        signature: T.nilable(String),
+        secret: T.nilable(String)
       ).returns(T::Hash[String, T.untyped])
     end
-    def self.verify_and_parse_sns(message, signature, secret)
-      verify_and_parse_internal(decode_sns_payload(message), signature, secret)
+    def self.verify_and_parse_sns(notification_body, signature = nil, secret = nil)
+      decoded = decode_sns_payload(notification_body)
+      verify_and_parse_optional(decoded, signature, secret, 'SNS')
     end
+
+    sig do
+      params(
+        payload: String,
+        signature: T.nilable(String),
+        secret: T.nilable(String),
+        transport: String
+      ).returns(T::Hash[String, T.untyped])
+    end
+    def self.verify_and_parse_optional(payload, signature, secret, transport)
+      has_signature = !signature.nil? && !signature.empty?
+      has_secret    = !secret.nil?    && !secret.empty?
+
+      if has_signature && has_secret
+        verify_and_parse_internal(payload, signature, secret)
+      elsif has_signature || has_secret
+        raise InvalidWebhookError,
+              "signature and secret must both be provided to verify the #{transport} payload"
+      else
+        parse_event(payload)
+      end
+    end
+    private_class_method :verify_and_parse_optional
 
     # Timing-safe equality check used to compare the locally computed HMAC
     # with the `X-Signature` header. Prefers the OpenSSL primitive when the

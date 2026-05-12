@@ -214,6 +214,23 @@ describe 'StreamChat webhook verification + parsing' do
       expect { client.verify_and_parse_sqs(wrapped, sig_over_wrapped) }
         .to raise_error(StreamChat::InvalidWebhookError, /signature mismatch/)
     end
+
+    it 'parses SQS without signature when none provided' do
+      wrapped = Base64.strict_encode64(gzip(json_body))
+      expect(client.verify_and_parse_sqs(wrapped)).to eq(event_hash)
+    end
+
+    it 'verifies and parses SQS when signature provided' do
+      wrapped = Base64.strict_encode64(gzip(json_body))
+      sig = hmac_hex(api_secret, json_body)
+      expect(client.verify_and_parse_sqs(wrapped, sig)).to eq(event_hash)
+    end
+
+    it 'parses SQS without consulting the client api_secret when no signature is requested' do
+      wrong_secret_client = StreamChat::Client.new(api_key, 'not-the-real-secret')
+      wrapped = Base64.strict_encode64(gzip(json_body))
+      expect(wrong_secret_client.verify_and_parse_sqs(wrapped)).to eq(event_hash)
+    end
   end
 
   describe '#verify_and_parse_sns' do
@@ -243,6 +260,58 @@ describe 'StreamChat webhook verification + parsing' do
       sig_over_envelope = hmac_hex(api_secret, envelope)
       expect { client.verify_and_parse_sns(envelope, sig_over_envelope) }
         .to raise_error(StreamChat::InvalidWebhookError, /signature mismatch/)
+    end
+
+    it 'parses SNS envelope without signature when none provided' do
+      wrapped = Base64.strict_encode64(gzip(json_body))
+      envelope = sns_envelope(wrapped)
+      expect(client.verify_and_parse_sns(envelope)).to eq(event_hash)
+    end
+
+    it 'parses SNS without consulting the client api_secret when no signature is requested' do
+      wrong_secret_client = StreamChat::Client.new(api_key, 'not-the-real-secret')
+      wrapped = Base64.strict_encode64(gzip(json_body))
+      envelope = sns_envelope(wrapped)
+      expect(wrong_secret_client.verify_and_parse_sns(envelope)).to eq(event_hash)
+    end
+  end
+
+  describe 'optional-signature gating on SQS/SNS module helpers' do
+    it 'raises InvalidWebhookError when only signature is provided on SQS' do
+      wrapped = Base64.strict_encode64(json_body)
+      expect { StreamChat::Webhook.verify_and_parse_sqs(wrapped, 'a-signature', nil) }
+        .to raise_error(StreamChat::InvalidWebhookError, /signature and secret must both be provided/)
+    end
+
+    it 'raises InvalidWebhookError when only secret is provided on SQS' do
+      wrapped = Base64.strict_encode64(json_body)
+      expect { StreamChat::Webhook.verify_and_parse_sqs(wrapped, nil, api_secret) }
+        .to raise_error(StreamChat::InvalidWebhookError, /signature and secret must both be provided/)
+    end
+
+    it 'raises InvalidWebhookError when only signature is provided on SNS' do
+      wrapped = Base64.strict_encode64(json_body)
+      envelope = sns_envelope(wrapped)
+      expect { StreamChat::Webhook.verify_and_parse_sns(envelope, 'a-signature', nil) }
+        .to raise_error(StreamChat::InvalidWebhookError, /signature and secret must both be provided/)
+    end
+
+    it 'raises InvalidWebhookError when only secret is provided on SNS' do
+      wrapped = Base64.strict_encode64(json_body)
+      envelope = sns_envelope(wrapped)
+      expect { StreamChat::Webhook.verify_and_parse_sns(envelope, nil, api_secret) }
+        .to raise_error(StreamChat::InvalidWebhookError, /signature and secret must both be provided/)
+    end
+
+    it 'parses SQS payload without verification when both signature and secret are nil' do
+      wrapped = Base64.strict_encode64(json_body)
+      expect(StreamChat::Webhook.verify_and_parse_sqs(wrapped)).to eq(event_hash)
+    end
+
+    it 'parses SNS payload without verification when both signature and secret are nil' do
+      wrapped = Base64.strict_encode64(gzip(json_body))
+      envelope = sns_envelope(wrapped)
+      expect(StreamChat::Webhook.verify_and_parse_sns(envelope)).to eq(event_hash)
     end
   end
 
