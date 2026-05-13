@@ -1,7 +1,11 @@
 # typed: strict
 # frozen_string_literal: true
 
+require 'base64'
 require 'open-uri'
+require 'openssl'
+require 'stringio'
+require 'zlib'
 require 'faraday'
 require 'faraday/multipart'
 require 'faraday/net_http_persistent'
@@ -18,6 +22,7 @@ require 'stream-chat/util'
 require 'stream-chat/types'
 require 'stream-chat/moderation'
 require 'stream-chat/channel_batch_updater'
+require 'stream-chat/webhook'
 
 module StreamChat
   DEFAULT_BLOCKLIST = 'profanity'
@@ -698,11 +703,57 @@ module StreamChat
       get('rate_limits', params: params)
     end
 
-    # Verify the signature added to a webhook event.
+    # Verify the signature on a webhook event using the client's API secret.
+    #
+    # Backward-compatible boolean helper. New integrations should call
+    # {#verify_and_parse_webhook} (or the SQS / SNS variants), which also handle
+    # gzip payload compression and return the parsed event.
     sig { params(request_body: String, x_signature: String).returns(T::Boolean) }
     def verify_webhook(request_body, x_signature)
-      signature = OpenSSL::HMAC.hexdigest('SHA256', @api_secret, request_body)
-      signature == x_signature
+      StreamChat::Webhook.verify_signature(request_body, x_signature, @api_secret)
+    end
+
+    # Verify and parse an HTTP webhook event.
+    #
+    # Decompresses `body` when gzipped (detected from the body bytes), verifies
+    # the `X-Signature` header against the client's API secret, and returns the
+    # parsed event as a `Hash`. Typed event classes are planned for a future
+    # release.
+    #
+    # @param body [String, Array<Integer>] Raw HTTP request body bytes Stream
+    #   signed.
+    # @param signature [String] Value of the `X-Signature` header.
+    # @return [Hash] The parsed event.
+    # @raise [InvalidWebhookError] When the signature does not match or the
+    #   gzip envelope is malformed.
+    sig do
+      params(
+        body: T.any(String, T::Array[Integer]),
+        signature: String
+      ).returns(T::Hash[String, T.untyped])
+    end
+    def verify_and_parse_webhook(body, signature)
+      StreamChat::Webhook.verify_and_parse_webhook(body, signature, @api_secret)
+    end
+
+    # Parse an SQS-delivered webhook event (decode only; Stream does not HMAC-sign SQS bodies).
+    #
+    # @param message_body [String] SQS message `Body` string.
+    # @return [Hash] The parsed event.
+    # @raise [InvalidWebhookError] on malformed base64 or gzip envelope
+    sig { params(message_body: String).returns(T::Hash[String, T.untyped]) }
+    def parse_sqs(message_body)
+      StreamChat::Webhook.parse_sqs(message_body)
+    end
+
+    # Parse an SNS-delivered webhook event (unwraps envelope JSON when needed).
+    #
+    # @param message [String] Raw SNS POST body or pre-extracted Message string.
+    # @return [Hash] The parsed event.
+    # @raise [InvalidWebhookError] on decode failures
+    sig { params(message: String).returns(T::Hash[String, T.untyped]) }
+    def parse_sns(message)
+      StreamChat::Webhook.parse_sns(message)
     end
 
     # Allows you to send custom events to a connected user.

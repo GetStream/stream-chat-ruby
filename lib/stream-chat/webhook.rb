@@ -1,0 +1,206 @@
+# typed: strict
+# frozen_string_literal: true
+
+require 'base64'
+require 'json'
+require 'openssl'
+require 'sorbet-runtime'
+require 'stringio'
+require 'zlib'
+
+require 'stream-chat/errors'
+
+module StreamChat
+  # Stateless helpers implementing the cross-SDK webhook contract documented at
+  # https://getstream.io/chat/docs/node/webhooks_overview/.
+  #
+  # The composite functions (`verify_and_parse_webhook`, `parse_sqs`,
+  # `parse_sns`) are the recommended entry points. The primitives
+  # they compose (`gunzip_payload`, `decode_sqs_payload`, `decode_sns_payload`,
+  # `verify_signature`, `parse_event`) are exposed so callers can build custom
+  # flows or run individual steps in isolation.
+  #
+  # The Ruby SDK currently returns the parsed JSON as a `Hash`; typed event
+  # classes will land in a future release.
+  module Webhook # rubocop:disable Metrics/ModuleLength
+    extend T::Sig
+
+    GZIP_MAGIC = T.let("\x1f\x8b".b.freeze, String)
+
+    # Coerces the webhook body into a binary `String` regardless of whether
+    # the caller hands us a `String` (HTTP `request.raw_post`) or an array of
+    # bytes (which is what some Ruby SQS clients yield when the message body
+    # is binary safe).
+    sig { params(body: T.any(String, T::Array[Integer])).returns(String) }
+    def self.normalize_body(body)
+      raw =
+        if body.is_a?(Array)
+          body.pack('C*')
+        else
+          String.new(body)
+        end
+      raw.force_encoding(Encoding::ASCII_8BIT)
+    end
+
+    # Returns `body` unchanged unless it starts with the gzip magic
+    # (`1f 8b`, per RFC 1952), in which case the gzip stream is inflated and
+    # the decompressed bytes are returned.
+    #
+    # Magic-byte detection (rather than relying on a header) keeps the same
+    # handler correct when middleware - Rack, Rails - auto-decompresses the
+    # request before your code sees it.
+    sig { params(body: T.any(String, T::Array[Integer])).returns(String) }
+    def self.gunzip_payload(body)
+      raw = normalize_body(body)
+      return raw unless raw.start_with?(GZIP_MAGIC)
+
+      begin
+        Zlib::GzipReader.new(StringIO.new(raw)).read.force_encoding(Encoding::ASCII_8BIT)
+      rescue Zlib::Error
+        raise InvalidWebhookError, InvalidWebhookError::GZIP_FAILED
+      end
+    end
+
+    # Reverses the SQS firehose envelope: the message `Body` is base64-decoded
+    # and, when the result begins with the gzip magic, gzip-decompressed. The
+    # same call works whether or not Stream is currently compressing payloads.
+    sig { params(body: String).returns(String) }
+    def self.decode_sqs_payload(body)
+      decoded =
+        begin
+          Base64.strict_decode64(body)
+        rescue ArgumentError
+          raise InvalidWebhookError, InvalidWebhookError::INVALID_BASE64
+        end
+      gunzip_payload(decoded)
+    end
+
+    # Reverses an SNS HTTP notification envelope. When `notification_body` is a
+    # JSON envelope (`{"Type":"Notification","Message":"..."}`), the inner
+    # `Message` field is extracted and run through the SQS pipeline
+    # (base64-decode, then gzip-if-magic). When the input is not a JSON
+    # envelope it is treated as the already-extracted `Message` string, so
+    # call sites that pre-unwrap continue to work.
+    sig { params(notification_body: String).returns(String) }
+    def self.decode_sns_payload(notification_body)
+      inner = extract_sns_message(notification_body)
+      decode_sqs_payload(inner.nil? ? notification_body : inner)
+    end
+
+    sig { params(notification_body: String).returns(T.nilable(String)) }
+    def self.extract_sns_message(notification_body)
+      trimmed = notification_body.to_s.lstrip
+      return nil unless trimmed.start_with?('{')
+
+      begin
+        parsed = JSON.parse(trimmed)
+      rescue JSON::ParserError
+        return nil
+      end
+      return nil unless parsed.is_a?(Hash)
+
+      message = parsed['Message']
+      message.is_a?(String) ? message : nil
+    end
+    private_class_method :extract_sns_message
+
+    # Constant-time HMAC-SHA256 verification of `signature` against the digest
+    # of `body` keyed by `secret`.
+    #
+    # The signature is always computed over the **uncompressed** JSON bytes,
+    # so callers that decoded a gzipped or base64-wrapped payload must pass
+    # the inflated bytes here.
+    sig do
+      params(
+        body: T.any(String, T::Array[Integer]),
+        signature: String,
+        secret: String
+      ).returns(T::Boolean)
+    end
+    def self.verify_signature(body, signature, secret)
+      raw = normalize_body(body)
+      expected = OpenSSL::HMAC.hexdigest('SHA256', secret, raw)
+      constant_time_equal?(expected, signature)
+    end
+
+    # Parse a JSON-encoded webhook event into a `Hash`.
+    #
+    # The Ruby SDK currently returns the parsed JSON as a `Hash`; typed event
+    # classes will land in a future release. The function name matches the
+    # documented primitive so callers can swap in a typed parser later without
+    # changing call sites.
+    sig { params(payload: String).returns(T::Hash[String, T.untyped]) }
+    def self.parse_event(payload)
+      result =
+        begin
+          JSON.parse(payload)
+        rescue JSON::ParserError
+          raise InvalidWebhookError, InvalidWebhookError::INVALID_JSON
+        end
+      raise InvalidWebhookError, InvalidWebhookError::INVALID_JSON unless result.is_a?(Hash)
+
+      result
+    end
+
+    sig do
+      params(
+        payload: String,
+        signature: String,
+        secret: String
+      ).returns(T::Hash[String, T.untyped])
+    end
+    def self.verify_and_parse_internal(payload, signature, secret)
+      raise InvalidWebhookError, InvalidWebhookError::SIGNATURE_MISMATCH unless verify_signature(payload, signature, secret)
+
+      parse_event(payload)
+    end
+    private_class_method :verify_and_parse_internal
+
+    # Decompress `body` when gzipped, verify the HMAC `signature`, and return
+    # the parsed event.
+    sig do
+      params(
+        body: T.any(String, T::Array[Integer]),
+        signature: String,
+        secret: String
+      ).returns(T::Hash[String, T.untyped])
+    end
+    def self.verify_and_parse_webhook(body, signature, secret)
+      verify_and_parse_internal(gunzip_payload(body), signature, secret)
+    end
+
+    # Decode the SQS `Body` (base64, then gzip-if-magic) and return the parsed
+    # event JSON. Stream does not ship an application-level signature on SQS payloads.
+    sig { params(message_body: String).returns(T::Hash[String, T.untyped]) }
+    def self.parse_sqs(message_body)
+      parse_event(decode_sqs_payload(message_body))
+    end
+
+    # Decode SNS (unwrap envelope when needed) and return the parsed event JSON.
+    sig { params(message: String).returns(T::Hash[String, T.untyped]) }
+    def self.parse_sns(message)
+      parse_event(decode_sns_payload(message))
+    end
+
+    # Timing-safe equality check used to compare the locally computed HMAC
+    # with the `X-Signature` header. Prefers the OpenSSL primitive when the
+    # Ruby build exposes it, otherwise falls back to a manual byte XOR loop
+    # that does not short-circuit on the first mismatch.
+    sig { params(left: String, right: String).returns(T::Boolean) }
+    def self.constant_time_equal?(left, right)
+      a = left.b
+      b = right.b
+      return false unless a.bytesize == b.bytesize
+
+      if OpenSSL.respond_to?(:fixed_length_secure_compare)
+        OpenSSL.fixed_length_secure_compare(a, b)
+      else
+        a_bytes = a.bytes
+        b_bytes = b.bytes
+        diff = 0
+        a_bytes.each_with_index { |byte, i| diff |= byte ^ b_bytes[i] }
+        diff.zero?
+      end
+    end
+  end
+end

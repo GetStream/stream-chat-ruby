@@ -47,4 +47,15 @@ module StreamChat
   end
 
   class StreamChannelException < StandardError; end
+
+  # Raised by webhook verify/parse helpers when the HMAC does not match or a
+  # gzip/base64/JSON envelope cannot be decoded. The message identifies which
+  # failure mode fired; the class-level constants below are the canonical
+  # strings for callers that prefer exact-match filtering over substring.
+  class InvalidWebhookError < StandardError
+    SIGNATURE_MISMATCH = 'signature mismatch'
+    INVALID_BASE64 = 'invalid base64 encoding'
+    GZIP_FAILED = 'gzip decompression failed'
+    INVALID_JSON = 'invalid JSON payload'
+  end
 end
