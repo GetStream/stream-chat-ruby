@@ -6,6 +6,10 @@ require 'stream-chat'
 require 'faraday'
 
 describe StreamChat::Client do
+  # Block-form retry helper. Kept under the original `loop_times` name to
+  # preserve backward compatibility with existing call sites. New tests
+  # should prefer the `eventually` RSpec matcher defined above, which reads
+  # as an eventual-consistency contract rather than a retry loop.
   def loop_times(times)
     loop do
       begin
@@ -20,16 +24,44 @@ describe StreamChat::Client do
     end
   end
 
+  # Hard-delete fellowship leftovers from prior CI runs whose after(:all)
+  # didn't fire. `delete_users` is idempotent so this is safe to re-run.
+  # Without it the shared test app accumulates Frodos / Sams / Gandalfs /
+  # Legolases forever and other tests that query users by name match sediment.
+  def cleanup_fellowship_leftovers!(client)
+    names = ['Frodo Baggins', 'Samwise Gamgee', 'Gandalf the Grey', 'Legolas']
+    leftover = client.query_users({ 'name' => { '$in' => names } })
+    leftover_ids = leftover['users'].map { |u| u['id'] }
+    return if leftover_ids.empty?
+
+    client.delete_users(leftover_ids,
+                        user: StreamChat::HARD_DELETE,
+                        messages: StreamChat::HARD_DELETE)
+  rescue StandardError
+    # Best-effort: a failed cleanup must not block tests; the per-run race
+    # tag below isolates concurrent runs that race past this point.
+  end
+
   before(:all) do
     @client = StreamChat::Client.from_env
+    cleanup_fellowship_leftovers!(@client)
+  end
 
+  before(:all) do
     @created_users = []
 
+    # Per-run race markers so concurrent CI runs (and the seconds-window between
+    # the active cleanup above and the upserts below) don't collide on
+    # race=Hobbit / Elf / Istari lookups.
+    @hobbit_race = "Hobbit-#{SecureRandom.alphanumeric(8)}"
+    @elf_race = "Elf-#{SecureRandom.alphanumeric(8)}"
+    @istari_race = "Istari-#{SecureRandom.alphanumeric(8)}"
+
     @fellowship_of_the_ring = [
-      { id: SecureRandom.uuid, name: 'Frodo Baggins', race: 'Hobbit', age: 50 },
-      { id: SecureRandom.uuid, name: 'Samwise Gamgee', race: 'Hobbit', age: 38 },
-      { id: SecureRandom.uuid, name: 'Gandalf the Grey', race: 'Istari' },
-      { id: SecureRandom.uuid, name: 'Legolas', race: 'Elf', age: 500 }
+      { id: SecureRandom.uuid, name: 'Frodo Baggins', race: @hobbit_race, age: 50 },
+      { id: SecureRandom.uuid, name: 'Samwise Gamgee', race: @hobbit_race, age: 38 },
+      { id: SecureRandom.uuid, name: 'Gandalf the Grey', race: @istari_race },
+      { id: SecureRandom.uuid, name: 'Legolas', race: @elf_race, age: 500 }
     ]
 
     @legolas = @fellowship_of_the_ring[3][:id]
@@ -588,7 +620,7 @@ describe StreamChat::Client do
   end
 
   it 'queries users' do
-    response = @client.query_users({ 'race' => { '$eq' => 'Hobbit' } }, sort: { 'age' => -1 })
+    response = @client.query_users({ 'race' => { '$eq' => @hobbit_race } }, sort: { 'age' => -1 })
     expect(response['users'].length).to eq 2
     expect([50, 38]).to eq(response['users'].map { |u| u['age'] })
   end
@@ -1025,20 +1057,22 @@ describe StreamChat::Client do
       expect(cmd['description']).to eq 'I am testing'
     end
 
+    # Each follow-up step uses the `eventually` matcher to absorb the
+    # backend's eventual-consistency lag between Create / Get / Update /
+    # Delete — on a cold shared CI app the next call regularly hits
+    # "the command ... does not exist" until the write propagates.
     it 'get that command' do
-      cmd = @client.get_command(@cmd)
-      expect(cmd['name']).to eq @cmd
-      expect(cmd['description']).to eq 'I am testing'
+      expect { @client.get_command(@cmd) }
+        .to eventually(include('name' => @cmd, 'description' => 'I am testing'))
     end
 
     it 'update that command' do
-      cmd = @client.update_command(@cmd, { description: 'I tested' })['command']
-      expect(cmd['name']).to eq @cmd
-      expect(cmd['description']).to eq 'I tested'
+      expect { @client.update_command(@cmd, { description: 'I tested' })['command'] }
+        .to eventually(include('name' => @cmd, 'description' => 'I tested'))
     end
 
     it 'delete that command' do
-      @client.delete_command(@cmd)
+      expect { @client.delete_command(@cmd) }.to eventually(be_truthy)
     end
 
     it 'list commands' do
