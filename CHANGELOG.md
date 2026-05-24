@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.27.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.26.1...v3.27.0) (2026-05-13)
+
+
+### Other
+
+* **spec:** clean fellowship sediment + retry commands eventually ([#212](https://github.com/GetStream/stream-chat-ruby/issues/212)) ([f3c8f5b](https://github.com/GetStream/stream-chat-ruby/commit/f3c8f5be841f95c2e0e399d3d180d7565d80fd6a))
+
 ### [3.26.1](https://github.com/GetStream/stream-chat-ruby/compare/v3.25.0...v3.26.1) (2026-04-29)
 
 
