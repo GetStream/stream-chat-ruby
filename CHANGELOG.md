@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.26.2](https://github.com/GetStream/stream-chat-ruby/compare/v3.26.1...v3.26.2) (2026-06-30)
+
+
+### Features
+
+* **webhooks:** verify_and_parse_* API for compressed payloads (CHA-3071) ([#211](https://github.com/GetStream/stream-chat-ruby/issues/211)) ([dd76c8f](https://github.com/GetStream/stream-chat-ruby/commit/dd76c8f39d0fae98c3d2c331635e9369b40e3696))
+
+
+### Bug Fixes
+
+* guard StreamAPIException against empty and non-integer error bodies ([#217](https://github.com/GetStream/stream-chat-ruby/issues/217)) ([415f6c0](https://github.com/GetStream/stream-chat-ruby/commit/415f6c0bd7b51b87631c5a1e8f821e50a5def2ec))
+
+
+### Other
+
+* before-message-send hook attempt timeout (CHA-3267) ([#216](https://github.com/GetStream/stream-chat-ruby/issues/216)) ([e721776](https://github.com/GetStream/stream-chat-ruby/commit/e721776376c064b434485bd4cb4188762f9f3c2b)), closes [GetStream/chat#13541](https://github.com/GetStream/chat/issues/13541)
+* **spec:** clean fellowship sediment + retry commands eventually ([#212](https://github.com/GetStream/stream-chat-ruby/issues/212)) ([f3c8f5b](https://github.com/GetStream/stream-chat-ruby/commit/f3c8f5be841f95c2e0e399d3d180d7565d80fd6a))
+
 ### [3.26.1](https://github.com/GetStream/stream-chat-ruby/compare/v3.25.0...v3.26.1) (2026-04-29)
 
 
