@@ -21,14 +21,28 @@ module StreamChat
     def initialize(response)
       super()
       @response = response
+
+      # Seed defaults first so the typed readers never return nil. A 5xx can
+      # arrive with an empty or non-JSON body (e.g. a load balancer emitting a
+      # bare 503), and an error envelope may omit "code"/"message" or send a
+      # non-integer "code". Without these defaults, reading error_code on such
+      # an exception raised a Sorbet TypeError that masked the real HTTP error.
+      @json_response = T.let(false, T::Boolean)
+      @error_code = T.let(-1, Integer)
+      @error_message = T.let('unknown', String)
+
       begin
         parsed_response = JSON.parse(response.body)
-        @json_response = T.let(true, T::Boolean)
-        @error_code = T.let(parsed_response.fetch('code', 'unknown'), Integer)
-        @error_message = T.let(parsed_response.fetch('message', 'unknown'), String)
       rescue JSON::ParserError
-        @json_response = false
+        return
       end
+      return unless parsed_response.is_a?(Hash)
+
+      @json_response = true
+      code = parsed_response['code']
+      @error_code = code if code.is_a?(Integer)
+      msg = parsed_response['message']
+      @error_message = msg if msg.is_a?(String)
     end
 
     sig { returns(String) }
