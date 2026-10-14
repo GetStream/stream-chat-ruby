@@ -1404,6 +1404,66 @@ describe StreamChat::Client do
     end
   end
 
+  describe 'scheduled messages' do
+    # Scheduled messages are behind a per-app flag. On an app without it the
+    # API either rejects scheduled_at (scheduled_messages_disabled) or, before
+    # the backend supports it, ignores it and sends the message right away.
+    def schedule_or_skip(text)
+      response = @channel.schedule_message({ 'text' => text }, @frodo, Time.now.utc + 3600)
+      skip 'scheduled messages not supported by this Stream app (no scheduled_message in response)' unless response['scheduled_message']
+      response
+    rescue StreamChat::StreamAPIException => e
+      raise unless e.message.include?('scheduled messages are not enabled')
+
+      skip "scheduled messages not enabled for this Stream app: #{e.message}"
+    end
+
+    before(:each) do
+      @scheduled = schedule_or_skip('scheduled hello')['scheduled_message']
+    end
+
+    after(:each) do
+      @client.delete_scheduled_message(@scheduled['id']) if @scheduled
+    rescue StreamChat::StreamAPIException
+      # already deleted or sent by the test
+    end
+
+    it 'schedules a message' do
+      expect(@scheduled['cid']).to eq(@channel.cid)
+      expect(@scheduled['status']).to eq('scheduled')
+      expect(@scheduled['user']['id']).to eq(@frodo)
+      expect(@scheduled['message']['text']).to eq('scheduled hello')
+    end
+
+    it 'queries scheduled messages' do
+      response = @client.query_scheduled_messages(@frodo, filter: { cid: @channel.cid }, limit: 10)
+
+      expect(response['scheduled_messages'].map { |sm| sm['id'] }).to include(@scheduled['id'])
+    end
+
+    it 'updates a scheduled message' do
+      scheduled_at = Time.now.utc + 7200
+      response = @client.update_scheduled_message(@scheduled['id'], message: { 'text' => 'edited' }, scheduled_at: scheduled_at)
+
+      expect(response['scheduled_message']['message']['text']).to eq('edited')
+      expect(Time.parse(response['scheduled_message']['scheduled_at'])).to be_within(1).of(scheduled_at)
+    end
+
+    it 'sends a scheduled message now' do
+      response = @client.send_scheduled_message_now(@scheduled['id'])
+
+      expect(response['scheduled_message']['id']).to eq(@scheduled['id'])
+    end
+
+    it 'deletes a scheduled message' do
+      response = @client.delete_scheduled_message(@scheduled['id'])
+      expect(response['scheduled_message']['id']).to eq(@scheduled['id'])
+
+      remaining = @client.query_scheduled_messages(@frodo, filter: { cid: @channel.cid })
+      expect(remaining['scheduled_messages'].map { |sm| sm['id'] }).not_to include(@scheduled['id'])
+    end
+  end
+
   describe 'live locations' do
     before(:all) do
       @location_test_user = { id: SecureRandom.uuid }
