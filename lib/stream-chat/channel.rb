@@ -55,6 +55,23 @@ module StreamChat
       @client.post("#{url}/message", data: payload)
     end
 
+    # Schedules a message to be sent to this channel at a later time.
+    #
+    # The message is not sent now: it is stored and sent at scheduled_at on
+    # behalf of user_id. The response carries `scheduled_message`, whose `id`
+    # is used to update, delete or send the scheduled message now.
+    #
+    # @param [StringKeyHash] message The message to send
+    # @param [String] user_id The ID of the user the message is sent as
+    # @param [DateTime, Time, String] scheduled_at When to send the message
+    #   (at least 1 minute and at most the app's maximum lead time from now)
+    # @param [Hash] options Additional SendMessage options, e.g. skip_push
+    # @return [StreamChat::StreamResponse]
+    sig { params(message: StringKeyHash, user_id: String, scheduled_at: T.any(DateTime, Time, String), options: T.untyped).returns(StreamChat::StreamResponse) }
+    def schedule_message(message, user_id, scheduled_at, **options)
+      send_message(message, user_id, **options, scheduled_at: StreamChat.normalize_timestamp(scheduled_at))
+    end
+
     # Sends an event on this channel.
     sig { params(event: StringKeyHash, user_id: String).returns(StreamChat::StreamResponse) }
     def send_event(event, user_id)
