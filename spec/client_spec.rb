@@ -842,7 +842,11 @@ describe StreamChat::Client do
     end
 
     it 'use the blocklist for a channel type' do
-      @client.update_channel_type('team', blocklist: @blocklist, blocklist_behavior: 'block')
+      # A new blocklist is not always visible to UpdateChannelType right away
+      # ("invalid block list name"), so retry for a few seconds.
+      loop_times 10 do
+        @client.update_channel_type('team', blocklist: @blocklist, blocklist_behavior: 'block')
+      end
     end
 
     xit 'should block messages that match the blocklist' do
