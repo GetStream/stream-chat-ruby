@@ -9104,7 +9104,6 @@ module URI::Util
 end
 
 module URI
-  extend ::URI::Escape
   def self.get_encoding(label); end
 end
 
