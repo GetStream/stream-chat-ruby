@@ -1410,11 +1410,13 @@ describe StreamChat::Client do
 
   describe 'scheduled messages' do
     # Scheduled messages are behind a per-app flag. On an app without it the
-    # API either rejects scheduled_at (scheduled_messages_disabled) or, before
-    # the backend supports it, ignores it and sends the message right away.
+    # API rejects scheduled_at (scheduled_messages_disabled), so skip. A
+    # response without scheduled_message means the backend ignored
+    # scheduled_at and posted the message right away, so fail.
     def schedule_or_skip(text)
       response = @channel.schedule_message({ 'text' => text }, @frodo, Time.now.utc + 3600)
-      skip 'scheduled messages not supported by this Stream app (no scheduled_message in response)' unless response['scheduled_message']
+      expect(response).to include('scheduled_message'),
+                          "scheduled_at was ignored and the message was sent immediately: #{response.inspect}"
       response
     rescue StreamChat::StreamAPIException => e
       raise unless e.message.include?('scheduled messages are not enabled')
