@@ -23,6 +23,7 @@ require 'stream-chat/types'
 require 'stream-chat/moderation'
 require 'stream-chat/channel_batch_updater'
 require 'stream-chat/webhook'
+require 'stream-chat/retry_middleware'
 
 module StreamChat
   DEFAULT_BLOCKLIST = 'profanity'
@@ -70,6 +71,8 @@ module StreamChat
         faraday.options[:open_timeout] = @timeout
         faraday.options[:timeout] = @timeout
         faraday.request :multipart
+        # Retries requests whose connection was dropped before a response; see RetryMiddleware.
+        faraday.use StreamChat::RetryMiddleware
         faraday.adapter :net_http_persistent, pool_size: 5 do |http|
           # AWS load balancer idle timeout is 60 secs, so let's make it 59
           http.idle_timeout = 59
