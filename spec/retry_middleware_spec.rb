@@ -22,6 +22,10 @@ describe StreamChat::RetryMiddleware do
 
   # Opens a pooled keep-alive connection, then has the server close it without
   # a TLS close_notify, the way the load balancer front end drops connections.
+  # Depending on the OpenSSL build, the next request either fails in
+  # Net::HTTP#begin_transport (and the middleware retries it) or Net::HTTP sees
+  # a clean EOF and reconnects by itself. Either way the request must succeed
+  # and reach the server exactly once, which is what these specs assert.
   def make_pooled_connection_stale
     server.script(:respond_close)
     client.get('warmup')
@@ -34,8 +38,21 @@ describe StreamChat::RetryMiddleware do
     server.requests
   end
 
-  context 'when the pooled connection went stale (request never sent)' do
-    it 'retries a POST, and the server receives it once' do
+  # How a dropped connection surfaces depends on the Ruby/OpenSSL build:
+  # Faraday::SSLError ("unexpected eof") on some, Faraday::ConnectionFailed
+  # (EOFError) on others. Callers get whichever the adapter raises.
+  def expect_transport_error(error)
+    expect(error).to be_a(Faraday::SSLError).or be_a(Faraday::ConnectionFailed)
+  end
+
+  def closed_port
+    TCPServer.new('127.0.0.1', 0).then do |s|
+      s.addr[1].tap { s.close }
+    end
+  end
+
+  context 'when the pooled connection went stale' do
+    it 'succeeds with a POST, and the server receives it once' do
       make_pooled_connection_stale
 
       response = client.post('messages', data: { message: { text: 'hi' } })
@@ -46,7 +63,7 @@ describe StreamChat::RetryMiddleware do
       expect(JSON.parse(requests.first.body)).to eq('message' => { 'text' => 'hi' })
     end
 
-    it 'retries a GET, and the server receives it once' do
+    it 'succeeds with a GET, and the server receives it once' do
       make_pooled_connection_stale
 
       client.get('channels')
@@ -54,7 +71,7 @@ describe StreamChat::RetryMiddleware do
       expect(server.requests.map(&:http_method)).to eq(['GET'])
     end
 
-    it 'retries a multipart upload with the full body' do
+    it 'succeeds with a multipart upload, and the server receives the full body once' do
       make_pooled_connection_stale
       content = "line of the uploaded file\n" * 4096
       file = Tempfile.new('upload')
@@ -74,23 +91,50 @@ describe StreamChat::RetryMiddleware do
     ensure
       file&.unlink
     end
+  end
 
-    it 'does not retry an IO body that cannot be rewound' do
-      make_pooled_connection_stale
+  context 'when the request body is an IO' do
+    # Connection refused fails before anything is sent, the same way on every
+    # platform, so it isolates the body check. A counting middleware placed
+    # after the retry middleware sees each attempt.
+    def refused_attempts(body)
+      refused = tls_client("https://127.0.0.1:#{closed_port}")
+      attempts = 0
+      counter = Class.new(Faraday::Middleware) do
+        define_method(:call) do |env|
+          attempts += 1
+          app.call(env)
+        end
+      end
+      refused.conn.builder.insert_after(StreamChat::RetryMiddleware, counter)
+
+      expect do
+        refused.conn.post('messages', body, 'Content-Length' => '7', 'Content-Type' => 'application/json')
+      end.to raise_error(Faraday::ConnectionFailed, /connection refused/)
+      attempts
+    end
+
+    it 'does not retry a body that cannot be rewound' do
       body = Class.new do
+        attr_reader :reads
+
         def initialize(data)
           @io = StringIO.new(data)
+          @reads = 0
         end
 
         def read(*args)
+          @reads += 1
           @io.read(*args)
         end
       end.new('{"a":1}')
 
-      expect do
-        client.conn.post('messages', body, 'Content-Length' => '7', 'Content-Type' => 'application/json')
-      end.to raise_error(Faraday::SSLError)
-      expect(server.requests).to be_empty
+      expect(refused_attempts(body)).to eq(1)
+      expect(body.reads).to eq(0)
+    end
+
+    it 'retries a body that can be rewound' do
+      expect(refused_attempts(StringIO.new('{"a":1}'))).to eq(3)
     end
   end
 
@@ -109,7 +153,7 @@ describe StreamChat::RetryMiddleware do
       server.script(:drop)
 
       expect { client.post('messages', data: { message: { text: 'hi' } }) }
-        .to raise_error(Faraday::SSLError, /unexpected eof/)
+        .to(raise_error { |e| expect_transport_error(e) })
       expect(server.requests.map(&:http_method)).to eq(['POST'])
     end
 
@@ -117,16 +161,14 @@ describe StreamChat::RetryMiddleware do
       open_pooled_connection
       server.script(:drop, :drop, :drop, :drop)
 
-      expect { client.get('channels') }.to raise_error(Faraday::SSLError)
+      expect { client.get('channels') }.to(raise_error { |e| expect_transport_error(e) })
       expect(server.requests.map(&:http_method)).to eq(%w[GET GET GET])
     end
   end
 
   context 'when the connection is refused' do
     it 'retries a POST once the server is listening' do
-      port = TCPServer.new('127.0.0.1', 0).then do |s|
-        s.addr[1].tap { s.close }
-      end
+      port = closed_port
       late_client = tls_client("https://127.0.0.1:#{port}")
       late_server = nil
       starter = Thread.new do
