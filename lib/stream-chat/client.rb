@@ -1222,6 +1222,58 @@ module StreamChat
       post('reminders/query', data: params)
     end
 
+    # Updates a scheduled message. Schedule a message with Channel#schedule_message.
+    #
+    # At least one of message or scheduled_at is required. The message, when
+    # given, replaces the scheduled message as a whole; the sender stays the
+    # user the message was scheduled for.
+    #
+    # @param id [String] The ID of the scheduled message
+    # @param message [StringKeyHash, nil] The new message
+    # @param scheduled_at [DateTime, Time, String, nil] The new send time
+    # @return [StreamChat::StreamResponse] API response with scheduled_message
+    sig { params(id: String, message: T.nilable(StringKeyHash), scheduled_at: T.nilable(T.any(DateTime, Time, String))).returns(StreamChat::StreamResponse) }
+    def update_scheduled_message(id, message: nil, scheduled_at: nil)
+      data = {}
+      data[:message] = message if message
+      data[:scheduled_at] = StreamChat.normalize_timestamp(scheduled_at) if scheduled_at
+      patch("scheduled_messages/#{id}", data: data)
+    end
+
+    # Deletes a scheduled message: cancels it so it is never sent, or removes a failed one.
+    #
+    # @param id [String] The ID of the scheduled message
+    # @return [StreamChat::StreamResponse] API response with scheduled_message
+    sig { params(id: String).returns(StreamChat::StreamResponse) }
+    def delete_scheduled_message(id)
+      delete("scheduled_messages/#{id}")
+    end
+
+    # Sends a scheduled message right away.
+    #
+    # @param id [String] The ID of the scheduled message
+    # @return [StreamChat::StreamResponse] API response with scheduled_message
+    sig { params(id: String).returns(StreamChat::StreamResponse) }
+    def send_scheduled_message_now(id)
+      post("scheduled_messages/#{id}/send_now")
+    end
+
+    # Queries the scheduled messages of a user across channels: pending ones
+    # first, then failed ones, each by scheduled_at.
+    #
+    # @param user_id [String] The ID of the user whose scheduled messages to query
+    # @param filter [StringKeyHash, nil] Optional filter, e.g. { cid: 'messaging:general', status: ['failed'] }
+    # @param sort [Array<Hash>, nil] Optional sort; only [{ field: 'scheduled_at', direction: 1 }] is supported
+    # @param options [Hash] Additional query options: limit (1 to 100, default 20) and next
+    # @return [StreamChat::StreamResponse] API response with scheduled_messages and next
+    sig { params(user_id: String, filter: T.nilable(StringKeyHash), sort: T.nilable(T::Array[StringKeyHash]), options: T.untyped).returns(StreamChat::StreamResponse) }
+    def query_scheduled_messages(user_id, filter: nil, sort: nil, **options)
+      data = options.merge({ user_id: user_id })
+      data[:filter] = filter if filter
+      data[:sort] = sort if sort
+      post('scheduled_messages/query', data: data)
+    end
+
     # Send the mark delivered event for this user, only works if the `delivery_receipts` setting is enabled
     #
     # @param [StringKeyHash, nil] data The delivery confirmation data
