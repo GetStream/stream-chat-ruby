@@ -1666,4 +1666,48 @@ describe StreamChat::Client do
       expect(team['users_daily']).to include 'total'
     end
   end
+
+  describe 'history window teams' do
+    # Only apps with the history window enabled can call these endpoints;
+    # every other app gets 403 with code 17. The CI app is one of the others.
+    def history_window_enabled?
+      @client.get_history_window_teams
+      true
+    rescue StreamChat::StreamAPIException => e
+      raise unless e.error_code == 17
+
+      false
+    end
+
+    it 'refuses every call with code 17 on an app without the history window' do
+      skip 'the app has the history window enabled' if history_window_enabled?
+
+      team = SecureRandom.uuid
+      [
+        -> { @client.set_history_window_teams([team]) },
+        -> { @client.delete_history_window_teams([team]) },
+        -> { @client.get_history_window_teams }
+      ].each do |call|
+        expect(&call).to raise_error(StreamChat::StreamAPIException) do |error|
+          expect(error.error_code).to eq 17
+          expect(error.error_message).to include 'history window teams'
+        end
+      end
+    end
+
+    it 'marks, lists and unmarks teams on an app with the history window' do
+      skip 'the app does not have the history window enabled' unless history_window_enabled?
+
+      team = SecureRandom.uuid
+      marked = @client.set_history_window_teams([team])
+      expect(marked['teams'].map { |t| t['team'] }).to eq [team]
+
+      listed = @client.get_history_window_teams
+      expect(listed).to include 'default_window_hours'
+      expect(listed['teams'].map { |t| t['team'] }).to include team
+
+      unmarked = @client.delete_history_window_teams([team])
+      expect(unmarked['teams']).to eq [team]
+    end
+  end
 end
