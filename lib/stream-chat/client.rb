@@ -1319,6 +1319,43 @@ module StreamChat
       post('stats/team_usage', data: options)
     end
 
+    # Gives teams full history (the paid tier of the history window).
+    #
+    # Teams without full history keep the app's history window. This endpoint is
+    # server-side only and only for apps with the history window enabled; other
+    # apps get a StreamAPIException with code 17 (HTTP 403).
+    #
+    # @param teams [Array<String>] 1 to 10 teams, each listed once
+    # @return [StreamChat::StreamResponse] Response with the marked teams
+    sig { params(teams: T::Array[String]).returns(StreamChat::StreamResponse) }
+    def set_history_window_teams(teams)
+      post('history_window/teams', data: { teams: teams })
+    end
+
+    # Puts teams back on the app's default history window.
+    #
+    # A team without full history is ignored. This endpoint is server-side only
+    # and only for apps with the history window enabled; other apps get a
+    # StreamAPIException with code 17 (HTTP 403).
+    #
+    # @param teams [Array<String>] 1 to 10 teams, each listed once
+    # @return [StreamChat::StreamResponse] Response with the teams that had full history
+    sig { params(teams: T::Array[String]).returns(StreamChat::StreamResponse) }
+    def delete_history_window_teams(teams)
+      post('history_window/teams/delete', data: { teams: teams })
+    end
+
+    # Returns the app's default history window and the teams with full history.
+    #
+    # This endpoint is server-side only and only for apps with the history window
+    # enabled; other apps get a StreamAPIException with code 17 (HTTP 403).
+    #
+    # @return [StreamChat::StreamResponse] Response with default_window_hours and teams
+    sig { returns(StreamChat::StreamResponse) }
+    def get_history_window_teams
+      get('history_window/teams')
+    end
+
     private
 
     sig { returns(T::Hash[String, String]) }
