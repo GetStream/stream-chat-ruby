@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.27.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.26.2...v3.27.0) (2026-10-29)
+
+
+### Other
+
+* run scheduled message specs unconditionally ([#224](https://github.com/GetStream/stream-chat-ruby/issues/224)) ([b7352bf](https://github.com/GetStream/stream-chat-ruby/commit/b7352bf5575a1940bbe465f74f7f7a8dbc6ba59d))
+
 ### [3.26.2](https://github.com/GetStream/stream-chat-ruby/compare/v3.26.1...v3.26.2) (2026-06-30)
 
 
