@@ -1669,18 +1669,27 @@ describe StreamChat::Client do
 
   describe 'history window teams' do
     # Only apps with the history window enabled can call these endpoints;
-    # every other app gets 403 with code 17. The CI app is one of the others.
-    def history_window_enabled?
+    # every other app gets 403 with code 17. The edge of a region whose control
+    # plane predates the endpoints answers 404 with code 16 instead, which says
+    # nothing about the SDK, so both cases skip there.
+    def history_window_state
       @client.get_history_window_teams
-      true
+      :enabled
     rescue StreamChat::StreamAPIException => e
-      raise unless e.error_code == 17
+      return :disabled if e.error_code == 17
+      return :unrouted if e.error_code == 16
 
-      false
+      raise
+    end
+
+    def skip_unless_history_window(expected)
+      state = history_window_state
+      skip "history window endpoints are not routed in this app's region yet" if state == :unrouted
+      skip "the app's history window state is #{state}" unless state == expected
     end
 
     it 'refuses every call with code 17 on an app without the history window' do
-      skip 'the app has the history window enabled' if history_window_enabled?
+      skip_unless_history_window(:disabled)
 
       team = SecureRandom.uuid
       [
@@ -1696,7 +1705,7 @@ describe StreamChat::Client do
     end
 
     it 'marks, lists and unmarks teams on an app with the history window' do
-      skip 'the app does not have the history window enabled' unless history_window_enabled?
+      skip_unless_history_window(:enabled)
 
       team = SecureRandom.uuid
       marked = @client.set_history_window_teams([team])
