@@ -1409,23 +1409,26 @@ describe StreamChat::Client do
   end
 
   describe 'scheduled messages' do
-    # Scheduled messages are behind a per-app flag. On an app without it the
-    # API rejects scheduled_at (scheduled_messages_disabled), so skip. A
-    # response without scheduled_message means the backend ignored
-    # scheduled_at and posted the message right away, so fail.
-    def schedule_or_skip(text)
+    # The CI app has scheduled messages enabled, so these specs never skip:
+    # a disabled feature is a failure. A response without scheduled_message
+    # means the backend ignored scheduled_at and posted the message right
+    # away, so fail on that too.
+    def schedule(text)
       response = @channel.schedule_message({ 'text' => text }, @frodo, Time.now.utc + 3600)
       expect(response).to include('scheduled_message'),
                           "scheduled_at was ignored and the message was sent immediately: #{response.inspect}"
       response
-    rescue StreamChat::StreamAPIException => e
-      raise unless e.message.include?('scheduled messages are not enabled')
+    end
 
-      skip "scheduled messages not enabled for this Stream app: #{e.message}"
+    # The server rounds a future scheduled_at up to the next whole UTC minute,
+    # so request a time already on a whole minute; it is stored unchanged.
+    def whole_minute_from_now(seconds)
+      t = (Time.now.utc + seconds).to_i
+      Time.at(t - (t % 60)).utc
     end
 
     before(:each) do
-      @scheduled = schedule_or_skip('scheduled hello')['scheduled_message']
+      @scheduled = schedule('scheduled hello')['scheduled_message']
     end
 
     after(:each) do
@@ -1448,11 +1451,11 @@ describe StreamChat::Client do
     end
 
     it 'updates a scheduled message' do
-      scheduled_at = Time.now.utc + 7200
+      scheduled_at = whole_minute_from_now(7200)
       response = @client.update_scheduled_message(@scheduled['id'], message: { 'text' => 'edited' }, scheduled_at: scheduled_at)
 
       expect(response['scheduled_message']['message']['text']).to eq('edited')
-      expect(Time.parse(response['scheduled_message']['scheduled_at'])).to be_within(1).of(scheduled_at)
+      expect(Time.parse(response['scheduled_message']['scheduled_at'])).to eq(scheduled_at)
     end
 
     it 'sends a scheduled message now' do
