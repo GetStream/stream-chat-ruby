@@ -67,6 +67,54 @@ describe 'StreamChat webhook verification + parsing' do
       expect { StreamChat::Webhook.gunzip_payload(bad) }
         .to raise_error(StreamChat::InvalidWebhookError, StreamChat::InvalidWebhookError::GZIP_FAILED)
     end
+
+    it 'raises on corrupt deflate data' do
+      bad = gzip(json_body)
+      bad[10, 4] = "\xff\xff\xff\xff".b
+      expect { StreamChat::Webhook.gunzip_payload(bad) }
+        .to raise_error(StreamChat::InvalidWebhookError, StreamChat::InvalidWebhookError::GZIP_FAILED)
+    end
+  end
+
+  describe 'decompressed payload limit' do
+    let(:limit) { StreamChat::Webhook.max_payload_bytes }
+    let(:bomb) { gzip("\0" * (limit + 1)) }
+    let(:too_large) { "#{StreamChat::InvalidWebhookError::GZIP_FAILED}: payload exceeds #{limit} bytes" }
+
+    it 'defaults to 10 MiB' do
+      expect(limit).to eq(10 * 1024 * 1024)
+    end
+
+    it 'inflates a body of exactly the limit' do
+      expect(StreamChat::Webhook.gunzip_payload(gzip("\0" * limit)).bytesize).to eq(limit)
+    end
+
+    it 'rejects a gzip bomb before the signature check' do
+      expect { client.verify_and_parse_webhook(bomb, 'deadbeef') }
+        .to raise_error(StreamChat::InvalidWebhookError, too_large)
+    end
+
+    it 'rejects a gzip bomb on the SQS path' do
+      expect { client.parse_sqs(Base64.strict_encode64(bomb)) }
+        .to raise_error(StreamChat::InvalidWebhookError, too_large)
+    end
+
+    context 'with a custom limit' do
+      after { StreamChat::Webhook.max_payload_bytes = 10 * 1024 * 1024 }
+
+      it 'honours the configured limit' do
+        StreamChat::Webhook.max_payload_bytes = json_body.bytesize - 1
+        expect { StreamChat::Webhook.gunzip_payload(gzip(json_body)) }
+          .to raise_error(StreamChat::InvalidWebhookError, /payload exceeds #{json_body.bytesize - 1} bytes/)
+        StreamChat::Webhook.max_payload_bytes = json_body.bytesize
+        expect(StreamChat::Webhook.gunzip_payload(gzip(json_body))).to eq(json_body)
+      end
+
+      it 'does not limit uncompressed bodies' do
+        StreamChat::Webhook.max_payload_bytes = 1
+        expect(StreamChat::Webhook.gunzip_payload(json_body)).to eq(json_body)
+      end
+    end
   end
 
   describe 'StreamChat::Webhook.decode_sqs_payload' do
