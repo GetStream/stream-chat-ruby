@@ -27,6 +27,18 @@ module StreamChat
 
     GZIP_MAGIC = T.let("\x1f\x8b".b.freeze, String)
 
+    @max_payload_bytes = T.let(10 * 1024 * 1024, Integer)
+
+    class << self
+      extend T::Sig
+
+      # Caps the decompressed size of a gzip webhook body. gunzip_payload runs
+      # before the signature check, so without a cap an unsigned gzip bomb could
+      # exhaust memory. Raise it if your events are larger.
+      sig { returns(Integer) }
+      attr_accessor :max_payload_bytes
+    end
+
     # Coerces the webhook body into a binary `String` regardless of whether
     # the caller hands us a `String` (HTTP `request.raw_post`) or an array of
     # bytes (which is what some Ruby SQS clients yield when the message body
@@ -49,16 +61,24 @@ module StreamChat
     # Magic-byte detection (rather than relying on a header) keeps the same
     # handler correct when middleware - Rack, Rails - auto-decompresses the
     # request before your code sees it.
+    #
+    # Raises `InvalidWebhookError` when the gzip stream is malformed or
+    # decompresses to more than `max_payload_bytes`.
     sig { params(body: T.any(String, T::Array[Integer])).returns(String) }
     def self.gunzip_payload(body)
       raw = normalize_body(body)
       return raw unless raw.start_with?(GZIP_MAGIC)
 
-      begin
-        Zlib::GzipReader.new(StringIO.new(raw)).read.force_encoding(Encoding::ASCII_8BIT)
-      rescue Zlib::Error
-        raise InvalidWebhookError, InvalidWebhookError::GZIP_FAILED
-      end
+      limit = max_payload_bytes
+      out =
+        begin
+          Zlib::GzipReader.wrap(StringIO.new(raw)) { |gz| gz.read(limit + 1) } || ''.b
+        rescue Zlib::Error
+          raise InvalidWebhookError, InvalidWebhookError::GZIP_FAILED
+        end
+      raise InvalidWebhookError, "#{InvalidWebhookError::GZIP_FAILED}: payload exceeds #{limit} bytes" if out.bytesize > limit
+
+      out.force_encoding(Encoding::ASCII_8BIT)
     end
 
     # Reverses the SQS firehose envelope: the message `Body` is base64-decoded
