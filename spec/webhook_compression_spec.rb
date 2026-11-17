@@ -89,6 +89,12 @@ describe 'StreamChat webhook verification + parsing' do
       expect(StreamChat::Webhook.gunzip_payload(gzip("\0" * limit)).bytesize).to eq(limit)
     end
 
+    it 'stops inflating one byte past the limit' do
+      expect_any_instance_of(Zlib::GzipReader).to receive(:read).with(limit + 1).and_call_original
+      expect { StreamChat::Webhook.gunzip_payload(gzip("\0" * (limit * 2))) }
+        .to raise_error(StreamChat::InvalidWebhookError, too_large)
+    end
+
     it 'rejects a gzip bomb before the signature check' do
       expect { client.verify_and_parse_webhook(bomb, 'deadbeef') }
         .to raise_error(StreamChat::InvalidWebhookError, too_large)
