@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.27.1](https://github.com/GetStream/stream-chat-ruby/compare/v3.27.0...v3.27.1) (2026-11-17)
+
+
+### Bug Fixes
+
+* limit decompressed webhook payloads to 10 MiB ([#230](https://github.com/GetStream/stream-chat-ruby/issues/230)) ([860901a](https://github.com/GetStream/stream-chat-ruby/commit/860901adbcaf0981ce407d915dbbe1e51f2f594a))
+
+
+### Other
+
+* add deprecation notice to README ([#220](https://github.com/GetStream/stream-chat-ruby/issues/220)) ([7d1117e](https://github.com/GetStream/stream-chat-ruby/commit/7d1117e43ecb7a4ace8cfdcbfbde691500d8212f))
+
 ## [3.27.0](https://github.com/GetStream/stream-chat-ruby/compare/v3.26.2...v3.27.0) (2026-10-29)
 
 
