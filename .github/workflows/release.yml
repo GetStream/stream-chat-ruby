@@ -13,8 +13,9 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # A merged release PR bumps VERSION, so a version missing from RubyGems is a release to finish.
-  # Once tagged, the tagged commit is rebuilt, so a rerun or a later push publishes the same code.
+  # A merged release PR bumps VERSION, so a version never pushed to RubyGems is a release to finish.
+  # The release is always the commit that set VERSION, so a rerun or a later push publishes the
+  # reviewed release PR and nothing merged after it.
   check:
     name: 🔎 Check for a new version
     runs-on: ubuntu-latest
@@ -25,21 +26,28 @@ jobs:
       release: ${{ steps.version.outputs.release }}
       version: ${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
 
+      # The downloads endpoint also answers 200 for a yanked version, which can never be pushed again.
       - id: version
         run: |
           version="v$(sed -n "s/^ *VERSION = '\(.*\)'$/\1/p" lib/stream-chat/version.rb)"
           test "$version" != v
           echo "version=$version" >> "$GITHUB_OUTPUT"
-          code=$(curl -s -o /dev/null -w '%{http_code}' --retry 3 "https://rubygems.org/api/v2/rubygems/stream-chat-ruby/versions/${version#v}.json")
+          code=$(curl -s -o /dev/null -w '%{http_code}' --retry 3 "https://rubygems.org/api/v1/downloads/stream-chat-ruby-${version#v}.json")
           case "$code" in
             200) echo "release=false" >> "$GITHUB_OUTPUT" ;;
             404)
+              ref=$(git log -1 --format=%H -S"VERSION = '${version#v}'" -- lib/stream-chat/version.rb)
+              tag=$(git rev-parse -q --verify "refs/tags/$version^{commit}" || true)
+              if [ -n "$tag" ] && [ "$tag" != "$ref" ]; then
+                echo "::error::$version is tagged at $tag, but VERSION was set in $ref"
+                exit 1
+              fi
               echo "release=true" >> "$GITHUB_OUTPUT"
-              echo "ref=$(git rev-parse -q --verify "refs/tags/$version^{commit}" || echo "$GITHUB_SHA")" >> "$GITHUB_OUTPUT"
+              echo "ref=$ref" >> "$GITHUB_OUTPUT"
               ;;
             *) echo "::error::RubyGems answered $code for $version"; exit 1 ;;
           esac
@@ -54,12 +62,12 @@ jobs:
     outputs:
       changelog: ${{ steps.changelog.outputs.changelog }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           ref: ${{ needs.check.outputs.ref }}
 
       - id: changelog
-        uses: actions/github-script@v6
+        uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6.4.1
         with:
           script: |
             const get_change_log_diff = require('./scripts/get_changelog_diff.js')
@@ -86,7 +94,7 @@ jobs:
       contents: write
     steps:
       - name: Create release on GitHub
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
         with:
           body: ${{ needs.build.outputs.changelog }}
           tag: ${{ needs.check.outputs.version }}
