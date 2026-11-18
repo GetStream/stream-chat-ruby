@@ -1,44 +1,120 @@
 name: Release
 
 on:
-  pull_request:
-    types: [closed]
+  push:
     branches:
       - master
 
-permissions:
-  contents: read
-  pull-requests: read
+permissions: {}
+
+# One release run at a time, so overlapping pushes cannot build the same version twice.
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
-  Release:
-    name: 🚀 Release
-    if: github.event.pull_request.merged && startsWith(github.head_ref, 'release-')
+  # A merged release PR bumps VERSION, so a version missing from RubyGems is a release to finish.
+  # Once tagged, the tagged commit is rebuilt, so a rerun or a later push publishes the same code.
+  check:
+    name: 🔎 Check for a new version
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      ref: ${{ steps.version.outputs.ref }}
+      release: ${{ steps.version.outputs.release }}
+      version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/github-script@v6
+      - id: version
+        run: |
+          version="v$(sed -n "s/^ *VERSION = '\(.*\)'$/\1/p" lib/stream-chat/version.rb)"
+          test "$version" != v
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          code=$(curl -s -o /dev/null -w '%{http_code}' --retry 3 "https://rubygems.org/api/v2/rubygems/stream-chat-ruby/versions/${version#v}.json")
+          case "$code" in
+            200) echo "release=false" >> "$GITHUB_OUTPUT" ;;
+            404)
+              echo "release=true" >> "$GITHUB_OUTPUT"
+              echo "ref=$(git rev-parse -q --verify "refs/tags/$version^{commit}" || echo "$GITHUB_SHA")" >> "$GITHUB_OUTPUT"
+              ;;
+            *) echo "::error::RubyGems answered $code for $version"; exit 1 ;;
+          esac
+
+  build:
+    name: 🏗️ Build
+    needs: check
+    if: needs.check.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      changelog: ${{ steps.changelog.outputs.changelog }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.check.outputs.ref }}
+
+      - id: changelog
+        uses: actions/github-script@v6
         with:
           script: |
             const get_change_log_diff = require('./scripts/get_changelog_diff.js')
-            core.exportVariable('CHANGELOG', get_change_log_diff())
+            core.setOutput('changelog', get_change_log_diff())
 
-            // Getting the release version from the PR source branch
-            // Source branch looks like this: release-1.0.0
-            const version = context.payload.pull_request.head.ref.split('-')[1]
-            core.exportVariable('VERSION', version)
-
-      - name: Publish gem
-        uses: dawidd6/action-publish-gem@v1
+      - uses: ruby/setup-ruby@20eb24b0d509e2b9ed9b6d42ddfeb992915e0564 # v1.341.0
         with:
-          api_key: ${{secrets.RUBYGEMS_API_KEY}}
+          ruby-version: "3.4"
 
+      - name: Build
+        run: gem build stream-chat.gemspec
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: gem
+          path: "*.gem"
+
+  # Tags the release commit before the upload. A rerun keeps the existing release.
+  release:
+    name: 🚀 Release
+    needs: [check, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
       - name: Create release on GitHub
         uses: ncipollo/release-action@v1
         with:
-          body: ${{ env.CHANGELOG }}
-          tag: ${{ env.VERSION }}
+          body: ${{ needs.build.outputs.changelog }}
+          tag: ${{ needs.check.outputs.version }}
+          commit: ${{ needs.check.outputs.ref }}
+          skipIfReleaseExists: true
           token: ${{ secrets.GITHUB_TOKEN }}
+
+  # The only job that can mint a RubyGems token, so it runs no project code. The RubyGems trusted
+  # publisher requires the rubygems environment, which only master can deploy to.
+  publish:
+    name: 💎 Publish to RubyGems
+    needs: [build, release]
+    runs-on: ubuntu-latest
+    environment: rubygems
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: gem
+
+      - uses: ruby/setup-ruby@20eb24b0d509e2b9ed9b6d42ddfeb992915e0564 # v1.341.0
+        with:
+          ruby-version: "3.4"
+
+      # Trades the job's OIDC token for a short-lived GEM_HOST_API_KEY.
+      - name: Configure RubyGems credentials
+        uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v2.1.0
+
+      - name: Publish to RubyGems (Trusted Publishing)
+        run: gem push ./*.gem
