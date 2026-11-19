@@ -910,8 +910,7 @@ module StreamChat
     def revoke_users_token(user_ids, before)
       before = StreamChat.normalize_timestamp(before)
 
-      updates = []
-      user_ids.map do |user_id|
+      updates = user_ids.map do |user_id|
         {
           'id' => user_id,
           'set' => {
