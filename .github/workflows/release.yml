@@ -18,7 +18,7 @@ jobs:
   # reviewed release PR and nothing merged after it.
   check:
     name: 🔎 Check for a new version
-    runs-on: { group: github-public-ubuntu-static }
+    runs-on: { group: github-public-amd64 }
     permissions:
       contents: read
     outputs:
@@ -56,7 +56,7 @@ jobs:
     name: 🏗️ Build
     needs: check
     if: needs.check.outputs.release == 'true'
-    runs-on: { group: github-public-ubuntu-static }
+    runs-on: { group: github-public-amd64 }
     permissions:
       contents: read
     outputs:
@@ -89,7 +89,7 @@ jobs:
   release:
     name: 🚀 Release
     needs: [check, build]
-    runs-on: { group: github-public-ubuntu-static }
+    runs-on: { group: github-public-amd64 }
     permissions:
       contents: write
     steps:
@@ -107,7 +107,7 @@ jobs:
   publish:
     name: 💎 Publish to RubyGems
     needs: [build, release]
-    runs-on: { group: github-public-ubuntu-static }
+    runs-on: { group: github-public-amd64 }
     environment: rubygems
     permissions:
       id-token: write
