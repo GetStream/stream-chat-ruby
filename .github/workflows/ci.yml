@@ -7,7 +7,7 @@ permissions:
 
 jobs:
   test:
-    runs-on: { group: github-public-ubuntu-static }
+    runs-on: { group: github-public-amd64 }
     strategy:
       max-parallel: 1
       matrix:

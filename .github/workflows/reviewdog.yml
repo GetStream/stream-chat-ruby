@@ -12,7 +12,7 @@ permissions:
 jobs:
   rubocop:
     name: 🐶 Reviewdog
-    runs-on: { group: github-public-ubuntu-static }
+    runs-on: { group: github-public-amd64 }
     steps:
       - name: Check out code
         uses: actions/checkout@v4
